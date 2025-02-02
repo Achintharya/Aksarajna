@@ -11,7 +11,6 @@ const rl = readline.createInterface({
   output: process.stdout
 });
 
-let articleCount = 0; // Initialize article count
 let lastResponse = ""; // Variable to store the last response
 
 // Function to save the article to a file
@@ -22,7 +21,31 @@ function saveArticleToFile(response, fileName) {
 
 // Main input loop
 async function processInput() {
-  rl.question("Enter your query (or type 'exit' to quit):\n", async (input) => {
+  rl.question("\nContext from file or image? (type 'file' or 'image')\n", async (contextSource) => {
+    let context = "";
+
+    if (contextSource.toLowerCase() === 'file') {
+      context = fs.readFileSync(CONTEXT_FILE, "utf-8");
+    } else if (contextSource.toLowerCase() === 'image') {
+      rl.question("Enter the image path:\n", (imagePath) => {
+        // Here you would add logic to extract text from the image
+        // For now, we'll just use the image path as a placeholder
+        context = `Extracted text from image at ${imagePath}`;
+        continueProcessing(context);
+      });
+      return; // Exit early to wait for image path input
+    } else {
+      console.log("Invalid option. Please type 'file' or 'image'.");
+      processInput();
+      return;
+    }
+
+    continueProcessing(context);
+  });
+}
+
+async function continueProcessing(context) {
+  rl.question("\nEnter your query (or type 'exit' to quit):\n", async (input) => {
     if (input.toLowerCase() === 'exit') {
       rl.close();
       return;
@@ -45,7 +68,6 @@ async function processInput() {
       }
     } else {
       try {
-        const context = fs.readFileSync(CONTEXT_FILE, "utf-8");
         const writingStyle = fs.readFileSync(WRITING_STYLE_FILE, "utf-8");
 
         if (!context) {
@@ -65,7 +87,6 @@ async function processInput() {
     processInput();
   });
 }
-
 
 // Generate a response using Mistral
 async function generateChatResponse(writingStyle, context, query) {
