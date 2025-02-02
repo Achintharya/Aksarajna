@@ -1,13 +1,8 @@
 import fs from 'fs';
-import path from 'path';
 import * as readline from 'readline';
-import dotenv from 'dotenv';
-import Mistral from "@mistralai/mistralai";
+import ollama from 'ollama';
 
-// Load environment variables from a .env file
-dotenv.config();
 
-const mistralClient = new Mistral(process.env.MISTRAL_API_KEY);
 const CONTEXT_FILE = "./context.txt"; // Context file
 const WRITING_STYLE_FILE = "./writing_style.txt"; // Full article for style reference
 
@@ -62,28 +57,19 @@ async function generateChatResponse(writingStyle, context, query) {
   const currentTime = new Date().toLocaleTimeString();
   const promptMessage = `Current Date and Time: ${currentDate}, ${currentTime}
 Writing Style Example: ${writingStyle}
-Context: ${context}
-User Query: ${query}
-Write as a paragraph in the same writing style as the Writing Style Example, using the provided context to address the query.`;
+Context: ${context}`;
 
   try {
-    const chatStreamResponse = await mistralClient.chatStream({
-      model: 'mistral-tiny',
+    const response = await ollama.chat({
+      model: 'llava',
       messages: [
         { role: "system", content: "### You are an AI that imitates a writing style(without including any info from it) to write about the context provided. ###" },
         { role: "user", content: promptMessage }
       ],
-      temperature: 0.5,
-      maxTokens: 500
     });
 
-    let finalResponse = "";
-    for await (const chunk of chatStreamResponse) {
-      const streamText = chunk.choices[0].delta.content;
-      finalResponse += streamText;
-    }
+    return response.message.content;
 
-    return finalResponse;
   } catch (error) {
     console.error("Error generating response:", error.message);
     return "Sorry, I couldn't process your request.";
