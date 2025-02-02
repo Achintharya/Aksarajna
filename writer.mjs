@@ -12,6 +12,13 @@ const rl = readline.createInterface({
 });
 
 let articleCount = 0; // Initialize article count
+let lastResponse = ""; // Variable to store the last response
+
+// Function to save the article to a file
+function saveArticleToFile(response, fileName) {
+  fs.writeFileSync(fileName, response, "utf-8");
+  console.log(`The article has been saved to '${fileName}'.`);
+}
 
 // Main input loop
 async function processInput() {
@@ -27,26 +34,35 @@ async function processInput() {
       return;
     }
 
-    try {
-      const context = fs.readFileSync(CONTEXT_FILE, "utf-8");
-      const writingStyle = fs.readFileSync(WRITING_STYLE_FILE, "utf-8");
-
-      if (!context) {
-        console.log("No relevant context found. Proceeding with minimal guidance.");
+    // Check if the input is a save command with a file name
+    const saveCommandMatch = input.match(/^save to file as "(.+)"$/i);
+    if (saveCommandMatch) {
+      const fileName = `${saveCommandMatch[1]}.txt`;
+      if (lastResponse) {
+        saveArticleToFile(lastResponse, fileName);
+      } else {
+        console.log("No previous response to save.");
       }
+    } else {
+      try {
+        const context = fs.readFileSync(CONTEXT_FILE, "utf-8");
+        const writingStyle = fs.readFileSync(WRITING_STYLE_FILE, "utf-8");
 
-      const response = await generateChatResponse(writingStyle, context || "", input);
+        if (!context) {
+          console.log("No relevant context found. Proceeding with minimal guidance.");
+        }
 
-      // Increment the article count and write the response to a new file
-      articleCount++;
-      const articleFileName = `article${articleCount}.txt`;
-      fs.writeFileSync(articleFileName, response, "utf-8");
-      console.log(`The article has been saved to '${articleFileName}'.`);
-    } catch (error) {
-      console.error("An error occurred:", error.message);
-    } finally {
-      processInput();
+        const response = await generateChatResponse(writingStyle, context || "", input);
+
+        // Update lastResponse with the current response
+        lastResponse = response;
+
+      } catch (error) {
+        console.error("An error occurred:", error.message);
+      }
     }
+
+    processInput();
   });
 }
 
@@ -57,7 +73,8 @@ async function generateChatResponse(writingStyle, context, query) {
   const currentTime = new Date().toLocaleTimeString();
   const promptMessage = `Current Date and Time: ${currentDate}, ${currentTime}
 Writing Style Example: ${writingStyle}
-Context: ${context}`;
+Context: ${context}
+User Query: ${query}`;
 
   try {
     const response = await ollama.chat({
@@ -68,6 +85,7 @@ Context: ${context}`;
       ],
     });
 
+    console.log(response.message.content);
     return response.message.content;
 
   } catch (error) {
