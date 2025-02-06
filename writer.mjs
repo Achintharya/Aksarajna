@@ -19,8 +19,7 @@ function saveArticleToFile(response, fileName) {
   console.log(`The article has been saved to '${fileName}'.`);
 }
 
-// Main input loop
-async function processInput() {
+async function start() {
   rl.question("\nContext from file or image? (type 'file' or 'image')\n", async (contextSource) => {
     let context = "";
 
@@ -31,21 +30,22 @@ async function processInput() {
         // Here you would add logic to extract text from the image
         // For now, we'll just use the image path as a placeholder
         context = `Extracted text from image at ${imagePath}`;
-        continueProcessing(context);
+        processInput(context);
       });
       return; // Exit early to wait for image path input
     } else {
       console.log("Invalid option. Please type 'file' or 'image'.");
-      processInput();
+      start();
       return;
     }
 
-    continueProcessing(context);
+    processInput(context);
   });
 }
 
-async function continueProcessing(context) {
-  rl.question("\nEnter your query (or type 'exit' to quit):\n", async (input) => {
+// Main input loop
+async function processInput(context) {
+  rl.question("==>  ", async (input) => {
     if (input.toLowerCase() === 'exit') {
       rl.close();
       return;
@@ -53,7 +53,7 @@ async function continueProcessing(context) {
 
     if (!input.trim()) {
       console.log("Please enter a valid input.");
-      processInput();
+      processInput(context);
       return;
     }
 
@@ -84,7 +84,7 @@ async function continueProcessing(context) {
       }
     }
 
-    processInput();
+    processInput(context);
   });
 }
 
@@ -116,4 +116,4 @@ User Query: ${query}`;
 }
 
 // Start the input loop
-processInput();
+start();
