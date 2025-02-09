@@ -10,6 +10,13 @@ This project is a web context extraction tool that searches for websites related
 - **Rate Limiting Handling**: Implements exponential backoff for handling HTTP 429 (Too Many Requests) responses.
 - **Environment Configuration**: Loads configuration from a `.env` file.
 
+## How It Works
+
+- The tool initiates a search using DuckDuckGo to find websites related to the user's query.
+- It then uses an asynchronous web crawler to visit the URLs obtained from the search results.
+- The crawler fetches the web pages and processes them concurrently to improve efficiency.
+- A language model-based extraction strategy is applied to extract structured information from the fetched web pages.
+- The extracted information is saved to a file for further use or analysis.
 
 # AI Writing Assistant
 
@@ -21,7 +28,6 @@ This program is an AI-powered writing assistant that generates responses based o
 - **Writing Style Imitation**: Uses a predefined writing style to generate responses.
 - **Save Responses**: Allows saving generated responses to a file.
 - **Interactive CLI**: Provides an interactive command-line interface for user interaction.
-
 
 ## How It Works
 
