@@ -3,8 +3,8 @@ import * as readline from 'readline';
 import ollama from 'ollama';
 
 
-const CONTEXT_FILE = "./context.txt"; // Context file
-const WRITING_STYLE_FILE = "./writing_style.txt"; // Full article for style reference
+const CONTEXT_FILE = "./data/context.txt"; // Context file
+const WRITING_STYLE_FILE = "./data/writing_style.txt"; // Full article for style reference
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -20,27 +20,12 @@ function saveArticleToFile(response, fileName) {
 }
 
 async function start() {
-  rl.question("\nContext from file or image? (type 'file' or 'image')\n", async (contextSource) => {
-    let context = "";
-
-    if (contextSource.toLowerCase() === 'file') {
-      context = fs.readFileSync(CONTEXT_FILE, "utf-8");
-    } else if (contextSource.toLowerCase() === 'image') {
-      rl.question("Enter the image path:\n", (imagePath) => {
-        // Here you would add logic to extract text from the image
-        // For now, we'll just use the image path as a placeholder
-        context = `Extracted text from image at ${imagePath}`;
-        processInput(context);
-      });
-      return; // Exit early to wait for image path input
-    } else {
-      console.log("Invalid option. Please type 'file' or 'image'.");
-      start();
-      return;
-    }
-
+  try {
+    const context = fs.readFileSync(CONTEXT_FILE, "utf-8");
     processInput(context);
-  });
+  } catch (error) {
+    console.error("Error reading context file:", error.message);
+  }
 }
 
 // Main input loop
@@ -60,7 +45,7 @@ async function processInput(context) {
     // Check if the input is a save command with a file name
     const saveCommandMatch = input.match(/^save to file as "(.+)"$/i);
     if (saveCommandMatch) {
-      const fileName = `${saveCommandMatch[1]}.txt`;
+      const fileName = `./articles/${saveCommandMatch[1]}.txt`;
       if (lastResponse) {
         saveArticleToFile(lastResponse, fileName);
       } else {
@@ -99,9 +84,9 @@ User Query: ${query}`;
 
   try {
     const response = await ollama.chat({
-      model: 'llava',
+      model: 'mistral',
       messages: [
-        { role: "system", content: "### You are an AI that imitates a writing style(without including any info from it) to write about the context provided. ###" },
+        { role: "system", content: "### You are an AI that imitates a writing style (without including any info from it) to write nonredundantly about the context provided. ###" },
         { role: "user", content: promptMessage }
       ],
     });

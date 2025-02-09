@@ -1,0 +1,6 @@
+asyncio
+requests
+pydantic
+python-dotenv
+crawl4ai
+duckduckgo-search
