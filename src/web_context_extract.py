@@ -68,16 +68,21 @@ async def main():
         ))
 
     # Process results and save to file
-    with open("./data/context.txt", "w") as file:
-        file.write(f"Extracted Content from {urls}:\n\n\n")
+    with open("./data/context.json", "w") as file:
+        output_data = []  # Initialize a list to hold all summaries
+
         for url, result in zip(urls, results):
             if result.success:
                 page_summary = json.loads(result.extracted_content)
-                file.write(json.dumps(page_summary, indent=2))
-                file.write("\n\n")
+                output_data.append(page_summary)  # Append each summary to the list
             else:
                 print(f"Crawl failed for {url}\n")
-        print("Wrote extracted info to file")
+
+        # Write the entire list as a JSON array
+        json.dump(output_data, file, indent=2)  # Use json.dump to write the list to the file
+
+        print("\nWrote extracted info to file")
+        print(f"Extracted Content: {urls}")
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -3,15 +3,9 @@ import * as readline from 'readline';
 import ollama from 'ollama';
 
 
-const CONTEXT_FILE = "./data/context.txt"; // Context file
-const WRITING_STYLE_FILE = "./data/writing_style.txt"; // Full article for style reference
+const CONTEXT_FILE = "data/context.txt"; // Context file
+const WRITING_STYLE_FILE = "data/writing_style.txt"; // Full article for style reference
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
-
-let lastResponse = ""; // Variable to store the last response
 
 // Function to save the article to a file
 function saveArticleToFile(response, fileName) {
@@ -22,54 +16,38 @@ function saveArticleToFile(response, fileName) {
 async function start() {
   try {
     const context = fs.readFileSync(CONTEXT_FILE, "utf-8");
-    processInput(context);
+    const writingStyle = fs.readFileSync(WRITING_STYLE_FILE, "utf-8");
+
+    if (!context) {
+      console.log("No relevant context found. Proceeding with minimal guidance.");
+    }
+
+    // Directly define the query here
+    const query = "Write brief informative article "; // Replace with your actual query
+
+    const response = await generateChatResponse(writingStyle, context || "", query);
+
+    // Prompt user for the file name
+    const fileName = await promptForFileName(); // New function to get file name
+    saveArticleToFile(response, fileName); 
+
   } catch (error) {
-    console.error("Error reading context file:", error.message);
+    console.error("An error occurred:", error.message);
   }
 }
 
-// Main input loop
-async function processInput(context) {
-  rl.question("==>  ", async (input) => {
-    if (input.toLowerCase() === 'exit') {
+// New function to prompt for file name
+async function promptForFileName() {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+
+  return new Promise((resolve) => {
+    rl.question('Enter the file name to save the article: ', (fileName) => {
       rl.close();
-      return;
-    }
-
-    if (!input.trim()) {
-      console.log("Please enter a valid input.");
-      processInput(context);
-      return;
-    }
-
-    // Check if the input is a save command with a file name
-    const saveCommandMatch = input.match(/^save to file as "(.+)"$/i);
-    if (saveCommandMatch) {
-      const fileName = `./articles/${saveCommandMatch[1]}.txt`;
-      if (lastResponse) {
-        saveArticleToFile(lastResponse, fileName);
-      } else {
-        console.log("No previous response to save.");
-      }
-    } else {
-      try {
-        const writingStyle = fs.readFileSync(WRITING_STYLE_FILE, "utf-8");
-
-        if (!context) {
-          console.log("No relevant context found. Proceeding with minimal guidance.");
-        }
-
-        const response = await generateChatResponse(writingStyle, context || "", input);
-
-        // Update lastResponse with the current response
-        lastResponse = response;
-
-      } catch (error) {
-        console.error("An error occurred:", error.message);
-      }
-    }
-
-    processInput(context);
+      resolve(`${fileName}.txt`); // Append .txt extension
+    });
   });
 }
 
@@ -100,5 +78,5 @@ User Query: ${query}`;
   }
 }
 
-// Start the input loop
+// Start the process
 start();

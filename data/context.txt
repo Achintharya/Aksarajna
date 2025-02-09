@@ -1,44 +1,47 @@
-Extracted Content from https://en.wikipedia.org/wiki/Pankaj_M_Munjal:
-[
-  {
-    "summary": "Pankaj M Munjal is an Indian businessman and chairman and managing director of Hero Cycles Ltd. He was born on December 15, 1962, in Ludhiana, India. Munjal joined his father's company in 1988 and became Co-chairman and managing director in 2011. He took over the executive responsibilities of Hero Cycles Ltd in 2010 and became chairman and managing director at Hero Motors Limited in July 2015.",
-    "error": false
-  },
-  {
-    "summary": "Munjal has a love for automobiles and has always been interested in the automotive industry. He finished his early schooling from The Lawrence School, Sanawar, and graduated in Science and training in Automotive Manufacturing at Kettering University (formerly General Motors Institute), Flint in USA. He also attended an executive program in Strategic Marketing Management at London Business School & Harvard University.",
-    "error": false
-  },
-  {
-    "summary": "Munjal has been a non-executive director at Munjal Showa Limited since May 16, 1985. He has also been the chairman of the board at Hero Motors Limited since July 2015. Prior to this, he headed Hero Motors Ltd, which he established in 1988 and was the leader in the automotive moped segment with its brand Hero Puch.",
-    "error": false
-  }
-]
+Below are the extracted and formatted relevant information from the given JSON data:
 
-Extracted Content from https://www.wikiwand.com/en/articles/Pankaj_Munjal:
-[
-  {
-    "summary": "Agree & Join LinkedIn \nBy clicking Continue to join or sign in, you agree to LinkedIn\u2019s [User Agreement](https://in.linkedin.com/in/</legal/user-agreement?trk=linkedin-tc_auth-button_user-agreement>), [Privacy Policy](https://in.linkedin.com/in/</legal/privacy-policy?trk=linkedin-tc_auth-button_privacy-policy>), and [Cookie Policy](https://in.linkedin.com/in/</legal/cookie-policy?trk=linkedin-tc_auth-button_cookie-policy>). \n[ Skip to main content ](https://in.linkedin.com/in/<#main-content>) [ LinkedIn ](https://in.linkedin.com/in/</?trk=seo-authwall-base_nav-header-logo>)\n# Join LinkedIn\nNot you? \nRemove photo \nFirst name\nLast name\nEmail\nPassword (6+ characters)\nBy clicking Agree & Join, you agree to the LinkedIn [User Agreement](https://in.linkedin.com/in/<https:/www.linkedin.com/legal/user-agreement?trk=seo-authwall-base_join-form-user-agreement>), [Privacy Policy](https://in.linkedin.com/in/<https:/www.linkedin.com/legal/privacy-policy?trk=seo-authwall-base_join-form-privacy-policy>), and [Cookie Policy](https://in.linkedin.com/in/<https:/www.linkedin.com/legal/cookie-policy?trk=seo-authwall-base_join-form-cookie-policy>). \nAgree & Join \nor\nContinue with GoogleContinue with Google\nAlready on Linkedin?  Sign in \n## Security verification\n## Sign in\nEmail or phone \nPassword \nShow\n[Forgot password?](https://in.linkedin.com/in/<https:/www.linkedin.com/uas/request-password-reset?trk=seo-authwall-base_forgot_password>) Sign in \nor \nBy clicking Continue to join or sign in, you agree to LinkedIn\u2019s [User Agreement](https://in.linkedin.com/in/</legal/user-agreement?trk=seo-authwall-base_auth-button_user-agreement>), [Privacy Policy](https://in.linkedin.com/in/</legal/privacy-policy?trk=seo-authwall-base_auth-button_privacy-policy>), and [Cookie Policy](https://in.linkedin.com/in/</legal/cookie-policy?trk=seo-authwall-base_auth-button_cookie-policy>). \nContinue with GoogleContinue with Google\nNew to Linkedin?  Join now \n  * LinkedIn \u00a9 2025\n  * [ About ](https://in.linkedin.com/in/<https:/about.linkedin.com?trk=seo-authwall-base_footer-about>)\n  * [ Accessibility ](https://in.linkedin.com/in/<https:/www.linkedin.com/accessibility?trk=seo-authwall-base_footer-accessibility>)\n  * [ User Agreement ](https://in.linkedin.com/in/<https:/www.linkedin.com/legal/user-agreement?trk=seo-authwall-base_footer-user-agreement>)\n  * [ Privacy Policy ](https://in.linkedin.com/in/<https:/www.linkedin.com/legal/privacy-policy?trk=seo-authwall-base_footer-privacy-policy>)\n  * [ Cookie Policy ](https://in.linkedin.com/in/<https:/www.linkedin.com/legal/cookie-policy?trk=seo-authwall-base_footer-cookie-policy>)\n  * [ Copyright Policy ](https://in.linkedin.com/in/<https:/www.linkedin.com/legal/copyright-policy?trk=seo-authwall-base_footer-copyright-policy>)\n  * [ Brand Policy ](https://in.linkedin.com/in/<https:/brand.linkedin.com/policies?trk=seo-authwall-base_footer-brand-policy>)\n  * [ Guest Controls ](https://in.linkedin.com/in/<https:/www.linkedin.com/psettings/guest-controls?trk=seo-authwall-base_footer-guest-controls>)\n  * [ Community Guidelines ](https://in.linkedin.com/in/<https:/www.linkedin.com/legal/professional-community-policies?trk=seo-authwall-base_footer-community-guide>)\n  *     * \u0627\u0644\u0639\u0631\u0628\u064a\u0629 (Arabic) \n    * \u09ac\u09be\u0982\u09b2\u09be (Bangla) \n    * \u010ce\u0161tina (Czech) \n    * Dansk (Danish) \n    * Deutsch (German) \n    * \u0395\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac (Greek) \n    * **English (English)**\n    * Espa\u00f1ol (Spanish) \n    * \u0641\u0627\u0631\u0633\u06cc (Persian) \n    * Suomi (Finnish) \n    * Fran\u00e7ais (French) \n    * \u0939\u093f\u0902\u0926\u0940 (Hindi) \n    * Magyar (Hungarian) \n    * Bahasa Indonesia (Indonesian) \n    * Italiano (Italian) \n    * \u05e2\u05d1\u05e8\u05d9\u05ea (Hebrew) \n    * \u65e5\u672c\u8a9e (Japanese) \n    * \ud55c\uad6d\uc5b4 (Korean) \n    * \u092e\u0930\u093e\u0920\u0940 (Marathi) \n    * Bahasa Malaysia (Malay) \n    * Nederlands (Dutch) \n    * Norsk (Norwegian) \n    * \u0a2a\u0a70\u0a1c\u0a3e\u0a2c\u0a40 (Punjabi) \n    * Polski (Polish) \n    * Portugu\u00eas (Portuguese) \n    * Rom\u00e2n\u0103 (Romanian) \n    * \u0420\u0443\u0441\u0441\u043a\u0438\u0439 (Russian) \n    * Svenska (Swedish) \n    * \u0c24\u0c46\u0c32\u0c41\u0c17\u0c41 (Telugu) \n    * \u0e20\u0e32\u0e29\u0e32\u0e44\u0e17\u0e22 (Thai) \n    * Tagalog (Tagalog) \n    * T\u00fcrk\u00e7e (Turkish) \n    * \u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430 (Ukrainian) \n    * Ti\u1ebfng Vi\u1ec7t (Vietnamese) \n    * \u7b80\u4f53\u4e2d\u6587 (Chinese (Simplified)) \n    * \u6b63\u9ad4\u4e2d\u6587 (Chinese (Traditional)) \nLanguage  \n",
-    "error": false
-  },
-  {
-    "summary": "User Agreement: https://in.linkedin.com/in/</legal/user-agreement?trk=seo-authwall-base_join-form-user-agreement>\nPrivacy Policy: https://in.linkedin.com/in/<https:/www.linkedin.com/legal/privacy-policy?trk=seo-authwall-base_join-form-privacy-policy>\nCookie Policy: https://in.linkedin.com/in/<https:/www.linkedin.com/legal/cookie-policy?trk=seo-authwall-base_join-form-cookie-policy>",
-    "error": false
-  },
-  {
-    "summary": "Already on Linkedin?  Sign in \n## Security verification\n## Sign in\nEmail or phone \nPassword \nShow\n[Forgot password?](https://in.linkedin.com/in/<https:/www.linkedin.com/uas/request-password-reset?trk=seo-authwall-base_forgot_password>) Sign in \nor \nBy clicking Continue to join or sign in, you agree to LinkedIn\u2019s [User Agreement](https://in.linkedin.com/in/</legal/user-agreement?trk=seo-authwall-base_auth-button_user-agreement>), [Privacy Policy](https://in.linkedin.com/in/</legal/privacy-policy?trk=seo-authwall-base_auth-button_privacy-policy>), and [Cookie Policy](https://in.linkedin.com/in/</legal/cookie-policy?trk=seo-authwall-base_auth-button_cookie-policy>). \nContinue with GoogleContinue with Google\nNew to Linkedin?  Join now \n  * LinkedIn \u00a9 2025\n  * [ About ](https://in.linkedin.com/in/<https:/about.linkedin.com?trk=seo-authwall-base_footer-about>)\n  * [ Accessibility ](https://in.linkedin.com/in/<https:/www.linkedin.com/accessibility?trk=seo-authwall-base_footer-accessibility>)\n  * [ User Agreement ](https://in.linkedin.com/in/<https:/www.linkedin.com/legal/user-agreement?trk=seo-authwall-base_footer-user-agreement>)\n  * [ Privacy Policy ](https://in.linkedin.com/in/<https:/www.linkedin.com/legal/privacy-policy?trk=seo-authwall-base_footer-privacy-policy>)\n  * [ Cookie Policy ](https://in.linkedin.com/in/<https:/www.linkedin.com/legal/cookie-policy?trk=seo-authwall-base_footer-cookie-policy>)\n  * [ Copyright Policy ](https://in.linkedin.com/in/<https:/www.linkedin.com/legal/copyright-policy?trk=seo-authwall-base_footer-copyright-policy>)\n  * [ Brand Policy ](https://in.linkedin.com/in/<https:/brand.linkedin.com/policies?trk=seo-authwall-base_footer-brand-policy>)\n  * [ Guest Controls ](https://in.linkedin.com/in/<https:/www.linkedin.com/psettings/guest-controls?trk=seo-authwall-base_footer-guest-controls>)\n  * [ Community Guidelines ](https://in.linkedin.com/in/<https:/www.linkedin.com/legal/professional-community-policies?trk=seo-authwall-base_footer-community-guide>)\n  *     * \u0627\u0644\u0639\u0631\u0628\u064a\u0629 (Arabic) \n    * \u09ac\u09be\u0982\u09b2\u09be (Bangla) \n    * \u010ce\u0161tina (Czech) \n    * Dansk (Danish) \n    * Deutsch (German) \n    * \u0395\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac (Greek) \n    * **English (English)**\n    * Espa\u00f1ol (Spanish) \n    * \u0641\u0627\u0631\u0633\u06cc (Persian) \n    * Suomi (Finnish) \n    * Fran\u00e7ais (French) \n    * \u0939\u093f\u0902\u0926\u0940 (Hindi) \n    * Magyar (Hungarian) \n    * Bahasa Indonesia (Indonesian) \n    * Italiano (Italian) \n    * \u05e2\u05d1\u05e8\u05d9\u05ea (Hebrew) \n    * \u65e5\u672c\u8a9e (Japanese) \n    * \ud55c\uad6d\uc5b4 (Korean) \n    * \u092e\u0930\u093e\u0920\u0940 (Marathi) \n    * Bahasa Malaysia (Malay) \n    * Nederlands (Dutch) \n    * Norsk (Norwegian) \n    * \u0a2a\u0a70\u0a1c\u0a3e\u0a2c\u0a40 (Punjabi) \n    * Polski (Polish) \n    * Portugu\u00eas (Portuguese) \n    * Rom\u00e2n\u0103 (Romanian) \n    * \u0420\u0443\u0441\u0441\u043a\u0438\u0439 (Russian) \n    * Svenska (Swedish) \n    * \u0c24\u0c46\u0c32\u0c41\u0c17\u0c41 (Telugu) \n    * \u0e20\u0e32\u0e29\u0e32\u0e44\u0e17\u0e22 (Thai) \n    * Tagalog (Tagalog) \n    * T\u00fcrk\u00e7e (Turkish) \n    * \u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430 (Ukrainian) \n    * Ti\u1ebfng Vi\u1ec7t (Vietnamese) \n    * \u7b80\u4f53\u4e2d\u6587 (Chinese (Simplified)) \n    * \u6b63\u9ad4\u4e2d\u6587 (Chinese (Traditional)) \nLanguage  \n",
-    "error": false
-  },
-  {
-    "summary": "Already on Linkedin?  Sign in \n## Security verification\n## Sign in\nEmail or phone \nPassword \nShow\n[Forgot password?](https://in.linkedin.com/in/<https:/www.linkedin.com/uas/request-password-reset?trk=seo-authwall-base_forgot_password>) Sign in \nor \nBy clicking Continue to join or sign in, you agree to LinkedIn\u2019s [User Agreement](https://in.linkedin.com/in/</legal/user-agreement?trk=seo-authwall-base_auth-button_user-agreement>), [Privacy Policy](https://in.linkedin.com/in/</legal/privacy-policy?trk=seo-authwall-base_auth-button_privacy-policy>), and [Cookie Policy](https://in.linkedin.com/in/</legal/cookie-policy?trk=seo-authwall-base_auth-button_cookie-policy>). \nContinue with GoogleContinue with Google\nNew to Linkedin?  Join now \n  * LinkedIn \u00a9 2025\n  * [ About ](https://in.linkedin.com/in/<https:/about.linkedin.com?trk=seo-authwall-base_footer-about>)\n  * [ Accessibility ](https://in.linkedin.com/in/<https:/www.linkedin.com/accessibility?trk=seo-authwall-base_footer-accessibility>)\n  * [ User Agreement ](https://in.linkedin.com/in/<https:/www.linkedin.com/legal/user-agreement?trk=seo-authwall-base_footer-user-agreement>)\n  * [ Privacy Policy ](https://in.linkedin.com/in/<https:/www.linkedin.com/legal/privacy-policy?trk=seo-authwall-base_footer-privacy-policy>)\n  * [ Cookie Policy ](https://in.linkedin.com/in/<https:/www.linkedin.com/legal/cookie-policy?trk=seo-authwall-base_footer-cookie-policy>)\n  * [ Copyright Policy ](https://in.linkedin.com/in/<https:/www.linkedin.com/legal/copyright-policy?trk=seo-authwall-base_footer-copyright-policy>)\n  * [ Brand Policy ](https://in.linkedin.com/in/<https:/brand.linkedin.com/policies?trk=seo-authwall-base_footer-brand-policy>)\n  * [ Guest Controls ](https://in.linkedin.com/in/<https:/www.linkedin.com/psettings/guest-controls?trk=seo-authwall-base_footer-guest-controls>)\n  * [ Community Guidelines ](https://in.linkedin.com/in/<https:/www.linkedin.com/legal/professional-community-policies?trk=seo-authwall-base_footer-community-guide>)\n  *     * \u0627\u0644\u0639\u0631\u0628\u064a\u0629 (Arabic) \n    * \u09ac\u09be\u0982\u09b2\u09be (Bangla) \n    * \u010ce\u0161tina (Czech) \n    * Dansk (Danish) \n    * Deutsch (German) \n    * \u0395\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac (Greek) \n    * **English (English)**\n    * Espa\u00f1ol (Spanish) \n    * \u0641\u0627\u0631\u0633\u06cc (Persian) \n    * Suomi (Finnish) \n    * Fran\u00e7ais (French) \n    * \u0939\u093f\u0902\u0926\u0940 (Hindi) \n    * Magyar (Hungarian) \n    * Bahasa Indonesia (Indonesian) \n    * Italiano (Italian) \n    * \u05e2\u05d1\u05e8\u05d9\u05ea (Hebrew) \n    * \u65e5\u672c\u8a9e (Japanese) \n    * \ud55c\uad6d\uc5b4 (Korean) \n    * \u092e\u0930\u093e\u0920\u0940 (Marathi) \n    * Bahasa Malaysia (Malay) \n    * Nederlands (Dutch) \n    * Norsk (Norwegian) \n    * \u0a2a\u0a70\u0a1c\u0a3e\u0a2c\u0a40 (Punjabi) \n    * Polski (Polish) \n    * Portugu\u00eas (Portuguese) \n    * Rom\u00e2n\u0103 (Romanian) \n    * \u0420\u0443\u0441\u0441\u043a\u0438\u0439 (Russian) \n    * Svenska (Swedish) \n    * \u0c24\u0c46\u0c32\u0c41\u0c17\u0c41 (Telugu) \n    * \u0e20\u0e32\u0e29\u0e32\u0e44\u0e17\u0e22 (Thai) \n    * Tagalog (Tagalog) \n    * T\u00fcrk\u00e7e (Turkish) \n    * \u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430 (Ukrainian) \n    * Ti\u1ebfng Vi\u1ec7t (Vietnamese) \n    * \u7b80\u4f53\u4e2d\u6587 (Chinese (Simplified)) \n    * \u6b63\u9ad4\u4e2d\u6587 (Chinese (Traditional)) \nLanguage  \n",
-    "error": false
-  },
-  {
-    "summary": "User Agreement: https://in.linkedin.com/in/<https:/www.linkedin.com/legal/user-agreement?trk=seo-authwall-base_footer-user-agreement>\nPrivacy Policy: https://in.linkedin.com/in/<https:/www.linkedin.com/legal/privacy-policy?trk=seo-authwall-base_footer-privacy-policy>\nCookie Policy: https://in.linkedin.com/in/<https:/www.linkedin.com/legal/cookie-policy?trk=seo-authwall-base_footer-cookie-policy>",
-    "error": false
-  },
-  {
-    "summary": "About: https://in.linkedin.com/in/<https:/about.linkedin.com?trk=seo-authwall-base_footer-about>\nAccessibility: https://in.linkedin.com/in/<https:/www.linkedin.com/accessibility?trk=seo-authwall-base_footer-accessibility>\nUser Agreement: https://in.linkedin.com/in/<https:/www.linkedin.com/legal/user-agreement?trk=seo-authwall-base_footer-user-agreement>\nPrivacy Policy: https://in.linkedin.com/in/<https:/www.linkedin.com/legal/privacy-policy?trk=seo-authwall-base_footer-privacy-policy>\nCookie Policy: https://in.linkedin.com/in/<https:/www.linkedin.com/legal/cookie-policy?trk=seo-authwall-base_footer-cookie-policy>\nCopyright Policy: https://in.linkedin.com/in/<https:/www.linkedin.com/legal/copyright-policy?trk=seo-authwall-base_footer-copyright-policy>\nBrand Policy: https://in.linkedin.com/in/<https:/brand.linkedin.com/policies?trk=seo-authwall-base_footer-brand-policy>\nGuest Controls: https://in.linkedin.com/in/<https:/www.linkedin.com/psettings/guest-controls?trk=seo-authwall-base_footer-guest-controls>\nCommunity Guidelines: https://in.linkedin.com/in/<https:/www.linkedin.com/legal/professional-community-policies?trk=seo-authwall-base_footer-community-guide>",
-    "error": false
-  }
-]
+1. **Biography of Pankaj Munjal**
 
+   - Born: December 15, 1962
+   - Place of Birth: Ludhiana, Punjab, India
+   - Occupation: Indian Businessman
+   - Role: Chairman and Managing Director of Hero Cycles Limited
+
+2. **Education**
+
+   - Early Schooling: The Lawrence School, Sanawar
+   - Graduation: Kettering University (Science)
+   - Training: Automotive Manufacturing at Kettering University
+   - Executive Programs: London Business School and Harvard University
+
+3. **Career Highlights**
+
+   - Joined his father's company in 1988
+   - Co-Chairman and Managing Director of Hero Cycles Limited (2011)
+   - Took over executive responsibilities of Hero Cycles Ltd in 2010
+   - Chairman and Managing Director of Hero Motors Limited (July 2015)
+   - Non-Executive Director of Munjal Showa Limited (since May 16, 1985)
+
+4. **Involvement in Technology and Investments**
+
+   - Investment in the UK (citing cultural fit and strategic advantages)
+   - Focus on bridging the gap between developed and developing markets
+   - Seamless supply chain
+
+5. **Views on Business and Leadership**
+
+   - Philosophy of turning failures into successes
+   - Role as a 'fireman' in managing multiple companies
+   - Hands-on approach to leadership
+
+6. **Personal Values and Vision**
+
+   - Motivation beyond wealth (focusing on serving people)
+   - Vision for the future of mobility and technology
+   - Reflections on personal growth and father's influence
+
+7. **Interviews and Discussions**
+
+   - Discussion on Brexit and its impact on investment decisions
+   - Views on the relationship between India and Britain
+   - Optimism about Anglo-Indian trade and the strong bond between the two countries

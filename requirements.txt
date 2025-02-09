@@ -4,3 +4,4 @@ pydantic
 python-dotenv
 crawl4ai
 duckduckgo-search
+crewai
