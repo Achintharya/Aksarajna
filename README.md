@@ -18,7 +18,7 @@ This project is a web context extraction tool that searches for websites related
 - A language model-based extraction strategy is applied to extract structured information from the fetched web pages.
 - The extracted information is saved to a file for further use or analysis.
 
-# AI Writing Assistant
+# AI Writer
 
 This program is an AI-powered writing assistant that generates responses based on a given context and writing style. It can read context from a file or an image and uses a predefined writing style to generate responses to user queries.
 
