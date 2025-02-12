@@ -8,25 +8,58 @@ from pydantic import BaseModel, Field
 from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode
 from crawl4ai.extraction_strategy import LLMExtractionStrategy
 from duckduckgo_search import DDGS
+import time
 
-# Load environment variables
 load_dotenv(dotenv_path='./config/.env')
 
 class PageSummary(BaseModel):
-    summary: str = Field(..., description="Detailed page summary")
+    summary: str = Field(..., description="Detailed page summary realted to query")
     
 async def website_search(query: str, max_results: int = 5):
-    """Search for websites related to the query and return their URLs."""
+
     try:
         with DDGS() as search:
-            results = search.text(query, max_results=max_results)
-            urls = {result.get("href") for result in results if "href" in result}  # Use a set to remove duplicates
+            results = search.text(query, max_results=5)
+            urls = [result["href"] for result in results if "href" in result]
             return list(urls)
     except Exception as e:
         print(f"Search failed: {e}")
         return []
 
-def make_request_with_backoff(url, headers, max_retries=5):
+
+# async def website_search(query: str, max_results: int = 9):
+#     headers = {"Content-Type": "application/json", "X-API-KEY": os.getenv("SERPER_API_KEY")}
+#     payload = {"q": query, "gl": "in", "num": max_results}  # Fetch extra results for better filtering
+
+#     try:
+#         async with aiohttp.ClientSession() as session:
+#             async with session.post("https://google.serper.dev/search", json=payload, headers=headers) as response:
+#                 data = await response.json()
+
+#                 # Extracting relevant results
+#                 results = []
+#                 for result in data.get("organic", []):
+#                     if "link" in result and "youtube.com" not in result["link"] and "youtu.be" not in result["link"]:
+#                         score = 0
+#                         if query.lower() in result.get("title", "").lower():
+#                             score += 2
+#                         if query.lower() in result.get("snippet", "").lower():
+#                             score += 1
+#                         results.append((score, result["link"]))
+
+#                 # Sort results by relevance (highest score first)
+#                 results.sort(reverse=True, key=lambda x: x[0])
+
+#                 await random_delay()
+#                 return [link for _, link in results[:max_results]]
+
+#     except Exception as e:
+#         print(f"Search failed: {e}")
+#         return []
+
+
+
+async def make_request_with_backoff(url, headers, max_retries=5):
     retries = 0
     backoff_factor = 1
 
@@ -43,9 +76,9 @@ def make_request_with_backoff(url, headers, max_retries=5):
 
     raise Exception("Max retries exceeded")
 
-async def main():
+async def extract(query: str):
     """Fetch URLs, configure the crawler, and extract structured information in parallel."""
-    query = input("Enter the search query: ") 
+    query=input("Enter search query: ")
     urls = await website_search(query)
     
     if not urls:
@@ -83,6 +116,5 @@ async def main():
 
         print("\nWrote extracted info to file")
         print(f"Extracted Content: {urls}")
-
-if __name__ == "__main__":
-    asyncio.run(main())
+        
+asyncio.run(extract(query=str))

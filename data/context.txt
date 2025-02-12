@@ -1,47 +1,40 @@
-Below are the extracted and formatted relevant information from the given JSON data:
+**Manufacturing Excellence Awards:**
 
-1. **Biography of Pankaj Munjal**
+* Company A was a finalist in the Automotive category for the Manufacturing Excellence Award.
+* Company B was also a finalist in the same category.
+* Company C was another finalist in the Automotive category for the same award.
 
-   - Born: December 15, 1962
-   - Place of Birth: Ludhiana, Punjab, India
-   - Occupation: Indian Businessman
-   - Role: Chairman and Managing Director of Hero Cycles Limited
+**Innovation in Manufacturing Awards:**
 
-2. **Education**
+* Tech Innovators was a finalist in the Electronics category for the Innovation in Manufacturing Award.
+* Electro Solutions was also a finalist in the same category.
+* Future Tech was another finalist in the Electronics category.
 
-   - Early Schooling: The Lawrence School, Sanawar
-   - Graduation: Kettering University (Science)
-   - Training: Automotive Manufacturing at Kettering University
-   - Executive Programs: London Business School and Harvard University
+**Sustainable Manufacturing Awards:**
 
-3. **Career Highlights**
+* Eco Innovators was a finalist in the Green Technology category for the Sustainable Manufacturing Award.
+* Green Solutions was also a finalist in the same category.
+* Sustainable Tech was another finalist in the Green Technology category.
 
-   - Joined his father's company in 1988
-   - Co-Chairman and Managing Director of Hero Cycles Limited (2011)
-   - Took over executive responsibilities of Hero Cycles Ltd in 2010
-   - Chairman and Managing Director of Hero Motors Limited (July 2015)
-   - Non-Executive Director of Munjal Showa Limited (since May 16, 1985)
+**Uday Narang:**
 
-4. **Involvement in Technology and Investments**
+* Uday Narang is the Founder of Omega Seiki Pvt. Ltd.
+* He has over 15 years of industry experience and a deep understanding of company operations and broader industry trends.
+* He has been instrumental in the growth and expansion of the Anglian Omega Group.
 
-   - Investment in the UK (citing cultural fit and strategic advantages)
-   - Focus on bridging the gap between developed and developing markets
-   - Seamless supply chain
+**Franchise India Expo 2025:**
 
-5. **Views on Business and Leadership**
+* The Franchise India Expo 2025 will be held on May 17-18, 2025 at the India International Convention and Expo Centre, Delhi, India.
+* The event includes various pavilions such as Dealer India Pavilion, Brand Licensing Pavilion, Startup India Pavilion, India EV & Auto Pavilion, Food & Restaurant Pavilion, International Pavilion, Franchise Pavilion, Retail Real Estate, and E-commerce & D2C Pavilion.
+* Registration options are available for exhibitions, awards, conferences, and sponsorships.
 
-   - Philosophy of turning failures into successes
-   - Role as a 'fireman' in managing multiple companies
-   - Hands-on approach to leadership
+**EV India Show:**
 
-6. **Personal Values and Vision**
+* The page features information on the conference, exhibition, awards, and sponsorship of the EV India Show.
+* It includes details about the speakers, such as Uday Narang, who is the Founder & Chairman of Omega Seiki Mobility.
 
-   - Motivation beyond wealth (focusing on serving people)
-   - Vision for the future of mobility and technology
-   - Reflections on personal growth and father's influence
+**EV Manufacturing Show and Excellence Awards 2023:**
 
-7. **Interviews and Discussions**
-
-   - Discussion on Brexit and its impact on investment decisions
-   - Views on the relationship between India and Britain
-   - Optimism about Anglo-Indian trade and the strong bond between the two countries
+* The event featured key leaders in the EV value chain, covering current manufacturing scenarios, supply chain challenges, innovations, and new tools for vehicle design.
+* Uday Narang received the Business Leadership Award for Outstanding Contribution to EV Manufacturing.
+* He dedicated the award to his team and thanked key individuals for their contributions.

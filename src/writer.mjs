@@ -46,7 +46,7 @@ async function promptForFileName() {
   return new Promise((resolve) => {
     rl.question('Enter the file name to save the article: ', (fileName) => {
       rl.close();
-      resolve(`${fileName}.txt`); // Append .txt extension
+      resolve(`articles/${fileName}.txt`); // Append .txt extension
     });
   });
 }
@@ -64,12 +64,11 @@ User Query: ${query}`;
     const response = await ollama.chat({
       model: 'mistral',
       messages: [
-        { role: "system", content: "### You are an AI that imitates a writing style (without including any info from it) to write nonredundantly about the context provided. ###" },
+        { role: "system", content: "### You are an AI that imitates a writing style (without including any info from it) to write nonredundantly about the context provided, WITH NO HALLUCINATION. ###" },
         { role: "user", content: promptMessage }
       ],
     });
 
-    console.log(response.message.content);
     return response.message.content;
 
   } catch (error) {

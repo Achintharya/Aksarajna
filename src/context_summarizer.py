@@ -15,8 +15,8 @@ llm = LLM(model="groq/llama-3.1-8b-instant", api_key=os.getenv("GROQ_API_KEY"))
 
 # Create your CrewAI agents with role, main goal/objective, and backstory/personality
 summarizer = Agent(
-    role='json Summarizer', # Agent's job title/function
-    goal='Create concise summaries of json info', # Agent's main objective
+    role='Summarizer', # Agent's job title/function
+    goal='Create detailed summaries of the given info without hallucination', # Agent's main objective
     backstory='Technical writer who excels at extracting and formatting all relevant useful data', # Agent's background/expertise
     llm=llm, # LLM that powers your agent
     verbose=True # Show agent's thought process as it completes its task
@@ -24,8 +24,8 @@ summarizer = Agent(
 
 
 summary_task = Task(
-    description=f'Summarize the following JSON data: {json.dumps(json_data)}',
-    expected_output="A clear, concise summary in points",
+    description=f'Summarize the following data as text : {json.dumps(json_data)}',
+    expected_output="only a clear, detailed summary in points with no json format",
     agent=summarizer,
     output_file="data/context.txt"
 )
