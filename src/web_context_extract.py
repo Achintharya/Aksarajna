@@ -3,6 +3,8 @@ import os
 import json
 import time
 import requests
+import random
+import aiohttp
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode
@@ -15,47 +17,71 @@ load_dotenv(dotenv_path='./config/.env')
 class PageSummary(BaseModel):
     summary: str = Field(..., description="Detailed page summary realted to query")
     
-async def website_search(query: str, max_results: int = 5):
+async def random_delay():
+    """Implement a random delay between 1 and 3 seconds to avoid rate limiting"""
+    delay = random.uniform(1, 3)
+    await asyncio.sleep(delay)
 
-    try:
-        with DDGS() as search:
-            results = search.text(query, max_results=5)
-            urls = [result["href"] for result in results if "href" in result]
-            return list(urls)
-    except Exception as e:
-        print(f"Search failed: {e}")
-        return []
-
-
-# async def website_search(query: str, max_results: int = 9):
-#     headers = {"Content-Type": "application/json", "X-API-KEY": os.getenv("SERPER_API_KEY")}
-#     payload = {"q": query, "gl": "in", "num": max_results}  # Fetch extra results for better filtering
-
+# async def website_search(query: str, max_results: int = 5):
 #     try:
-#         async with aiohttp.ClientSession() as session:
-#             async with session.post("https://google.serper.dev/search", json=payload, headers=headers) as response:
-#                 data = await response.json()
-
-#                 # Extracting relevant results
-#                 results = []
-#                 for result in data.get("organic", []):
-#                     if "link" in result and "youtube.com" not in result["link"] and "youtu.be" not in result["link"]:
-#                         score = 0
-#                         if query.lower() in result.get("title", "").lower():
-#                             score += 2
-#                         if query.lower() in result.get("snippet", "").lower():
-#                             score += 1
-#                         results.append((score, result["link"]))
-
-#                 # Sort results by relevance (highest score first)
-#                 results.sort(reverse=True, key=lambda x: x[0])
-
-#                 await random_delay()
-#                 return [link for _, link in results[:max_results]]
-
+#         with DDGS() as search:
+#             results = search.text(query, max_results=max_results)
+#             urls = [result["href"] for result in results if "href" in result]
+#             return list(urls)
 #     except Exception as e:
 #         print(f"Search failed: {e}")
 #         return []
+
+
+async def website_search(query: str, max_results: int =8) -> list:
+    """Search for websites using Serper API with improved error handling and rate limiting"""
+    headers = {
+        "Content-Type": "application/json",
+        "X-API-KEY": os.getenv("SERPER_API_KEY")
+    }
+    payload = {"q": query, "gl": "in", "num": max_results}
+    query_lower = query.lower()
+
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post("https://google.serper.dev/search", json=payload, headers=headers) as response:
+                # Ensure we received a successful response
+                response.raise_for_status()
+                data = await response.json()
+
+                organic_results = data.get("organic", [])
+                results = []
+                for result in organic_results:
+                    link = result.get("link")
+                    # Filter out YouTube links or if link is missing
+                    if not link or "youtube.com" in link or "youtu.be" in link:
+                        continue
+
+                    # Calculate a relevance score based on the presence of the query in title and snippet
+                    score = 0
+                    title = result.get("title", "").lower()
+                    snippet = result.get("snippet", "").lower()
+                    if query_lower in title:
+                        score += 2
+                    if query_lower in snippet:
+                        score += 1
+
+                    if score > 0:
+                        results.append((score, link))
+
+                # Sort by score in descending order
+                results.sort(key=lambda x: x[0], reverse=True)
+
+                # Introduce a random delay to avoid rate limiting
+                await random_delay()
+                return [link for score, link in results[:max_results]]
+
+    except aiohttp.ClientError as e:
+        print(f"Network error during search: {e}")
+        return []
+    except Exception as e:
+        print(f"Search failed: {e}")
+        return []
 
 
 
@@ -78,12 +104,19 @@ async def make_request_with_backoff(url, headers, max_retries=5):
 
 async def extract(query: str):
     """Fetch URLs, configure the crawler, and extract structured information in parallel."""
-    query=input("Enter search query: ")
+    query = input("Enter search query: ")
     urls = await website_search(query)
     
     if not urls:
         print("No URLs found.")
         return
+
+    # Save URLs to sources.txt with query as subheading
+    with open("./data/sources.txt", "a", encoding='utf-8') as f:
+        f.write(f"\n## {query}\n")
+        for url in urls:
+            f.write(f"- {url}\n")
+        f.write("\n")  # Add extra newline for readability
 
     browser_config = BrowserConfig(headless=True, verbose=True)
 

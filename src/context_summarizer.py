@@ -10,16 +10,16 @@ with open("data/context.json", "r") as file:
 
 load_dotenv(dotenv_path='./config/.env')
 
-# Initialize Large Language Model (LLM) of your choice (see all models on our Models page)
+
 llm = LLM(model="groq/llama-3.1-8b-instant", api_key=os.getenv("GROQ_API_KEY"))
 
-# Create your CrewAI agents with role, main goal/objective, and backstory/personality
+
 summarizer = Agent(
     role='Summarizer', # Agent's job title/function
     goal='Create detailed summaries of the given info without hallucination', # Agent's main objective
     backstory='Technical writer who excels at extracting and formatting all relevant useful data', # Agent's background/expertise
-    llm=llm, # LLM that powers your agent
-    verbose=True # Show agent's thought process as it completes its task
+    llm=llm, 
+    verbose=False # Show agent's thought process as it completes its task
 )
 
 
@@ -35,7 +35,7 @@ summary_task = Task(
 crew = Crew(
     agents=[summarizer], # Agents to include in your crew
     tasks=[summary_task], # Tasks in execution order
-    verbose=True
+    verbose=False
 )
 
 result = crew.kickoff()
