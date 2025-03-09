@@ -14,7 +14,7 @@ This project combines a web context extraction tool and an AI-powered writing as
 
 ### AI Writer
 
-- **Contextual Input**: Accepts context from a text file or an image.
+- **Contextual Input**: Accepts context from a text file or an image(based on model used).
 - **Writing Style Imitation**: Uses a predefined writing style to generate responses.
 - **Save Responses**: Allows saving generated responses to a file.
 - **Interactive CLI**: Provides an interactive command-line interface for user interaction.
