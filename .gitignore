@@ -1,5 +1,12 @@
 # Environment variables
 .env
+config/.env
+*/**/.env
+
+# But allow .env.example files
+!.env.example
+!config/.env.example
+!*/**/.env.example
 
 # Python
 __pycache__/
