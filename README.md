@@ -6,7 +6,7 @@ This project combines a web context extraction tool and an AI-powered writing as
 
 ### Web Context Extractor
 
-- **Website Search**: Uses DuckDuckGo to search for websites related to a given query.
+- **Website Search**: Uses DuckDuckGo/google_serper to search for websites related to a given query.
 - **Web Crawling**: Utilizes an asynchronous web crawler to fetch and process multiple URLs concurrently.
 - **Content Extraction**: Employs a language model-based strategy to extract structured information from web pages.
 - **Rate Limiting Handling**: Implements exponential backoff for handling HTTP 429 (Too Many Requests) responses.
