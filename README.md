@@ -23,7 +23,7 @@ This project combines a web context extraction tool and an AI-powered writing as
 
 1. **Web Context Extraction**:
 
-   - The tool initiates a search using DuckDuckGo to find websites related to the user's query.
+   - The tool initiates a search using DuckDuckGo/google_serper to find websites related to the user's query.
    - It then uses an asynchronous web crawler to visit the URLs obtained from the search results.
    - The crawler fetches the web pages and processes them concurrently to improve efficiency.
    - A language model-based extraction strategy is applied to extract structured information from the fetched web pages.
