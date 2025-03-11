@@ -4,17 +4,14 @@ import ollama
 import sys  # Import sys to read command line arguments
 from datetime import datetime
 
-# Function to save the article to a file
 def save_article_to_file(response, file_name):
     with open(file_name, 'w', encoding='utf-8') as file:
         file.write(response)
     print(f"The article has been saved to '{file_name}'.")
 
-# Function to prompt for file name
-def prompt_for_file_name(query):
-    # Use the query to create a file name
-    file_name = query.replace(" ", "_")  # Replace spaces with underscores for the file name
-    return f"../articles/{file_name}.txt"
+def prompt_for_file_name():
+    file_name = input('Enter the file name to save the article: ')
+    return f"articles/{file_name}.txt"
 
 # Function to generate a chat response
 def generate_chat_response(writing_style, context, query):
@@ -40,27 +37,26 @@ def generate_chat_response(writing_style, context, query):
     except Exception as error:
         print(f"Error generating response: {error}")
         return "Sorry, I couldn't process your request."
-
 def start():
     try:
         # Read context and writing style
-        with open("../data/context.txt", "r", encoding='utf-8') as file:
+        with open("./data/context.txt", "r", encoding='utf-8') as file:
             context = file.read()
 
-        with open("../data/writing_style.txt", "r", encoding='utf-8') as file:
+        with open("./data/writing_style.txt", "r", encoding='utf-8') as file:
             writing_style = file.read()
 
         if not context:
             print("No relevant context found. Proceeding with minimal guidance.")
 
-        # Get the query from command line arguments
-        query = sys.argv[1]
+        # Define the query
+        query = "Write brief informative article "  # Replace with your actual query
 
         # Generate response
         response = generate_chat_response(writing_style, context, query)
 
-        # Prompt user for the file name using the query
-        file_name = prompt_for_file_name(query)  
+        # Prompt user for the file name
+        file_name = prompt_for_file_name()
         save_article_to_file(response, file_name)
 
     except Exception as error:

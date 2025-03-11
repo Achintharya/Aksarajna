@@ -51,29 +51,20 @@ async def website_search(query: str, max_results: int =6) -> list:
                 data = await response.json()
 
                 organic_results = data.get("organic", [])
-                if not isinstance(organic_results, list):  # Ensure it's a list
-                    print("Unexpected API response format.")
-                    return []
                 results = []
                 for result in organic_results:
-                    if not isinstance(result, dict):
-                        continue  # Skip invalid data
-
                     link = result.get("link")
+                    # Filter out YouTube links or if link is missing
                     if not link or "youtube.com" in link or "youtu.be" in link:
-                        continue  # Ignore YouTube links and missing links
+                        continue
 
-                    title = result.get("title", "")
-                    snippet = result.get("snippet", "")
-
-                    if not isinstance(title, str) or not isinstance(snippet, str):
-                        continue  # Ensure title and snippet are strings
-
-                    # Calculate a relevance score
+                    # Calculate a relevance score based on the presence of the query in title and snippet
                     score = 0
-                    if query.lower() in title.lower():
+                    title = result.get("title", "").lower()
+                    snippet = result.get("snippet", "").lower()
+                    if query_lower in title:
                         score += 2
-                    if query.lower() in snippet.lower():
+                    if query_lower in snippet:
                         score += 1
 
                     if score > 0:
@@ -112,10 +103,10 @@ async def make_request_with_backoff(url, headers, max_retries=5):
 
     raise Exception("Max retries exceeded")
 
-async def extract():
+async def extract(query: str):
     """Fetch URLs, configure the crawler, and extract structured information in parallel."""
 
-    query = sys.argv[1]
+    query = input("Enter search query: ")
     
     # First try DuckDuckGo search
     urls = await website_search_ddg(query)
@@ -169,4 +160,4 @@ async def extract():
         print("\nWrote extracted info to file")
 
         
-asyncio.run(extract())
+asyncio.run(extract(query=str))

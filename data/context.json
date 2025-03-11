@@ -1,89 +1,95 @@
 [
   [
     {
-      "summary": "India Today is a prominent media outlet with various platforms including TV, magazines, and digital content. It covers a wide range of topics such as technology, entertainment, sports, and global news. The site also features special sections like podcasts, opinion columns, and interactive content. Additionally, it provides information on events, gaming, and useful links for readers.",
+      "summary": "Mistral AI is a company that has made significant contributions to the field of artificial intelligence, particularly in the development of large language models. They have released models like Mistral 7B and Mistral Large, which have been noted for their performance and innovation. The company has also been involved in partnerships, such as with Microsoft Azure, to accelerate AI innovation. Mistral AI has made its models open source, which has been a notable trend in the AI community. The company has also developed platforms and solutions for various use cases, showcasing their versatility in the AI landscape.",
       "error": false
     },
     {
-      "summary": "Manus AI, developed by the Chinese company Monica, is an advanced AI agent that can perform a wide range of tasks autonomously. It has gained significant attention for its ability to act as a general-purpose AI, capable of handling complex tasks without supervision. Manus can create websites, plan trips, analyze stocks, and more, all from a single user prompt. It is currently available on an invitation-only basis and is expected to be open-sourced in the coming months.",
+      "summary": "Mistral AI has released several models, including Mistral Large 2, Pixtral Large, Ministral 8B, Ministral 3B, Pixtral, Codestral Mamba 7B, Mathstral 7B, Codestral 22B, Mistral 8x22B, Mistral Small, Mistral Large, and Mistral Medium. These models vary in parameters, release dates, and licenses. Mistral AI claims that some of these models are fluent in multiple languages and programming languages, and have been used by various companies such as BNP Paribas, AXA, and Zalando.",
       "error": false
     },
     {
-      "summary": "Manus AI is designed to work independently, continuing its processing in the cloud even if the user disconnects. It can interact with various platforms, take screenshots, record browsing activity, and generate files. The AI agent also displays its workflow in real-time, allowing users to see the process of task execution. Additionally, Manus can personalize outputs based on user interactions over time.",
+      "summary": "Mistral AI SAS is a French artificial intelligence (AI) startup headquartered in Paris. It specializes in open-weight large language models (LLMs). The company was established in April 2023 by Arthur Mensch, Guillaume Lample, and Timoth\u00e9e Lacroix, who are experts in advanced AI systems and large-scale AI models. Mistral AI emphasizes openness and innovation in the AI field and aims to democratize AI by focusing on open-source innovation. The company has raised significant funding, including \u20ac105 million in June 2023 and \u20ac385 million in December 2023, with a valuation of over $2 billion by December 2023. Mistral AI has also partnered with Microsoft to expand its presence in the AI industry, with its language models available on Microsoft's Azure cloud and the multilingual conversational assistant Le Chat launched in the style of ChatGPT.",
       "error": false
     },
     {
-      "summary": "Manus AI is currently available only as an invitation-only web preview. The company has not announced a public release date but has indicated that the model will be open-sourced in the coming months. Users can interact with Manus by providing prompts, and the AI will research, compile data, and generate structured outputs in real-time.",
+      "summary": "Mistral AI was named after the mistral, a powerful, cold wind in southern France. The company was founded by Arthur Mensch, Guillaume Lample, and Timoth\u00e9e Lacroix, who met during their studies at \u00c9cole Polytechnique. Arthur Mensch is a former employee of Google DeepMind, while Guillaume Lample and Timoth\u00e9e Lacroix are specialists in large-scale AI models who had worked for Meta Platforms.",
+      "error": false
+    },
+    {
+      "summary": "Mistral AI emphasizes openness and innovation in the AI field, positioning itself as an alternative to proprietary models. The company aims to democratize AI by focusing on open-source innovation. This approach has gained prominence as an alternative to proprietary AI systems.",
+      "error": false
+    },
+    {
+      "summary": "Mistral AI has raised significant funding, including \u20ac105 million in June 2023 and \u20ac385 million in December 2023. The company's valuation was estimated at \u20ac240 million in June 2023 and over $2 billion by December 2023. In April 2024, Mistral AI was in talks to raise \u20ac500 million, which would more than double its current valuation to at least \u20ac5 billion. In June 2024, Mistral AI secured a \u20ac600 million funding round, elevating its valuation to \u20ac5.8 billion. The company is currently in fourth place in the global AI race and in first place outside the San Francisco Bay Area.",
+      "error": false
+    },
+    {
+      "summary": "On 26 February 2024, Microsoft announced a new partnership with Mistral AI to expand its presence in the AI industry. Under the agreement, Mistral's language models will be available on Microsoft's Azure cloud, and the multilingual conversational assistant Le Chat will be launched in the style of ChatGPT.",
+      "error": false
+    },
+    {
+      "summary": "On November 19, 2024, Mistral AI announced updates for Le Chat, including the ability to create images in partnership with Black Forest Labs utilizing the Flux Pro model. Additionally, it introduced the capability to search for information on the internet to provide reliable and up-to-date information. Furthermore, it launched the Canvas system, a collaborative interface where the AI generates code and the user can modify it. On February 6, 2025, Mistral AI released its AI assistant, Le Chat, on iOS and Android, making its language models accessible on mobile devices. Le Chat offers features including web search, image generation, and real-time updates. Mistral AI also introduced a Pro subscription tier, priced at $14.99 per month, which provides access to more advanced models, unlimited messaging, and web browsing.",
+      "error": false
+    },
+    {
+      "summary": "Mistral AI has developed several models, including Mistral Small 3, Mistral Large 2, Pixtral Large, Ministral 8B, Ministral 3B, Pixtral, and Codestral Mamba 7B. These models vary in the number of parameters and licensing, with some available under the Apache 2.0 license and others under the Mistral Research License or proprietary licenses. The models are designed for various applications, including language processing, image generation, and code generation.",
       "error": false
     }
   ],
   [
     {
-      "summary": "MANUS Meta is a company specializing in high-fidelity hand and finger tracking technology. They offer a range of products including Metagloves Pro, Quantum Metagloves, Quantum Bodypack, and more. These products are used in various industries such as entertainment, VR/XR, robotics, and life sciences. The company provides resources like a download center and knowledge base, and has integrations with various software and platforms. MANUS Meta also participates in several industry events and conferences.",
+      "summary": "Mistral AI offers configurable AI solutions for all builders, with a focus on frontier AI. The platform includes Le Chat, an AI assistant for life and work, and La Plateforme, a comprehensive AI platform for building and deploying custom AI solutions. The company emphasizes customizable, private, and portable AI solutions, with a strong commitment to open source and AI policy.",
+      "error": false
+    },
+    {
+      "summary": "Le Chat is described as an AI assistant for life and work, with links to the App Store and Google Play Store for downloading the app. The platform also includes links to try the API and contact sales.",
+      "error": false
+    },
+    {
+      "summary": "Mistral AI provides a range of AI solutions, including Le Chat for multilingual assistance, coding assistance, and building AI-powered apps. The platform is designed to be customizable, private, and portable, with a strong focus on open source and AI policy.",
+      "error": false
+    },
+    {
+      "summary": "Announcements include the launch of the new Le Chat AI assistant and job openings for AI enthusiasts. The company invites users to start building with Mistral AI and provides links to contact an expert and view open roles.",
+      "error": false
+    },
+    {
+      "summary": "Mistral AI offers various resources and links, including information about the company, customers, careers, and contact details. The platform also provides links to AI solutions, partners, research, and documentation.",
       "error": false
     }
   ],
   [
     {
-      "summary": "Manus AI supports multiple languages, allowing users to interact and receive outputs in their preferred language. It can handle real-time data processing tasks, making it suitable for live data analysis and monitoring. Manus AI is a cloud-based service accessible through web browsers on various devices, including desktops, laptops, tablets, and smartphones, regardless of the operating system. It supports multimodal inputs, allowing it to process and generate various types of data, including text, images, and code. Manus AI can create content in various formats, such as generating textual reports, creating visual data representations, and writing executable code, depending on the task requirements.",
+      "summary": "Mistral Solutions has received positive feedback from various clients for their dedication, commitment, and professionalism in delivering solutions. Clients appreciate their quick responses, high-quality prototypes, and comprehensive documentation. The company has successfully implemented mission-critical networking capabilities and has been praised for their training and support, making clients capable of handling various critical situations effectively.",
       "error": false
     },
     {
-      "summary": "Manus AI is an autonomous AI agent developed by the startup Monica, designed to perform multi-step tasks with minimal human input. It can plan, execute, and refine tasks independently, functioning as a digital assistant capable of making informed decisions. Manus AI operates through a structured agent loop, iteratively processing tasks in a step-by-step manner. It includes features like a Linux sandbox environment, shell and command-line execution, integrated web browser control, file system management, and deployment capabilities. However, it has limitations such as looping errors, over-reliance on existing models, and security risks. Manus AI was evaluated using the GAIA benchmark and performed significantly better than previous state-of-the-art models, including OpenAI\u2019s Deep Research system. Access to Manus AI is currently limited to an invitation-only beta phase.",
-      "error": false
-    }
-  ],
-  [
-    {
-      "summary": "Manus is a general AI agent designed to bridge minds and actions, excelling at various tasks in work and life. It delivers results while users rest, showcasing its capabilities through real-world task replays and featured research in areas like travel, stock analysis, education, and more.",
+      "summary": "Mistral Solutions offers a range of services including Aerospace and Defense, Deep-Tech Applications, and Homeland Security Solutions. They provide various services such as Product Design, System Engineering, Software Development, Hardware Design, Quality Assurance, and Production Support. They also offer products like SOM Modules, Development Platforms, and Defense Solutions.",
       "error": false
     },
     {
-      "summary": "Manus integrates comprehensive travel information to create personalized itineraries and custom travel handbooks for trips, such as a trip to Japan in April.",
+      "summary": "Mistral Solutions provides various resources and support including a Newsroom, Careers section, and a Library with collaterals, support center, infographic library, and video library. They also offer a webstore and contact information for inquiries and support.",
       "error": false
     },
     {
-      "summary": "Manus provides in-depth stock analysis with visually compelling dashboards, showcasing comprehensive insights into Tesla's market performance and financial outlook.",
+      "summary": "Mistral Solutions is a company providing end-to-end embedded product design and development services. They specialize in advanced product design and development services, including build-to-specification (BTS), build-to-print (BTP), and comprehensive system engineering for a wide range of applications. Their expertise spans Aerospace and Defense, and Deep-Tech Applications, catering to industries such as Industrial, Automotive, Healthcare, Consumer Electronics, Semiconductor, and Hyperscalers.",
       "error": false
     },
     {
-      "summary": "Manus develops engaging video presentations for middle school educators, clearly explaining the momentum theorem through accessible and educational content.",
+      "summary": "Mistral Solutions offers a variety of products including RADAR Modules, 77GHz AoPCB Automotive RoM, 60GHz ES2.0 AoPCB Module, 60GHz ES2.0 AoP Module, SOM Modules, MRD5165 SOM, AM65x Industrial SOM, SnapDragon 820 Nano SOM, Development Platforms, Edge AI-Box, MRD5165 Eagle Kit, DCP1000 Module, AI Sensor Fusion Kit Lite, Jetson Neuron Board, AM65x Development Kit, 820 Development Kit, Defense Solutions, COTS Boards, COTS Software, COTS Systems, COTS Enclosures, Homeland Security, Mobile C4ISR Platforms, Xherpa \u2013 Heavy Payload Drone, Kite \u2013 Tethered Drone System.",
       "error": false
     },
     {
-      "summary": "Manus generates clear, structured comparison tables highlighting key policy information with optimal recommendations for comparing insurance options.",
+      "summary": "Mistral Solutions provides various services including Product Design Services, System Engineering, Software Development, System Software, Audio and Video, Cloud, Mobile and IoT Apps, RADAR & Signal Processing Apps, UI/UX, HMI Apps, DevOps, FPGA Design Services, Hardware Design Services, Hardware Board Design Services, Industrial and Rugged Designs, High-speed Digital Designs, RF Designs, RF Antenna Design Services, Mixed Signal Design, Power Supply Design, Quality Assurance Services, Verification and Validation Services, DO-178B/C, DO-254, DO-160 Testing, FCC/CE Certification Testing, Production Support, Product Lifecycle Support, PCB Design Services, Resourcing.",
       "error": false
     },
     {
-      "summary": "Manus conducts comprehensive research across extensive networks to identify the most suitable suppliers for specific requirements, working exclusively in the user's best interest.",
+      "summary": "Mistral Solutions has a strong presence in the news and media, with coverage in ANI, Business Standard, and Financial Express. They have also been featured in various press releases and accolades, showcasing their achievements and contributions to the industry.",
       "error": false
     },
     {
-      "summary": "Manus conducted in-depth research on AI search products in the clothing industry, providing comprehensive product analysis and competitive positioning.",
-      "error": false
-    },
-    {
-      "summary": "Manus expertly navigated the YC W25 database to identify all qualifying B2B companies, compiling this valuable information into a structured table.",
-      "error": false
-    },
-    {
-      "summary": "Manus delivers actionable insights, detailed visualizations, and customized strategies designed to increase sales performance for online stores by analyzing sales data.",
-      "error": false
-    },
-    {
-      "summary": "Manus showcases various tasks submitted by users, such as creating a table of the best books on media and linguistics in France, finding the largest real estate brokerages, researching the impact of fire control technologies, generating SEO-friendly blogs, and more.",
-      "error": false
-    },
-    {
-      "summary": "Manus Spaces gallery features incredible Spaces created with Manus, including tasks like Japan LBO QUEST, Quantum Computing Learning Hub, Stock Pattern Matcher, Discover the Wonder of Physics, IBIT ETF Dashboard, Super Mario Minecraft Style, Room with Calm Pop Culture Vibe, and Zinc Oxide Growth on Nickel Foam.",
-      "error": false
-    },
-    {
-      "summary": "Manus has achieved new state-of-the-art (SOTA) performance across all three difficulty levels in the GAIA benchmark for evaluating General AI Assistants on solving real-world problems.",
-      "error": false
-    },
-    {
-      "summary": "Manus is a general AI agent that turns thoughts into actions, with additional information available on their website, including company details, feedback, media inquiries, privacy policy, and terms of service.",
+      "summary": "Mistral Solutions is certified with ISO 9001:2015, ISO 27001:2013, and AS9100D, ensuring high standards of quality and security in their services. They have received numerous accolades and awards, including Global Services, FedEx, Red Herring Asia 100, Global Services 100, acc_nasscom_2007, ELCINA, SME Award, SME100 Awards, Defence Technology, EDN Ace, STPI Karnataka IT Exports, and EDN HOT 100.",
       "error": false
     }
   ]
