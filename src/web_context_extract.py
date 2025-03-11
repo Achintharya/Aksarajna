@@ -22,15 +22,15 @@ async def random_delay():
     delay = random.uniform(1, 3)
     await asyncio.sleep(delay)
 
-# async def website_search(query: str, max_results: int = 5):
-#     try:
-#         with DDGS() as search:
-#             results = search.text(query, max_results=max_results)
-#             urls = [result["href"] for result in results if "href" in result]
-#             return list(urls)
-#     except Exception as e:
-#         print(f"Search failed: {e}")
-#         return []
+async def website_search_ddg(query: str, max_results: int = 5):
+    try:
+        with DDGS() as search:
+            results = search.text(query, max_results=max_results)
+            urls = [result["href"] for result in results if "href" in result]
+            return list(urls)
+    except Exception as e:
+        print(f"Search failed: {e}")
+        return []
 
 
 async def website_search(query: str, max_results: int =8) -> list:
@@ -105,10 +105,19 @@ async def make_request_with_backoff(url, headers, max_retries=5):
 async def extract(query: str):
     """Fetch URLs, configure the crawler, and extract structured information in parallel."""
     query = input("Enter search query: ")
-    urls = await website_search(query)
+    
+    # First try DuckDuckGo search
+    urls = await website_search_ddg(query)
+    
+    # If DuckDuckGo search fails or returns no results, try Serper
+    if not urls:
+        print("DuckDuckGo search returned no results, trying alternative search...")
+        urls = await website_search(query)
+    else:
+        print("Using DuckDuckGo search results...")
     
     if not urls:
-        print("No URLs found.")
+        print("No URLs found from either search method.")
         return
 
     # Save URLs to sources.txt with query as subheading
@@ -148,6 +157,6 @@ async def extract(query: str):
         json.dump(output_data, file, indent=2)  # Use json.dump to write the list to the file
 
         print("\nWrote extracted info to file")
-        print(f"Extracted Content: {urls}")
+
         
 asyncio.run(extract(query=str))

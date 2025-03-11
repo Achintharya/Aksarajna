@@ -1,41 +1,91 @@
-SUN Mobility is an electric vehicle energy services company founded in 2017. It is a joint venture between the SUN Group and the Maini Group, co-founded by Chetan Maini, Uday Khemka, and Ajay Goel. The company focuses on developing, manufacturing, and operating battery swapping infrastructure for electric two-wheelers, three-wheelers, and larger commercial vehicles.
+**Detailed Summary of Electric Vehicle Policies and Incentives in India**
 
-Key Features and Services:
+**National and Regional Trends:**
 
-* Develops, manufactures, and operates battery swapping infrastructure for electric vehicles
-* Offers Battery-as-a-Service (BaaS) and Mobility-as-a-Service (MaaS) solutions
-* Provides modular Smart Batteries that are smaller and lighter than conventional fixed EV batteries and are swappable in a few minutes
-* Offers a 'pay-as-you-go' model for electric vehicles by separating the battery from the vehicle
-* Provides innovative technologies for battery swapping solutions, including smart batteries, quick interchange stations, smart networks, and plug-and-play docks
+1. Global venture capital funding for electric vehicles (EVs) and battery startups has seen a significant drop in 2023 due to geopolitical tensions, supply chain disruptions, and high energy prices.
+2. EV charging technology and battery recycling saw notable investments, despite the overall decline.
+3. India emerged as a significant player in the global VC market for EVs, particularly in the 2/3-wheeler segment.
 
-Partnerships and Collaborations:
+**State-wise Electric Vehicle Policies:**
 
-* Partners with fleet operators such as Amazon, Zomato, and Swiggy, shared mobility service providers, and automotive OEMs like Omega Seiki Mobility, Hero Electric, Piaggio Vehicles Pvt. Ltd., and others
-* Collaborates with energy infrastructure players, electricity distribution companies, and city transport corporations such as Indian Oil Corporation, Delhi Metro Rail Corporation, and Tata Power Delhi Distribution Limited
+1. **Andhra Pradesh:**
+	* The policy aims to become a leading state in electric vehicles by 2029 and a global destination by 2050.
+	* Offers various capital subsidies, tax incentives, skill development incentives, and financial incentives for private EV charging stations and hydrogen generation infrastructure.
+2. **Arunachal Pradesh:**
+	* The policy aims to facilitate EV adoption by ensuring safe, reliable, and affordable charging infrastructure.
+	* Provides demand-side incentives for the first 200 EVs and charging infrastructure subsidies for retail outlets of oil marketing companies and local entrepreneurs.
+3. **Assam:**
+	* The policy aims to create an ecosystem for manufacturing EV components in Assam and promote electric mobility.
+	* Provides demand-side incentives based on battery capacity and supply-side incentives for charging infrastructure and EV manufacturers.
+4. **Bihar:**
+	* The policy aims to create a manufacturing ecosystem for e-vehicles, fulfill Sustainable Development Goals, and make Bihar a preferred investment destination for the EV sector.
+	* Offers incentives for the first 100,000 vehicles manufactured within Bihar, including subsidies for electric rickshaws, e-2 wheelers, and e-buses.
+5. **Chandigarh:**
+	* The policy aims to achieve 80% of new vehicle registrations as EVs by the end of the policy period.
+	* Includes objectives such as installing 100 charging stations, establishing a wide network of charging points, and promoting the use of electric bicycles.
+6. **Chhattisgarh:**
+	* The policy aims to have 15% of new vehicle registrations as EVs by 2027, with a target to procure 4 lakh electric vehicles by 2026-27.
+	* Includes demand-side incentives such as subsidies for purchasing EVs, waivers on registration fees, and road tax exemptions.
+7. **Delhi:**
+	* The Delhi EV Policy aims to improve air quality by deploying 25% of all new vehicles as battery-operated by 2024.
+	* Provides various demand-side incentives for different EV segments, including electric two-wheelers, e-autos, e-rickshaws, e-carts, e-buses, and goods carriers.
+8. **Gujarat:**
+	* The Gujarat State EV Policy 2021 aims to support the electrification of 200,000 vehicles and 250 charging stations over four years.
+	* Makes Gujarat a manufacturing hub for electric vehicles and ancillary equipment, and encourages start-ups and investment in electric mobility and associated sectors.
+9. **Haryana:**
+	* The policy aims to promote clean transport and environmental sustainability by reducing pollution and creating an ecosystem for EV manufacturing.
+	* Includes objectives such as developing Electric Mobility Industrial Parks with plug-and-play infrastructure, support for manufacturing firms with land, water, and road connectivity, and financial support through capital subsidies.
+10. **Jharkhand:**
+	* The policy aims to promote the adoption of electric vehicles and provide various incentives for different EV categories.
+	* Includes demand-side incentives for electric two-wheelers, e-autos, and e-buses, as well as supply-side incentives for charging infrastructure and EV manufacturers.
+11. **Karnataka:**
+	* The policy aims to establish the state as a preferred investment destination for electric vehicle manufacturing.
+	* Includes objectives to leverage benefits and opportunities for the growth of the EV segment and provide various incentives for EV manufacturing enterprises.
+12. **Kerala:**
+	* The policy aims to promote shared mobility and clean transportation, reduce pollution, and create an ecosystem for manufacturing EV components.
+	* Includes objectives such as setting up charging stations in major cities and on highways, with a focus on initial pilot districts.
+13. **Madhya Pradesh:**
+	* The policy aims to promote sustainable electric mobility and improve air quality by reducing emissions from the transport sector.
+	* Offers demand-side incentives for electric two-wheelers and e-rickshaws, including tax exemptions and parking fee waivers.
+14. **Maharashtra:**
+	* The policy aims to increase market demand for EVs and support their adaptability in public and private transport sectors.
+	* Offers demand incentives for various vehicle segments and supports the development of charging infrastructure and scrappage incentives.
+15. **Meghalaya:**
+	* The policy aims to facilitate the adoption of at least 15% EVs by 2025.
+	* Offers purchase subsidies for various types of electric vehicles and supports the development of charging infrastructure and startups in the EV ecosystem.
+16. **Odisha:**
+	* The policy aims to accelerate the adoption of EVs, especially two-wheelers, three-wheelers, and light motor vehicles, with a target of 20% of all vehicle registrations being EVs by 2025.
+	* Provides purchase incentives and support for electric buses and charging infrastructure.
+17. **Punjab:**
+	* The policy aims to increase the share of e-taxis and promote the use of e-LCVs for goods carriage.
+	* Offers incentives for electric two-wheelers, three-wheelers, and four-wheelers, including 100% waiver on permit fees and motor vehicle tax for vehicles manufactured in Punjab.
+18. **Rajasthan:**
+	* The policy aims to reduce pollution from diesel and petrol vehicles by offering subsidies for electric two-wheelers and other electric vehicles based on battery capacity.
+19. **Tamil Nadu:**
+	* The policy aims to attract ₹50,000 crore of investment in EV manufacturing and create a comprehensive EV ecosystem.
+	* Includes objectives to electrify buses, convert auto-rickshaws to EVs, and provide demand-side and supply-side incentives for various EV segments.
+20. **Telangana:**
+	* The policy aims to make the state a hub for Electric Vehicles and Energy Storage Systems.
+	* Offers demand-side incentives such as road tax and registration fee exemptions for various types of electric vehicles, including two-wheelers, three-wheelers, and buses.
+21. **Uttar Pradesh:**
+	* The policy aims to promote sustainable and clean mobility solutions, making the state a global hub for electric mobility development and manufacturing.
+	* Offers various incentives including registration fees and road tax exemptions, purchase subsidies, and capital subsidies for charging and battery swapping infrastructure.
+22. **Uttarakhand:**
+	* The policy aims to make the state a preferred destination for EV manufacturing, create employment opportunities, and encourage the use of hybrid EVs.
+	* Offers incentives such as interest subsidies, electricity duty exemptions, EPF reimbursement, and stamp duty exemptions.
+23. **West Bengal:**
+	* The policy aims to build a sustainable transportation infrastructure by promoting the Electric Mobility Ecosystem.
+	* Includes objectives such as setting a target of 10 lakh electric vehicles and 1,00,000 public/semi-public charging stations, and promoting the recycling and disposal of used batteries in an environmentally friendly manner.
+24. **Other States:**
+	* Bihar EV Policy 2020: offers incentives for the first 100,000 vehicles manufactured within Bihar, including subsidies for electric rickshaws, e-2 wheelers, and e-buses.
+	* Goa EV Policy: aims to position Goa as a model for electric vehicle adoption, with 30% of annual vehicles registered in Goa being electric by 2025.
+	* Odisha EV Policy: aims to accelerate the adoption of EVs, especially two-wheelers, three-wheelers, and light motor vehicles, with a target of 20% of all vehicle registrations being EVs by 2025.
+	* Telangana EV Policy: aims to make the state a hub for Electric Vehicles and Energy Storage Systems.
 
-Investments and Recognition:
+**Common incentives and policies across states:**
 
-* Received $25 million investment from Bosch in 2019
-* Received $50 million investment from Vitol in 2021
-* Recognized with the prestigious "Championship of Disruptive Innovation" award by the Global IP Convention (GIPC) Awards
-* Received several awards and recognitions, including the Technology Excellence Award, Global CleanTech 100, Entrepreneurship World Cup, APAC 25, CleanEquity Monaco, and GABS Innovator Award
-
-Operations and Network:
-
-* Has over 600 battery swapping points across India
-* Operates over 630 active swap stations, covering approximately 30 million emission-free kilometers monthly, and saving around 56,000 metric tonnes of CO2 emissions so far
-* Expanding its battery-swapping network to reduce downtime and unlock new possibilities for EV adoption at scale
-
-Key Employees:
-
-* Ajay Goel (Managing Director | CEO)
-* Karthee Madasamy (Independent Director, MapMyIndia | ex-MD, Qualcomm Ventures)
-* Dharmendra Pundeer (Head Software Delivery And Operations)
-* Subhash Bhat (CFO)
-
-Headquarters and Funding:
-
-* Based in Bangalore, Karnataka
-* Privately held
-* Employees: 501-1,000
-* Founded in 2017
+1. Demand-side incentives for various EV categories, including electric two-wheelers, e-autos, e-rickshaws, e-buses, and goods carriers.
+2. Supply-side incentives for charging infrastructure, EV manufacturers, and EV components.
+3. Capital subsidies, tax incentives, and skill development incentives for EV manufacturing enterprises.
+4. Incentives for EV charging infrastructure, including the development of charging stations as commercially viable ventures.
+5. Support for the use of renewable energy and encouragement of battery swapping infrastructure.
