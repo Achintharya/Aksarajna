@@ -14,4 +14,4 @@ async def run_script(command):
 if __name__ == "__main__":
     asyncio.run(run_script(['python', 'src/web_context_extract.py']))
     asyncio.run(run_script(['python', 'src/context_summarizer.py']))
-    asyncio.run(run_script(['node', 'src/writer.mjs']))
+    asyncio.run(run_script(['python', 'src/writer.py']))

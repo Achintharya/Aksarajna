@@ -1,91 +1,116 @@
-**Detailed Summary of Electric Vehicle Policies and Incentives in India**
+The Indus Script is an ancient writing system used by the Indus Valley Civilization, which flourished around 2600-1900 BCE. The script remains undeciphered, and its exact nature and purpose are subjects of ongoing research.
 
-**National and Regional Trends:**
+The script is composed of various artifacts, including seals, pottery, and copper tablets, characterized by its pictographic and logographic elements. It is known for unique symbols and remains undeciphered, making it one of the most enigmatic scripts in history.
 
-1. Global venture capital funding for electric vehicles (EVs) and battery startups has seen a significant drop in 2023 due to geopolitical tensions, supply chain disruptions, and high energy prices.
-2. EV charging technology and battery recycling saw notable investments, despite the overall decline.
-3. India emerged as a significant player in the global VC market for EVs, particularly in the 2/3-wheeler segment.
+Over 100 attempts at decipherment have been made since the 1920s, with the topic being popular among amateur researchers. In 2025, a $1 million prize was announced for deciphering the script.
 
-**State-wise Electric Vehicle Policies:**
+Key points of agreement include:
 
-1. **Andhra Pradesh:**
-	* The policy aims to become a leading state in electric vehicles by 2029 and a global destination by 2050.
-	* Offers various capital subsidies, tax incentives, skill development incentives, and financial incentives for private EV charging stations and hydrogen generation infrastructure.
-2. **Arunachal Pradesh:**
-	* The policy aims to facilitate EV adoption by ensuring safe, reliable, and affordable charging infrastructure.
-	* Provides demand-side incentives for the first 200 EVs and charging infrastructure subsidies for retail outlets of oil marketing companies and local entrepreneurs.
-3. **Assam:**
-	* The policy aims to create an ecosystem for manufacturing EV components in Assam and promote electric mobility.
-	* Provides demand-side incentives based on battery capacity and supply-side incentives for charging infrastructure and EV manufacturers.
-4. **Bihar:**
-	* The policy aims to create a manufacturing ecosystem for e-vehicles, fulfill Sustainable Development Goals, and make Bihar a preferred investment destination for the EV sector.
-	* Offers incentives for the first 100,000 vehicles manufactured within Bihar, including subsidies for electric rickshaws, e-2 wheelers, and e-buses.
-5. **Chandigarh:**
-	* The policy aims to achieve 80% of new vehicle registrations as EVs by the end of the policy period.
-	* Includes objectives such as installing 100 charging stations, establishing a wide network of charging points, and promoting the use of electric bicycles.
-6. **Chhattisgarh:**
-	* The policy aims to have 15% of new vehicle registrations as EVs by 2027, with a target to procure 4 lakh electric vehicles by 2026-27.
-	* Includes demand-side incentives such as subsidies for purchasing EVs, waivers on registration fees, and road tax exemptions.
-7. **Delhi:**
-	* The Delhi EV Policy aims to improve air quality by deploying 25% of all new vehicles as battery-operated by 2024.
-	* Provides various demand-side incentives for different EV segments, including electric two-wheelers, e-autos, e-rickshaws, e-carts, e-buses, and goods carriers.
-8. **Gujarat:**
-	* The Gujarat State EV Policy 2021 aims to support the electrification of 200,000 vehicles and 250 charging stations over four years.
-	* Makes Gujarat a manufacturing hub for electric vehicles and ancillary equipment, and encourages start-ups and investment in electric mobility and associated sectors.
-9. **Haryana:**
-	* The policy aims to promote clean transport and environmental sustainability by reducing pollution and creating an ecosystem for EV manufacturing.
-	* Includes objectives such as developing Electric Mobility Industrial Parks with plug-and-play infrastructure, support for manufacturing firms with land, water, and road connectivity, and financial support through capital subsidies.
-10. **Jharkhand:**
-	* The policy aims to promote the adoption of electric vehicles and provide various incentives for different EV categories.
-	* Includes demand-side incentives for electric two-wheelers, e-autos, and e-buses, as well as supply-side incentives for charging infrastructure and EV manufacturers.
-11. **Karnataka:**
-	* The policy aims to establish the state as a preferred investment destination for electric vehicle manufacturing.
-	* Includes objectives to leverage benefits and opportunities for the growth of the EV segment and provide various incentives for EV manufacturing enterprises.
-12. **Kerala:**
-	* The policy aims to promote shared mobility and clean transportation, reduce pollution, and create an ecosystem for manufacturing EV components.
-	* Includes objectives such as setting up charging stations in major cities and on highways, with a focus on initial pilot districts.
-13. **Madhya Pradesh:**
-	* The policy aims to promote sustainable electric mobility and improve air quality by reducing emissions from the transport sector.
-	* Offers demand-side incentives for electric two-wheelers and e-rickshaws, including tax exemptions and parking fee waivers.
-14. **Maharashtra:**
-	* The policy aims to increase market demand for EVs and support their adaptability in public and private transport sectors.
-	* Offers demand incentives for various vehicle segments and supports the development of charging infrastructure and scrappage incentives.
-15. **Meghalaya:**
-	* The policy aims to facilitate the adoption of at least 15% EVs by 2025.
-	* Offers purchase subsidies for various types of electric vehicles and supports the development of charging infrastructure and startups in the EV ecosystem.
-16. **Odisha:**
-	* The policy aims to accelerate the adoption of EVs, especially two-wheelers, three-wheelers, and light motor vehicles, with a target of 20% of all vehicle registrations being EVs by 2025.
-	* Provides purchase incentives and support for electric buses and charging infrastructure.
-17. **Punjab:**
-	* The policy aims to increase the share of e-taxis and promote the use of e-LCVs for goods carriage.
-	* Offers incentives for electric two-wheelers, three-wheelers, and four-wheelers, including 100% waiver on permit fees and motor vehicle tax for vehicles manufactured in Punjab.
-18. **Rajasthan:**
-	* The policy aims to reduce pollution from diesel and petrol vehicles by offering subsidies for electric two-wheelers and other electric vehicles based on battery capacity.
-19. **Tamil Nadu:**
-	* The policy aims to attract ₹50,000 crore of investment in EV manufacturing and create a comprehensive EV ecosystem.
-	* Includes objectives to electrify buses, convert auto-rickshaws to EVs, and provide demand-side and supply-side incentives for various EV segments.
-20. **Telangana:**
-	* The policy aims to make the state a hub for Electric Vehicles and Energy Storage Systems.
-	* Offers demand-side incentives such as road tax and registration fee exemptions for various types of electric vehicles, including two-wheelers, three-wheelers, and buses.
-21. **Uttar Pradesh:**
-	* The policy aims to promote sustainable and clean mobility solutions, making the state a global hub for electric mobility development and manufacturing.
-	* Offers various incentives including registration fees and road tax exemptions, purchase subsidies, and capital subsidies for charging and battery swapping infrastructure.
-22. **Uttarakhand:**
-	* The policy aims to make the state a preferred destination for EV manufacturing, create employment opportunities, and encourage the use of hybrid EVs.
-	* Offers incentives such as interest subsidies, electricity duty exemptions, EPF reimbursement, and stamp duty exemptions.
-23. **West Bengal:**
-	* The policy aims to build a sustainable transportation infrastructure by promoting the Electric Mobility Ecosystem.
-	* Includes objectives such as setting a target of 10 lakh electric vehicles and 1,00,000 public/semi-public charging stations, and promoting the recycling and disposal of used batteries in an environmentally friendly manner.
-24. **Other States:**
-	* Bihar EV Policy 2020: offers incentives for the first 100,000 vehicles manufactured within Bihar, including subsidies for electric rickshaws, e-2 wheelers, and e-buses.
-	* Goa EV Policy: aims to position Goa as a model for electric vehicle adoption, with 30% of annual vehicles registered in Goa being electric by 2025.
-	* Odisha EV Policy: aims to accelerate the adoption of EVs, especially two-wheelers, three-wheelers, and light motor vehicles, with a target of 20% of all vehicle registrations being EVs by 2025.
-	* Telangana EV Policy: aims to make the state a hub for Electric Vehicles and Energy Storage Systems.
+* The right-to-left direction of inscriptions
+* The numerical nature of certain signs
+* The functional homogeneity of terminal signs
 
-**Common incentives and policies across states:**
+The Indus script's 'fish sign' has been interpreted as a homophone for 'star' using the rebus principle. Some scholars argue that the script recorded an early form of Dravidian languages.
 
-1. Demand-side incentives for various EV categories, including electric two-wheelers, e-autos, e-rickshaws, e-buses, and goods carriers.
-2. Supply-side incentives for charging infrastructure, EV manufacturers, and EV components.
-3. Capital subsidies, tax incentives, and skill development incentives for EV manufacturing enterprises.
-4. Incentives for EV charging infrastructure, including the development of charging stations as commercially viable ventures.
-5. Support for the use of renewable energy and encouragement of battery swapping infrastructure.
+ Characteristics of the Indus script:
+
+* The characters are largely pictorial, depicting objects found in the ancient world generally, found locally in Harappan culture, or derived from the natural world.
+* Many abstract signs have also been identified.
+* Some signs are compounds of simpler pictographic signs, while others are not known to occur in isolation.
+* Some signs resemble tally marks and are often interpreted as early numerals.
+
+The script has a large number of principal signs, over 400, which is considered too large a number for each character to be a phonogram, and so the script is generally believed to be logo-syllabic.
+
+Writing direction of the Indus script:
+
+* The script is generally read from right to left, though some exceptions wherein the script is written left to right or in a boustrophedon mode are also known.
+* In the case of seals, which create a mirror image impression on the clay or ceramic on which the seal is affixed, the impression of the seal is read from right to left.
+
+relationship to other scripts:
+
+* Researchers have compared the Indus Valley script to the Brahmi and Tamil-Brahmi scripts, suggesting that there may be similarities between them.
+* The Indus Valley script may have had a relation to a Dravidian language, as suggested by linguists such as Iravatham Mahadevan, Kamil Zvelebil, and Asko Parpola.
+
+The Indus script has primarily been found on stamp seals, pottery, bronze, and copper plates, tools, and weapons. The script might have been developed between 3500 BC and 2700 BC.
+
+Inscriptions are very short, typically around 5 signs, with the longest inscription being 34 characters long. There are doubts whether the Indus script records a written language or is instead a system of non-linguistic signs or proto-writing, similar to merchant's marks and house marks.
+
+Researchers have identified about 400 signs of the Indus script, with 31 signs repeated over 100 times. Some researchers suggest that the 400 signs can be made of 39 elementary signs, with the rest being variations.
+
+Trade connections between the Indus Valley Civilization and the Mesopotamia region have been suggested, as evidenced by the presence of clay tablets with the Indus script in the Mesopotamia region.
+
+Despite extensive research, the script remains undeciphered due to the lack of bilingual texts and the perishable nature of the materials on which it was written.
+
+Location of Indus Valley sites:
+
+Indus Valley sites in Pakistan include:
+- Harappa
+- Larkana
+- Mohenjo-daro
+- Nausharo
+- Chanhudaro
+- Ganweriwal
+- Mehrgarh
+- Lakhueen-jo-daro
+- Pirak
+- Kot Bala
+- Kot Diji
+- Rehman Dheri
+- Amri
+- Sutkagan Dor
+- Sokhta Koh
+- Tharro Hills
+- Pir Shah Jurio
+- Allahdino
+- Balakot
+- Ganeriwala
+- Nindowari
+- Judeir-jo-daro
+- Dabarkot
+
+Indus Valley sites in India include:
+- Dholavira
+- Gola Dhoro
+- Lothal
+- Bhagatrav
+- Rangpur
+- Jognakhera
+- Surkotada
+- Kalibangan
+- Manda
+- Alamgirpur
+- Daimabad
+- Malwan
+- Kunal
+- Rakhigarhi
+- Rupnagar
+- Rupar
+- Hulas
+- Kanmer
+- Oriyo timbo
+- Dher Majra
+- Lohari Ragho
+- Dwarka
+- Kuntasi
+- Loteshwar
+- Mandi
+- Farmana
+- Ganeshwar
+- Sothi
+- Siswal
+- Sanauli
+- Sanghol
+- Pabumath
+- Nagwada
+- Babar Kot
+- Balu
+- Bara
+- Bargaon
+- Bhagwanpura
+- Bhirrana
+- Banawali
+- Rojdi
+- Kotla Nihang Khan
+- Kerala-no-dhoro
+- Mitathal
+- Desalpur

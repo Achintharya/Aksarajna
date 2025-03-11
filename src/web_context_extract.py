@@ -33,7 +33,7 @@ async def website_search_ddg(query: str, max_results: int = 5):
         return []
 
 
-async def website_search(query: str, max_results: int =8) -> list:
+async def website_search(query: str, max_results: int =6) -> list:
     """Search for websites using Serper API with improved error handling and rate limiting"""
     headers = {
         "Content-Type": "application/json",

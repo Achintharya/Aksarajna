@@ -16,7 +16,7 @@ llm = LLM(model="groq/llama-3.1-8b-instant", api_key=os.getenv("GROQ_API_KEY"))
 
 summarizer = Agent(
     role='Summarizer', # Agent's job title/function
-    goal='Create detailed llm readable summaries of the given info without hallucination', # Agent's main objective
+    goal='Create detailed llm readable detailed summaries of the given info without hallucination', # Agent's main objective
     backstory='Technical writer who excels at extracting and formatting all relevant useful data', # Agent's background/expertise
     llm=llm, 
     verbose=False # Show agent's thought process as it completes its task
