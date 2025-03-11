@@ -7,10 +7,11 @@ import random
 import aiohttp
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
-from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode
+from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode, LLMConfig
 from crawl4ai.extraction_strategy import LLMExtractionStrategy
 from duckduckgo_search import DDGS
 import time
+import sys
 
 load_dotenv(dotenv_path='./config/.env')
 
@@ -50,20 +51,29 @@ async def website_search(query: str, max_results: int =6) -> list:
                 data = await response.json()
 
                 organic_results = data.get("organic", [])
+                if not isinstance(organic_results, list):  # Ensure it's a list
+                    print("Unexpected API response format.")
+                    return []
                 results = []
                 for result in organic_results:
-                    link = result.get("link")
-                    # Filter out YouTube links or if link is missing
-                    if not link or "youtube.com" in link or "youtu.be" in link:
-                        continue
+                    if not isinstance(result, dict):
+                        continue  # Skip invalid data
 
-                    # Calculate a relevance score based on the presence of the query in title and snippet
+                    link = result.get("link")
+                    if not link or "youtube.com" in link or "youtu.be" in link:
+                        continue  # Ignore YouTube links and missing links
+
+                    title = result.get("title", "")
+                    snippet = result.get("snippet", "")
+
+                    if not isinstance(title, str) or not isinstance(snippet, str):
+                        continue  # Ensure title and snippet are strings
+
+                    # Calculate a relevance score
                     score = 0
-                    title = result.get("title", "").lower()
-                    snippet = result.get("snippet", "").lower()
-                    if query_lower in title:
+                    if query.lower() in title.lower():
                         score += 2
-                    if query_lower in snippet:
+                    if query.lower() in snippet.lower():
                         score += 1
 
                     if score > 0:
@@ -102,9 +112,10 @@ async def make_request_with_backoff(url, headers, max_retries=5):
 
     raise Exception("Max retries exceeded")
 
-async def extract(query: str):
+async def extract():
     """Fetch URLs, configure the crawler, and extract structured information in parallel."""
-    query = input("Enter search query: ")
+
+    query = sys.argv[1]
     
     # First try DuckDuckGo search
     urls = await website_search_ddg(query)
@@ -130,8 +141,7 @@ async def extract(query: str):
     browser_config = BrowserConfig(headless=True, verbose=True)
 
     extraction_strategy = LLMExtractionStrategy(
-        provider="mistral/mistral-small-latest",
-        api_token=os.getenv("MISTRAL_API_KEY"),
+        llm_config=LLMConfig(provider="mistral/mistral-small-latest", api_token=os.getenv("MISTRAL_API_KEY")),
         schema=PageSummary.model_json_schema()
     )
 
@@ -159,4 +169,4 @@ async def extract(query: str):
         print("\nWrote extracted info to file")
 
         
-asyncio.run(extract(query=str))
+asyncio.run(extract())

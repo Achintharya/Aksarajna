@@ -4,7 +4,7 @@ from crewai import Agent, Task, Crew, LLM
 import json
 
 # Load JSON file
-with open("data/context.json", "r") as file:
+with open("./data/context.json", "r") as file:
     json_data = json.load(file)
 
 
