@@ -8,7 +8,7 @@ const progressCard = document.getElementById('progressCard');
 const resultsCard = document.getElementById('resultsCard');
 const currentStep = document.getElementById('currentStep');
 const progressBar = document.querySelector('.progress-bar');
-const logsElement = document.getElementById('logs');
+// Removed logs element
 const errorAlert = document.getElementById('errorAlert');
 const errorMessage = document.getElementById('errorMessage');
 const successAlert = document.getElementById('successAlert');
@@ -19,6 +19,20 @@ const queryInput = document.getElementById('query');
 const extractCheck = document.getElementById('extractCheck');
 const summarizeCheck = document.getElementById('summarizeCheck');
 const writeCheck = document.getElementById('writeCheck');
+const articleTypeSelect = document.getElementById('articleType');
+const articleTypeContainer = document.getElementById('articleTypeContainer');
+
+const articleFilenameContainer = document.getElementById('articleFilenameContainer');
+
+// Show/hide article type and filename based on write checkbox
+writeCheck.addEventListener('change', function() {
+    articleTypeContainer.style.display = this.checked ? 'block' : 'none';
+    articleFilenameContainer.style.display = this.checked ? 'block' : 'none';
+});
+
+// Initialize article type and filename visibility
+articleTypeContainer.style.display = writeCheck.checked ? 'block' : 'none';
+articleFilenameContainer.style.display = writeCheck.checked ? 'block' : 'none';
 
 // Initialize by fetching current status
 fetch('/api/status')
@@ -65,10 +79,14 @@ processForm.addEventListener('submit', (e) => {
         return;
     }
     
+    const articleFilenameInput = document.getElementById('articleFilename');
+    
     // Prepare data
     const data = {
         query: queryInput.value.trim(),
-        components: components
+        components: components,
+        articleType: articleTypeSelect.value,
+        articleFilename: articleFilenameInput.value.trim()
     };
     
     // Send request to start process
@@ -117,11 +135,7 @@ function updateUI(status) {
     progressBar.setAttribute('aria-valuenow', status.progress);
     progressBar.textContent = `${status.progress}%`;
     
-    // Update logs
-    if (status.logs && status.logs.length > 0) {
-        logsElement.textContent = status.logs.join('\n');
-        logsElement.scrollTop = logsElement.scrollHeight;
-    }
+    // Logs update removed
     
     // Show error if any
     if (status.error) {
@@ -155,7 +169,7 @@ function hideProgressCard() {
     processForm.style.display = 'block';
     errorAlert.style.display = 'none';
     successAlert.style.display = 'none';
-    logsElement.textContent = '';
+    // Logs reset removed
     currentStep.textContent = '-';
     progressBar.style.width = '0%';
     progressBar.setAttribute('aria-valuenow', 0);

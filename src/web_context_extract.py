@@ -5,10 +5,14 @@ import time
 import random
 import aiohttp
 import argparse
+import sys
 from pydantic import BaseModel, Field, ValidationError
 from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode, LLMConfig
 from crawl4ai.extraction_strategy import LLMExtractionStrategy
 from duckduckgo_search import DDGS
+
+# Add the parent directory to the path so we can import from src
+sys.path.insert(0, os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
 from src.config import logger, config, cache
 
 class PageSummary(BaseModel):
@@ -270,7 +274,7 @@ async def extract(query: str = None):
         context_json_path = config.get('paths.context_json')
         logger.info(f"Processing crawl results and saving to {context_json_path}")
         
-        with open(context_json_path, "w") as file:
+        with open(context_json_path, "w", encoding='utf-8') as file:
             output_data = []  # Initialize a list to hold all summaries
 
             for url, result in zip(urls, results):
@@ -284,7 +288,7 @@ async def extract(query: str = None):
                     logger.warning(f"Crawl failed for {url}")
 
             # Write the entire list as a JSON array
-            json.dump(output_data, file, indent=2)  # Use json.dump to write the list to the file
+            json.dump(output_data, file, indent=2, ensure_ascii=False)  # Use json.dump to write the list to the file
 
             logger.info(f"Successfully extracted information from {len(output_data)} URLs")
     

@@ -5,6 +5,9 @@ import sys
 import time
 from tqdm import tqdm
 import subprocess
+
+# Add the parent directory to the path so we can import from src
+sys.path.insert(0, os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
 from src.config import logger, config
 
 async def run_script(command, description=None):
@@ -38,7 +41,9 @@ async def run_script(command, description=None):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
-            bufsize=1
+            bufsize=1,
+            encoding='utf-8',
+            errors='replace'
         )
         
         # Monitor the process
@@ -56,6 +61,16 @@ async def run_script(command, description=None):
         
         # Check if the process completed successfully
         if process.returncode != 0:
+            # Special handling for context_summarizer.py
+            if "context_summarizer.py" in command[1]:
+                # Check if there's a rate limit error but a basic summary was created
+                if "rate_limit" in stderr.lower() and "created basic summary" in stderr.lower():
+                    logger.warning(f"Context summarizer hit rate limit but created basic summary")
+                    progress.update(100 - progress.n)
+                    progress.close()
+                    logger.info(f"Successfully completed with fallback: {script_name}")
+                    return True
+                
             logger.error(f"Error running {script_name}: {stderr}")
             progress.close()
             return False
@@ -82,6 +97,9 @@ async def main():
     parser.add_argument("--all", action="store_true", help="Run all components in sequence")
     parser.add_argument("--concurrent", action="store_true", help="Run selected components concurrently")
     parser.add_argument("--query", type=str, help="Search query for web extraction")
+    parser.add_argument("--article-type", type=str, choices=["detailed", "summarized", "points"], 
+                      default="detailed", help="Article type (detailed, summarized, points)")
+    parser.add_argument("--article-filename", type=str, help="File name for the article (without extension)")
     
     args = parser.parse_args()
     
@@ -103,7 +121,10 @@ async def main():
         scripts_to_run.append((['python', 'src/context_summarizer.py'], "Context Summarization"))
     
     if args.all or args.write:
-        scripts_to_run.append((['python', 'src/article_writer.py'], "Article Writing"))
+        article_writer_cmd = ['python', 'src/article_writer.py', '--type', args.article_type]
+        if args.article_filename:
+            article_writer_cmd.extend(['--filename', args.article_filename])
+        scripts_to_run.append((article_writer_cmd, "Article Writing"))
     
     # Run the scripts
     if args.concurrent:

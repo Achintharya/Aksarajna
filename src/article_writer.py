@@ -5,6 +5,9 @@ import sys
 import argparse
 from datetime import datetime
 from tqdm import tqdm
+
+# Add the parent directory to the path so we can import from src
+sys.path.insert(0, os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
 from src.config import logger, config
 
 def save_article_to_file(response, file_name):
@@ -69,7 +72,7 @@ def generate_chat_response(writing_style, context, query):
 
     try:
         # Get the model from configuration
-        model = config.get('models.article_writer', 'mistral')
+        model = config.get('models.article_writer')
         logger.info(f"Using model: {model}")
         
         progress.update(20)  # Update progress
@@ -78,7 +81,7 @@ def generate_chat_response(writing_style, context, query):
         response = ollama.chat(
             model=model,
             messages=[
-                {'role': "system", 'content': "### You are an AI that imitates a writing style (without including any info from it) to write nonredundantly about the context provided, WITH NO HALLUCINATION. ###"},
+                {'role': "system", 'content': "### You are an AI that imitates a writing style (without including any info from it) to write nonredundantly about the context provided, WITH NO HALLUCINATION. NEVER USE BOLD FORMATTING###"},
                 {'role': "user", 'content': prompt_message}
             ]
         )
@@ -98,12 +101,13 @@ def generate_chat_response(writing_style, context, query):
         logger.error(f"Error generating response: {e}")
         return f"Sorry, I couldn't process your request: {e}"
 
-def start(query=None):
+def start(query=None, filename=None):
     """
     Start the article writing process
     
     Args:
         query (str, optional): The query to use for generating the article
+        filename (str, optional): The file name to save the article to
     """
     try:
         # Read context and writing style
@@ -139,12 +143,9 @@ def start(query=None):
             logger.warning("No relevant context found. Proceeding with minimal guidance.")
             print("Warning: No relevant context found. The article may lack specific information.")
 
-        # Define the query if not provided
-        if not query:
-            query = input("Enter your article query (e.g., 'Write an informative article about electric vehicles'): ")
         
         if not query:
-            query = "Write a brief informative article based on the provided context"
+            query = "Write a detailed comprehensive article based on the provided context"
             logger.warning(f"No query provided, using default: '{query}'")
 
         logger.info(f"Generating article for query: '{query}'")
@@ -153,11 +154,21 @@ def start(query=None):
         # Generate response
         response = generate_chat_response(writing_style, context, query)
 
-        # Prompt user for the file name
-        file_name = prompt_for_file_name()
-        save_article_to_file(response, file_name)
+        # Get the file name
+        if filename:
+            # Use the provided filename
+            file_name = filename
+            if not file_name.endswith('.txt'):
+                file_name = f"{file_name}.txt"
+            articles_dir = config.get('paths.articles_dir')
+            file_path = os.path.join(articles_dir, file_name)
+        else:
+            # Prompt user for the file name
+            file_path = prompt_for_file_name()
         
-        print(f"The article has been saved to '{file_name}'.")
+        save_article_to_file(response, file_path)
+        
+        print(f"The article has been saved to '{file_path}'.")
         return 0
 
     except KeyboardInterrupt:
@@ -172,10 +183,20 @@ def start(query=None):
 def main():
     """Main function to handle command-line arguments and run the article writer"""
     parser = argparse.ArgumentParser(description="AI Article Writer")
-    parser.add_argument("--query", type=str, help="Article query")
+    parser.add_argument("--type", type=str, choices=["detailed", "summarized", "points"], 
+                      default="detailed", help="Article type (detailed, summarized, points)")
+    parser.add_argument("--filename", type=str, help="File name for the article (without extension)")
     args = parser.parse_args()
     
-    return start(query=args.query)
+    # Map article type to a query
+    article_type_queries = {
+        "detailed": "Write a detailed comprehensive article based on the provided context",
+        "summarized": "Write a concise summary article based on the provided context",
+        "points": "Write an article in bullet points based on the provided context"
+    }
+    
+    query = article_type_queries.get(args.type, article_type_queries["detailed"])
+    return start(query=query, filename=args.filename)
 
 # Start the process
 if __name__ == "__main__":

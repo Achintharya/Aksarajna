@@ -1,7 +1,11 @@
 import os
 import json
 import argparse
+import sys
 from crewai import Agent, Task, Crew, LLM
+
+# Add the parent directory to the path so we can import from src
+sys.path.insert(0, os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
 from src.config import logger, config
 
 def summarize_context():
@@ -18,7 +22,7 @@ def summarize_context():
     
     # Load JSON file
     try:
-        with open(context_json_path, "r") as file:
+        with open(context_json_path, "r", encoding='utf-8') as file:
             json_data = json.load(file)
         
         if not json_data:
@@ -58,35 +62,63 @@ def summarize_context():
         # Create summarizer agent
         summarizer = Agent(
             role='Summarizer',  # Agent's job title/function
-            goal='Create detailed llm readable detailed summaries of the given info without hallucination',  # Agent's main objective
+            goal='Create detailed llm readable summaries of the given info without hallucination',  # Agent's main objective
             backstory='Technical writer who excels at extracting and formatting all relevant useful data',  # Agent's background/expertise
             llm=llm,
             verbose=False  # Show agent's thought process as it completes its task
         )
         
-        # Create summarization task
-        summary_task = Task(
-            description=f'Summarize the following data as text : {json.dumps(json_data)}',
-            expected_output="only a clear, detailed summary in points with no json.",
-            agent=summarizer,
-            output_file=context_txt_path
-        )
-        
-        # Create crew to manage agents and task workflow
-        crew = Crew(
-            agents=[summarizer],  # Agents to include in your crew
-            tasks=[summary_task],  # Tasks in execution order
-            verbose=False
-        )
-        
-        logger.info("Starting context summarization")
-        print("Summarizing context data...")
-        
-        # Execute the summarization
-        result = crew.kickoff()
-        
-        logger.info("Context summarization completed successfully")
-        print("Context summarization completed successfully!")
+        try:
+            # Create summarization task
+            summary_task = Task(
+                description=f'Summarize the following data as text : {json.dumps(json_data)}',
+                expected_output="only a clear, detailed summary in points with no json.",
+                agent=summarizer,
+                output_file=context_txt_path
+            )
+            
+            # Create crew to manage agents and task workflow
+            crew = Crew(
+                agents=[summarizer],  # Agents to include in your crew
+                tasks=[summary_task],  # Tasks in execution order
+                verbose=False
+            )
+            
+            logger.info("Starting context summarization")
+            print("Summarizing context data...")
+            
+            # Execute the summarization
+            result = crew.kickoff()
+            
+            logger.info("Context summarization completed successfully")
+            print("Context summarization completed successfully!")
+        except Exception as e:
+            logger.error(f"Error during LLM call: {e}")
+            
+            # If there's a rate limit error, try to provide a useful summary anyway
+            if "rate_limit" in str(e).lower():
+                logger.warning("Rate limit hit, creating a basic summary from the JSON data")
+                
+                # Create a basic summary from the JSON data
+                basic_summary = "Here is a summary of the extracted information:\n\n"
+                
+                # Process each item in the JSON data
+                for group_index, group in enumerate(json_data):
+                    basic_summary += f"## Source Group {group_index + 1}\n\n"
+                    
+                    for item_index, item in enumerate(group):
+                        if isinstance(item, dict) and "summary" in item:
+                            basic_summary += f"* {item['summary']}\n"
+                
+                # Save the basic summary to the output file
+                with open(context_txt_path, "w", encoding='utf-8') as file:
+                    file.write(basic_summary)
+                
+                logger.info("Created basic summary from JSON data due to rate limit")
+                print("Created basic summary from JSON data (rate limit reached)")
+            else:
+                # Re-raise the exception if it's not a rate limit error
+                raise
         
         return 0
         

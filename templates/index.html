@@ -1,106 +1,180 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Integrated Web Context and AI Writing Tool</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+  </head>
+  <body>
     <div class="container mt-4">
-        <h1 class="mb-4">Integrated Web Context and AI Writing Tool</h1>
-        
-        <div class="card mb-4">
-            <div class="card-header">
-                <h2 class="card-title h5 mb-0">Run Process</h2>
-            </div>
-            <div class="card-body">
-                <form id="processForm">
-                    <div class="mb-3">
-                        <label for="query" class="form-label">Search Query</label>
-                        <input type="text" class="form-control" id="query" placeholder="Enter search query">
-                        <div class="form-text">Required for web context extraction</div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Components to Run</label>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="extract" id="extractCheck" checked>
-                            <label class="form-check-label" for="extractCheck">
-                                Web Context Extraction
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="summarize" id="summarizeCheck" checked>
-                            <label class="form-check-label" for="summarizeCheck">
-                                Context Summarization
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="write" id="writeCheck" checked>
-                            <label class="form-check-label" for="writeCheck">
-                                Article Writing
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary" id="runBtn">Run Process</button>
-                </form>
-            </div>
+      <h1 class="mb-4">Integrated Web Context and AI Writing Tool</h1>
+
+      <div class="card mb-4">
+        <div class="card-header">
+          <h2 class="card-title h5 mb-0">Run Process</h2>
         </div>
-        
-        <div class="card mb-4" id="progressCard" style="display: none;">
-            <div class="card-header">
-                <h2 class="card-title h5 mb-0">Process Status</h2>
+        <div class="card-body">
+          <form id="processForm">
+            <div class="mb-3">
+              <label for="query" class="form-label">Search Query</label>
+              <input
+                type="text"
+                class="form-control"
+                id="query"
+                placeholder="Enter search query"
+              />
+              <div class="form-text">Required for web context extraction</div>
             </div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <label class="form-label">Current Step: <span id="currentStep">-</span></label>
-                    <div class="progress">
-                        <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
-                    </div>
-                </div>
-                
-                <div class="mb-3">
-                    <label class="form-label">Logs</label>
-                    <div class="log-container border rounded p-2" style="height: 200px; overflow-y: auto;">
-                        <pre id="logs" class="mb-0"></pre>
-                    </div>
-                </div>
-                
-                <div class="alert alert-danger" id="errorAlert" style="display: none;">
-                    <strong>Error:</strong> <span id="errorMessage"></span>
-                </div>
-                
-                <div class="alert alert-success" id="successAlert" style="display: none;">
-                    <strong>Success!</strong> Process completed successfully.
-                </div>
-                
-                <div class="mt-3">
-                    <a href="/api/logs" target="_blank" class="btn btn-secondary">Download Logs</a>
-                    <button type="button" class="btn btn-primary" id="newProcessBtn" style="display: none;">Start New Process</button>
-                </div>
+
+            <div class="mb-3">
+              <label class="form-label">Components to Run</label>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  value="extract"
+                  id="extractCheck"
+                  checked
+                />
+                <label class="form-check-label" for="extractCheck">
+                  Web Context Extraction
+                </label>
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  value="summarize"
+                  id="summarizeCheck"
+                  checked
+                />
+                <label class="form-check-label" for="summarizeCheck">
+                  Context Summarization
+                </label>
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  value="write"
+                  id="writeCheck"
+                  checked
+                />
+                <label class="form-check-label" for="writeCheck">
+                  Article Writing
+                </label>
+              </div>
             </div>
+
+            <div class="mb-3" id="articleTypeContainer">
+              <label for="articleType" class="form-label">Article Type</label>
+              <select class="form-select" id="articleType">
+                <option value="detailed" selected>Detailed</option>
+                <option value="summarized">Summarized</option>
+                <option value="points">Bullet Points</option>
+              </select>
+              <div class="form-text">
+                Select the type of article to generate
+              </div>
+            </div>
+
+            <div class="mb-3" id="articleFilenameContainer">
+              <label for="articleFilename" class="form-label">Article Filename</label>
+              <input
+                type="text"
+                class="form-control"
+                id="articleFilename"
+                placeholder="Enter article filename (without extension)"
+              />
+              <div class="form-text">
+                Optional: Enter a filename for the generated article
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="runBtn">
+              Run Process
+            </button>
+          </form>
         </div>
-        
-        <div class="card mb-4" id="resultsCard" style="display: none;">
-            <div class="card-header">
-                <h2 class="card-title h5 mb-0">Results</h2>
-            </div>
-            <div class="card-body">
-                <p>The process has completed. You can find the generated files in the following locations:</p>
-                <ul>
-                    <li>Extracted Context: <code>data/context.json</code></li>
-                    <li>Summarized Context: <code>data/context.txt</code></li>
-                    <li>Generated Articles: <code>articles/</code> directory</li>
-                </ul>
-            </div>
+      </div>
+
+      <div class="card mb-4" id="progressCard" style="display: none">
+        <div class="card-header">
+          <h2 class="card-title h5 mb-0">Process Status</h2>
         </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="form-label"
+              >Current Step: <span id="currentStep">-</span></label
+            >
+            <div class="progress">
+              <div
+                class="progress-bar"
+                role="progress"
+                style="width: 0%"
+                aria-valuenow="0"
+                aria-valuemin="0"
+                aria-valuemax="100"
+              >
+                0%
+              </div>
+            </div>
+          </div>
+
+
+          <div class="alert alert-danger" id="errorAlert" style="display: none">
+            <strong>Error:</strong> <span id="errorMessage"></span>
+          </div>
+
+          <div
+            class="alert alert-success"
+            id="successAlert"
+            style="display: none"
+          >
+            <strong>Success!</strong> Process completed successfully.
+          </div>
+
+          <div class="mt-3">
+            <button
+              type="button"
+              class="btn btn-primary"
+              id="newProcessBtn"
+              style="display: none"
+            >
+              Start New Process
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-4" id="resultsCard" style="display: none">
+        <div class="card-header">
+          <h2 class="card-title h5 mb-0">Results</h2>
+        </div>
+        <div class="card-body">
+          <p>
+            The process has completed. You can find the generated files in the
+            following locations:
+          </p>
+          <ul>
+            <li>Extracted Context: <code>data/context.json</code></li>
+            <li>Summarized Context: <code>data/context.txt</code></li>
+            <li>Generated Articles: <code>articles/</code> directory</li>
+          </ul>
+        </div>
+      </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-</body>
+  </body>
 </html>

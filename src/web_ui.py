@@ -62,13 +62,15 @@ def update_status(step=None, progress=None, log=None, error=None, completed=Fals
     # Emit the updated status to all clients
     socketio.emit('status_update', process_status)
 
-def run_process(query, components):
+def run_process(query, components, article_type='detailed', article_filename=''):
     """
     Run the selected components with the given query
     
     Args:
         query (str): The search query
         components (list): List of components to run ('extract', 'summarize', 'write')
+        article_type (str): Type of article to generate (detailed, summarized, points)
+        article_filename (str): File name for the article (without extension)
     """
     global process_status
     process_status["running"] = True
@@ -87,6 +89,9 @@ def run_process(query, components):
         
         if 'write' in components:
             cmd.append('--write')
+            cmd.extend(['--article-type', article_type])
+            if article_filename:
+                cmd.extend(['--article-filename', article_filename])
         
         if len(components) > 1:
             cmd.append('--concurrent')
@@ -101,23 +106,21 @@ def run_process(query, components):
             stderr=subprocess.PIPE,
             text=True,
             bufsize=1,
-            universal_newlines=True
+            universal_newlines=True,
+            encoding='utf-8',
+            errors='replace'
         )
         
-        # Track progress based on output
-        progress_markers = {
-            "Starting web context extraction": 10,
-            "Searching DuckDuckGo": 15,
-            "Searching Google": 20,
-            "Found results": 25,
-            "Starting web crawling": 30,
-            "Processing crawl results": 50,
-            "Starting context summarization": 60,
-            "Summarizing context data": 70,
-            "Context summarization completed": 80,
-            "Generating article": 85,
-            "Article saved": 95,
-            "All tasks completed": 100
+        # Set up progress tracking based on components
+        total_steps = len(components)
+        current_step = 0
+        progress_per_step = 90 / total_steps  # 90% divided by number of steps (5% is initial, 5% is final)
+        
+        # Map components to step names
+        component_names = {
+            'extract': 'Web Context Extraction',
+            'summarize': 'Context Summarization',
+            'write': 'Article Writing'
         }
         
         # Read output line by line
@@ -125,15 +128,25 @@ def run_process(query, components):
             if not line:
                 break
                 
-            update_status(log=line.strip())
+            line_text = line.strip()
+            update_status(log=line_text)
             
-            # Update progress based on markers
-            for marker, prog in progress_markers.items():
-                if marker in line:
-                    update_status(progress=prog)
-                    if marker == "All tasks completed":
-                        update_status(completed=True)
-                    break
+            # Check for component start/completion indicators
+            if "Starting:" in line_text:
+                for comp in components:
+                    if comp in line_text.lower():
+                        current_step += 1
+                        step_name = component_names.get(comp, comp)
+                        progress = 5 + (current_step - 1) * progress_per_step
+                        update_status(step=f"Running {step_name}", progress=int(progress))
+                        break
+            
+            if "Successfully completed:" in line_text:
+                for comp in components:
+                    if comp in line_text.lower():
+                        progress = 5 + current_step * progress_per_step
+                        update_status(step=f"Completed {component_names.get(comp, comp)}", progress=int(progress))
+                        break
         
         # Read any errors
         for line in iter(process.stderr.readline, ''):
@@ -188,6 +201,8 @@ def run():
     data = request.json
     query = data.get('query', '')
     components = data.get('components', [])
+    article_type = data.get('articleType', 'detailed')
+    article_filename = data.get('articleFilename', '')
     
     if not components:
         return jsonify({"error": "No components selected"}), 400
@@ -196,7 +211,7 @@ def run():
     reset_status()
     
     # Start the process in a separate thread
-    thread = threading.Thread(target=run_process, args=(query, components))
+    thread = threading.Thread(target=run_process, args=(query, components, article_type, article_filename))
     thread.daemon = True
     thread.start()
     
@@ -219,7 +234,9 @@ def main():
     """Main function to run the web UI"""
     create_directories()
     port = int(os.environ.get('PORT', 5000))
-    socketio.run(app, host='0.0.0.0', port=port, debug=True)
+    # Disable debug mode to prevent auto-reloading which can break Socket.IO connections
+    # Set allow_unsafe_werkzeug=True to avoid warnings about the development server
+    socketio.run(app, host='0.0.0.0', port=port, debug=False, allow_unsafe_werkzeug=True)
 
 if __name__ == '__main__':
     main()
