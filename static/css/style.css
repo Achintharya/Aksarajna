@@ -38,7 +38,11 @@ h1 {
     background-color: #007bff;
     color: white;
     font-weight: bold;
-    transition: width 0.3s ease;
+    transition: width 0.5s ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2em; /* Ensure text is visible even at low percentages */
 }
 
 #logs {

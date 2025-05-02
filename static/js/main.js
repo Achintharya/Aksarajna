@@ -48,14 +48,34 @@ fetch('/api/status')
 // Socket.IO event listeners
 socket.on('connect', () => {
     console.log('Connected to server');
+    // Fetch current status when connected
+    fetch('/api/status')
+        .then(response => response.json())
+        .then(status => {
+            updateUI(status);
+        })
+        .catch(error => console.error('Error fetching status:', error));
 });
 
 socket.on('status_update', (status) => {
+    console.log('Status update received:', status);
     updateUI(status);
 });
 
 socket.on('disconnect', () => {
     console.log('Disconnected from server');
+});
+
+// Reconnect logic
+socket.on('reconnect', () => {
+    console.log('Reconnected to server');
+    // Fetch current status when reconnected
+    fetch('/api/status')
+        .then(response => response.json())
+        .then(status => {
+            updateUI(status);
+        })
+        .catch(error => console.error('Error fetching status:', error));
 });
 
 // Form submission
@@ -129,13 +149,21 @@ newProcessBtn.addEventListener('click', () => {
 
 // Update UI based on status
 function updateUI(status) {
+    console.log('Updating UI with status:', status);
+    
     // Update progress
     currentStep.textContent = status.current_step || '-';
-    progressBar.style.width = `${status.progress}%`;
-    progressBar.setAttribute('aria-valuenow', status.progress);
-    progressBar.textContent = `${status.progress}%`;
     
-    // Logs update removed
+    // Force a reflow to ensure the animation works
+    const currentWidth = progressBar.style.width;
+    progressBar.style.width = currentWidth;
+    void progressBar.offsetWidth; // Force reflow
+    
+    // Update progress bar
+    const progress = status.progress || 0;
+    progressBar.style.width = `${progress}%`;
+    progressBar.setAttribute('aria-valuenow', progress);
+    progressBar.textContent = `${progress}%`;
     
     // Show error if any
     if (status.error) {
@@ -156,6 +184,9 @@ function updateUI(status) {
         successAlert.style.display = 'none';
         newProcessBtn.style.display = 'none';
     }
+    
+    // Log the current status to console for debugging
+    console.log(`Current step: ${status.current_step}, Progress: ${progress}%`);
 }
 
 // Show/hide cards

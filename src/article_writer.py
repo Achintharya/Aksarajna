@@ -1,8 +1,8 @@
 import os
 import json
-import ollama
 import sys
 import argparse
+import requests
 from datetime import datetime
 from tqdm import tqdm
 
@@ -47,7 +47,7 @@ def prompt_for_file_name():
 
 def generate_chat_response(writing_style, context, query):
     """
-    Generate a chat response using the Ollama API
+    Generate a chat response using the Mistral API
     
     Args:
         writing_style (str): The writing style to imitate
@@ -71,30 +71,55 @@ def generate_chat_response(writing_style, context, query):
                      f"User Query: {query}"
 
     try:
-        # Get the model from configuration
+        # Get the model and API key from configuration
         model = config.get('models.article_writer')
+        api_key = config.get('api_keys.mistral')
+        
+        if not api_key:
+            logger.error("Mistral API key not found in configuration")
+            return "Error: Mistral API key not found. Please check your .env file."
+        
         logger.info(f"Using model: {model}")
         
         progress.update(20)  # Update progress
         
-        # Ensure the model parameter is a string and messages is a list
-        response = ollama.chat(
-            model=model,
-            messages=[
-                {'role': "system", 'content': "### You are an AI that imitates a writing style (without including any info from it) to write nonredundantly about the context provided, WITH NO HALLUCINATION. NEVER USE BOLD FORMATTING###"},
-                {'role': "user", 'content': prompt_message}
+        # Prepare the API request
+        headers = {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": f"Bearer {api_key}"
+        }
+        
+        payload = {
+            "model": model,
+            "messages": [
+                {"role": "system", "content": "### You are an AI that imitates a writing style (without including any info from it) to write nonredundantly about the context provided, WITH NO HALLUCINATION. NEVER USE BOLD FORMATTING###"},
+                {"role": "user", "content": prompt_message}
             ]
+        }
+        
+        # Make the API request
+        response = requests.post(
+            "https://api.mistral.ai/v1/chat/completions",
+            headers=headers,
+            json=payload
         )
+        
+        # Check for errors
+        response.raise_for_status()
+        
+        # Parse the response
+        response_data = response.json()
         
         progress.update(70)  # Update progress after generation
         progress.close()
         
         logger.info("Article generation completed successfully")
-        return response['message']['content']
+        return response_data['choices'][0]['message']['content']
 
-    except ollama.ResponseError as e:
+    except requests.exceptions.RequestException as e:
         progress.close()
-        logger.error(f"Ollama API response error: {e}")
+        logger.error(f"Mistral API request error: {e}")
         return f"Error generating response: {e}"
     except Exception as e:
         progress.close()

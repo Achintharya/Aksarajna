@@ -6,7 +6,6 @@ crawl4ai
 duckduckgo-search
 crewai
 aiohttp
-ollama
 tqdm
 flask
 flask-socketio

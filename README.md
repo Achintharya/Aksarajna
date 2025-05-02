@@ -15,8 +15,9 @@ This project combines a web context extraction tool and an AI-powered writing as
 
 ### AI Writer
 
-- **Contextual Input**: Accepts context from a text file or an image(based on model used).
+- **Contextual Input**: Accepts context from a text file or an image (based on model used).
 - **Writing Style Imitation**: Uses a predefined writing style to generate responses.
+- **Mistral API Integration**: Leverages the Mistral AI API for high-quality article generation.
 - **Save Responses**: Allows saving generated responses to a file.
 - **Interactive CLI**: Provides an interactive command-line interface for user interaction.
 - **Progress Indicators**: Shows progress bars for long-running operations.
@@ -46,7 +47,7 @@ This project combines a web context extraction tool and an AI-powered writing as
 
 3. **AI Writing Assistant**:
    - The program reads context from the summarized context file.
-   - It uses the `ollama` library to generate responses based on the context and writing style.
+   - It uses the Mistral API to generate high-quality responses based on the context and writing style.
    - Users can interact with the program through a command-line interface, providing queries and receiving AI-generated responses.
    - The generated articles are saved to files in the articles directory.
 
@@ -70,10 +71,17 @@ This project combines a web context extraction tool and an AI-powered writing as
 
 4. Edit the `.env` file to add your API keys:
    ```
+   # Required for context summarization
    GROQ_API_KEY=your_groq_api_key_here
+   
+   # Required for article generation and web context extraction
    MISTRAL_API_KEY=your_mistral_api_key_here
+   
+   # Optional: Used for web searches if DuckDuckGo fails
    SERPER_API_KEY=your_serper_api_key_here
    ```
+   
+   Note: The Mistral API key is essential for both article generation and web context extraction. The Groq API key is required for context summarization. The Serper API key is optional and only used as a fallback for web searches.
 
 ## Usage
 

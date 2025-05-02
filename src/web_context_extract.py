@@ -274,23 +274,49 @@ async def extract(query: str = None):
         context_json_path = config.get('paths.context_json')
         logger.info(f"Processing crawl results and saving to {context_json_path}")
         
-        with open(context_json_path, "w", encoding='utf-8') as file:
-            output_data = []  # Initialize a list to hold all summaries
+        output_data = []  # Initialize a list to hold all summaries
 
-            for url, result in zip(urls, results):
-                if result.success:
+        for url, result in zip(urls, results):
+            if result.success:
+                try:
+                    page_summary = json.loads(result.extracted_content)
+                    output_data.append(page_summary)  # Append each summary to the list
+                except json.JSONDecodeError as e:
+                    logger.error(f"Failed to parse JSON from {url}: {e}")
+                    # Try to create a basic summary if JSON parsing fails
                     try:
-                        page_summary = json.loads(result.extracted_content)
-                        output_data.append(page_summary)  # Append each summary to the list
-                    except json.JSONDecodeError as e:
-                        logger.error(f"Failed to parse JSON from {url}: {e}")
-                else:
-                    logger.warning(f"Crawl failed for {url}")
+                        # Create a basic summary object
+                        basic_summary = {
+                            "summary": f"Content extracted from {url} (JSON parsing failed)"
+                        }
+                        output_data.append(basic_summary)
+                    except Exception as inner_e:
+                        logger.error(f"Failed to create basic summary for {url}: {inner_e}")
+            else:
+                logger.warning(f"Crawl failed for {url}")
 
-            # Write the entire list as a JSON array
-            json.dump(output_data, file, indent=2, ensure_ascii=False)  # Use json.dump to write the list to the file
+        # Make sure we have at least some data to write
+        if not output_data:
+            # Create a placeholder entry if no data was extracted
+            output_data = [{
+                "summary": "No content could be extracted from the provided URLs."
+            }]
 
+        # Write the entire list as a JSON array
+        try:
+            with open(context_json_path, "w", encoding='utf-8') as file:
+                json.dump(output_data, file, indent=2, ensure_ascii=False)
             logger.info(f"Successfully extracted information from {len(output_data)} URLs")
+        except Exception as e:
+            logger.error(f"Failed to write context JSON file: {e}")
+            # Try to write to a backup file
+            try:
+                backup_path = context_json_path + ".backup"
+                with open(backup_path, "w", encoding='utf-8') as file:
+                    json.dump(output_data, file, indent=2, ensure_ascii=False)
+                logger.info(f"Wrote backup context file to {backup_path}")
+            except Exception as backup_e:
+                logger.error(f"Failed to write backup context file: {backup_e}")
     
     except Exception as e:
         logger.error(f"Error during web crawling: {e}")

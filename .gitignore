@@ -42,6 +42,9 @@ ENV/
 *.swo
 .DS_Store 
 
+# Config file
+src/config.py
+
 # Logs
 logs/
 *.log

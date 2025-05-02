@@ -49,15 +49,52 @@ async def run_script(command, description=None):
         # Monitor the process
         progress.update(10)  # Initial progress
         
-        # Wait for the process to complete while updating progress
-        for i in range(9):
-            if process.poll() is not None:
-                break
-            await asyncio.sleep(0.5)
-            progress.update(10)
+        # Read output line by line to monitor progress
+        stdout_lines = []
+        stderr_lines = []
         
-        # Get the output and error
-        stdout, stderr = process.communicate()
+        # Function to read from a pipe without blocking
+        async def read_pipe(pipe, lines_list):
+            while True:
+                line = pipe.readline()
+                if not line:
+                    break
+                lines_list.append(line.strip())
+                # Update progress based on output
+                if "%" in line:
+                    try:
+                        percent = int(line.split('%')[0].split('|')[-1].strip())
+                        if percent > progress.n:
+                            progress.update(percent - progress.n)
+                    except:
+                        pass
+                await asyncio.sleep(0.1)
+        
+        # Create tasks to read stdout and stderr
+        stdout_task = asyncio.create_task(read_pipe(process.stdout, stdout_lines))
+        stderr_task = asyncio.create_task(read_pipe(process.stderr, stderr_lines))
+        
+        # Wait for the process to complete
+        while process.poll() is None:
+            await asyncio.sleep(0.5)
+            # If we're not getting progress updates from output, increment gradually
+            if len(stdout_lines) == 0 and len(stderr_lines) == 0:
+                progress.update(1)
+        
+        # Cancel the read tasks
+        stdout_task.cancel()
+        stderr_task.cancel()
+        
+        # Get any remaining output
+        remaining_stdout, remaining_stderr = process.communicate()
+        if remaining_stdout:
+            stdout_lines.extend(remaining_stdout.strip().split('\n'))
+        if remaining_stderr:
+            stderr_lines.extend(remaining_stderr.strip().split('\n'))
+        
+        # Combine the output
+        stdout = '\n'.join(stdout_lines)
+        stderr = '\n'.join(stderr_lines)
         
         # Check if the process completed successfully
         if process.returncode != 0:
@@ -65,7 +102,7 @@ async def run_script(command, description=None):
             if "context_summarizer.py" in command[1]:
                 # Check if there's a rate limit error but a basic summary was created
                 if "rate_limit" in stderr.lower() and "created basic summary" in stderr.lower():
-                    logger.warning(f"Context summarizer hit rate limit but created basic summary")
+                    logger.warning("Context summarizer hit rate limit but created basic summary")
                     progress.update(100 - progress.n)
                     progress.close()
                     logger.info(f"Successfully completed with fallback: {script_name}")
@@ -78,6 +115,9 @@ async def run_script(command, description=None):
         # Complete the progress bar
         progress.update(100 - progress.n)
         progress.close()
+        
+        # Add a small delay to ensure file operations are complete
+        await asyncio.sleep(1)
         
         logger.info(f"Successfully completed: {script_name}")
         return True
@@ -127,17 +167,40 @@ async def main():
         scripts_to_run.append((article_writer_cmd, "Article Writing"))
     
     # Run the scripts
-    if args.concurrent:
-        # Run scripts concurrently
-        tasks = [run_script(cmd, desc) for cmd, desc in scripts_to_run]
-        results = await asyncio.gather(*tasks)
+    if args.concurrent and len(scripts_to_run) > 1:
+        # Even with concurrent flag, we need to ensure proper order of execution
+        # Extract -> Summarize -> Write
         
-        # Check if all scripts completed successfully
-        if all(results):
-            logger.info("All tasks completed successfully")
-        else:
-            logger.error("Some tasks failed")
-            sys.exit(1)
+        # Group scripts by type
+        extract_scripts = [s for s in scripts_to_run if "web_context_extract.py" in s[0][1]]
+        summarize_scripts = [s for s in scripts_to_run if "context_summarizer.py" in s[0][1]]
+        write_scripts = [s for s in scripts_to_run if "article_writer.py" in s[0][1]]
+        
+        # Run extraction scripts first (concurrently if multiple)
+        if extract_scripts:
+            extract_tasks = [run_script(cmd, desc) for cmd, desc in extract_scripts]
+            extract_results = await asyncio.gather(*extract_tasks)
+            if not all(extract_results):
+                logger.error("Extraction task(s) failed")
+                sys.exit(1)
+        
+        # Run summarization scripts next (concurrently if multiple)
+        if summarize_scripts:
+            summarize_tasks = [run_script(cmd, desc) for cmd, desc in summarize_scripts]
+            summarize_results = await asyncio.gather(*summarize_tasks)
+            if not all(summarize_results):
+                logger.error("Summarization task(s) failed")
+                sys.exit(1)
+        
+        # Run article writing scripts last (concurrently if multiple)
+        if write_scripts:
+            write_tasks = [run_script(cmd, desc) for cmd, desc in write_scripts]
+            write_results = await asyncio.gather(*write_tasks)
+            if not all(write_results):
+                logger.error("Article writing task(s) failed")
+                sys.exit(1)
+        
+        logger.info("All tasks completed successfully")
     else:
         # Run scripts sequentially
         for cmd, desc in scripts_to_run:

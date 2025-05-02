@@ -99,9 +99,14 @@ def run_process(query, components, article_type='detailed', article_filename='')
         update_status(step="Starting process", progress=5, 
                      log=f"Running command: {' '.join(cmd)}")
         
+        # Set environment variables
+        env = os.environ.copy()
+        env["PYTHONUTF8"] = "1"
+        
         # Create a process to run the command
         process = subprocess.Popen(
             cmd,
+            env=env,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
@@ -123,6 +128,13 @@ def run_process(query, components, article_type='detailed', article_filename='')
             'write': 'Article Writing'
         }
         
+        # Track which components have started and completed
+        started_components = set()
+        completed_components = set()
+        
+        # Track the current component being processed
+        current_component = None
+        
         # Read output line by line
         for line in iter(process.stdout.readline, ''):
             if not line:
@@ -131,39 +143,84 @@ def run_process(query, components, article_type='detailed', article_filename='')
             line_text = line.strip()
             update_status(log=line_text)
             
-            # Check for component start/completion indicators
+            # Check for component start indicators
             if "Starting:" in line_text:
                 for comp in components:
-                    if comp in line_text.lower():
+                    if comp in line_text.lower() and comp not in started_components:
+                        started_components.add(comp)
+                        current_component = comp
                         current_step += 1
                         step_name = component_names.get(comp, comp)
                         progress = 5 + (current_step - 1) * progress_per_step
                         update_status(step=f"Running {step_name}", progress=int(progress))
                         break
             
+            # Check for component completion indicators
             if "Successfully completed:" in line_text:
                 for comp in components:
-                    if comp in line_text.lower():
+                    if comp in line_text.lower() and comp not in completed_components:
+                        completed_components.add(comp)
+                        current_component = None  # Reset current component
                         progress = 5 + current_step * progress_per_step
                         update_status(step=f"Completed {component_names.get(comp, comp)}", progress=int(progress))
                         break
+            
+            # Update progress based on percentage indicators in output
+            if "%" in line_text:
+                try:
+                    # Extract percentage from progress bar output
+                    percent_parts = line_text.split('%')[0].split('|')
+                    if len(percent_parts) > 1:
+                        percent_str = percent_parts[-1].strip()
+                        if percent_str.isdigit():
+                            percent = int(percent_str)
+                            # Map the component's progress to the overall progress
+                            if current_step > 0 and current_step <= len(components):
+                                # Calculate the progress for the current component
+                                component_progress = 5 + (current_step - 1) * progress_per_step + (percent * progress_per_step / 100)
+                                update_status(progress=int(component_progress))
+                                # Debug log to see progress updates
+                                logger.info(f"Progress update: {percent}% for component {current_component}, overall {int(component_progress)}%")
+                except Exception as e:
+                    logger.error(f"Error parsing progress: {e}")
         
         # Read any errors
+        stderr_output = []
         for line in iter(process.stderr.readline, ''):
             if not line:
                 break
-            update_status(error=line.strip())
+            line_text = line.strip()
+            stderr_output.append(line_text)
+            update_status(error=line_text)
         
-        # Wait for process to complete
-        process.wait()
+        # Wait for process to complete with a timeout
+        try:
+            process.wait(timeout=60)  # Wait up to 60 seconds for the process to complete
+        except subprocess.TimeoutExpired:
+            update_status(error="Process timed out after 60 seconds")
+            process.kill()
+            process.wait()
         
         # Check if process completed successfully
         if process.returncode != 0:
-            update_status(
-                error=f"Process exited with code {process.returncode}",
-                completed=True
-            )
+            # Check if there's a rate limit error but a basic summary was created
+            stderr_text = '\n'.join(stderr_output)
+            if "rate_limit" in stderr_text.lower() and "created basic summary" in stderr_text.lower():
+                update_status(
+                    step="Process completed with fallback",
+                    progress=100,
+                    log="Process completed with rate limit fallback",
+                    completed=True
+                )
+            else:
+                update_status(
+                    error=f"Process exited with code {process.returncode}",
+                    completed=True
+                )
         else:
+            # Add a small delay to ensure file operations are complete
+            time.sleep(1)
+            
             update_status(
                 step="Process completed",
                 progress=100,
@@ -183,7 +240,7 @@ def run_process(query, components, article_type='detailed', article_filename='')
 
 @app.route('/')
 def index():
-    """Render the main page"""
+w    """Render the main page"""
     return render_template('index.html')
 
 @app.route('/api/status')

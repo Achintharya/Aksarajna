@@ -35,7 +35,7 @@ DEFAULT_CONFIG = {
     # Models
     "models": {
         "summarizer": "groq/llama-3.1-8b-instant",
-        "article_writer": "mistral",
+        "article_writer": "mistral-small-latest",  # Updated to use Mistral model
         "extraction": "mistral/mistral-small-latest"
     },
     
