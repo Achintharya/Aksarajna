@@ -87,18 +87,27 @@ This project combines a web context extraction tool and an AI-powered writing as
 
 ### Web UI
 
-The easiest way to use the tool is through the web interface:
+The easiest way to use the tool is through the web interface. There are two versions available:
+
+#### Classic Web UI
 
 ```
 python src/web_ui.py
 ```
 
-This will start a web server at http://localhost:5000 where you can:
-- Enter a search query
+#### React Web UI (Modern Interface)
+
+```
+python run_react_app.py
+```
+
+Both versions will start a web server at http://localhost:5000 where you can:
+- Enter a search query or provide specific URLs as sources
 - Select which components to run
 - Monitor the progress with a real-time progress bar
-- View logs as they are generated
 - Access the results when the process completes
+
+The React version provides a more modern and responsive user interface with the same functionality.
 
 ### Command Line Interface
 
@@ -158,7 +167,14 @@ The project uses a centralized configuration system. Default settings are define
   - `context_summarizer.py`: Context summarization module
   - `article_writer.py`: Article writing module
   - `config.py`: Centralized configuration module
-  - `web_ui.py`: Web interface module
+  - `web_ui.py`: Legacy web interface module (kept for backward compatibility)
+  - `web_ui_react.py`: React web interface module
+- `frontend/`: Contains the React frontend application
+  - `src/`: React source code
+    - `components/`: React components
+    - `services/`: Service modules for API communication
+  - `public/`: Public assets
+  - `dist/`: Built React application (generated)
 - `config/`: Contains configuration files
   - `.env.example`: Example environment variables file
 - `data/`: Contains data files
@@ -167,12 +183,9 @@ The project uses a centralized configuration system. Default settings are define
   - `sources.txt`: List of sources used for context extraction
   - `writing_style.txt`: Example writing style for the article writer
 - `articles/`: Contains generated articles
-- `templates/`: Contains HTML templates for the web interface
-- `static/`: Contains static files for the web interface
-  - `css/`: CSS stylesheets
-  - `js/`: JavaScript files
 - `logs/`: Contains application logs
   - `application.log`: Main application log file
+- `run_react_app.py`: Script to build and run the React frontend
 
 ## Requirements
 

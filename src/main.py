@@ -137,6 +137,7 @@ async def main():
     parser.add_argument("--all", action="store_true", help="Run all components in sequence")
     parser.add_argument("--concurrent", action="store_true", help="Run selected components concurrently")
     parser.add_argument("--query", type=str, help="Search query for web extraction")
+    parser.add_argument("--urls", type=str, help="Comma-separated list of URLs to extract from")
     parser.add_argument("--article-type", type=str, choices=["detailed", "summarized", "points"], 
                       default="detailed", help="Article type (detailed, summarized, points)")
     parser.add_argument("--article-filename", type=str, help="File name for the article (without extension)")
@@ -155,6 +156,8 @@ async def main():
         extract_cmd = ['python', 'src/web_context_extract.py']
         if args.query:
             extract_cmd.extend(['--query', args.query])
+        if args.urls:
+            extract_cmd.extend(['--urls', args.urls])
         scripts_to_run.append((extract_cmd, "Web Context Extraction"))
     
     if args.all or args.summarize:

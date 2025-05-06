@@ -3,7 +3,7 @@ import sys
 import json
 import threading
 import time
-from flask import Flask, render_template, request, jsonify, Response
+from flask import Flask, render_template, request, jsonify, Response, send_from_directory
 from flask_socketio import SocketIO
 import subprocess
 
@@ -13,8 +13,7 @@ from src.config import logger, config
 
 # Initialize Flask app
 app = Flask(__name__, 
-            template_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'templates'),
-            static_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'static'))
+            static_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'frontend', 'dist'))
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Global variables to track process status
@@ -241,10 +240,14 @@ def run_process(query, urls, components, article_type='detailed', article_filena
         process_status["running"] = False
         socketio.emit('status_update', process_status)
 
-@app.route('/')
-def index():
-    """Render the main page"""
-    return render_template('index.html')
+# Serve React App
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve(path):
+    if path != "" and os.path.exists(app.static_folder + '/' + path):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, 'index.html')
 
 @app.route('/api/status')
 def get_status():
@@ -284,16 +287,8 @@ def get_logs():
     logs = "\n".join(process_status["logs"])
     return Response(logs, mimetype='text/plain')
 
-def create_directories():
-    """Create necessary directories if they don't exist"""
-    os.makedirs('templates', exist_ok=True)
-    os.makedirs('static', exist_ok=True)
-    os.makedirs('static/css', exist_ok=True)
-    os.makedirs('static/js', exist_ok=True)
-
 def main():
     """Main function to run the web UI"""
-    create_directories()
     port = int(os.environ.get('PORT', 5000))
     # Disable debug mode to prevent auto-reloading which can break Socket.IO connections
     # Set allow_unsafe_werkzeug=True to avoid warnings about the development server

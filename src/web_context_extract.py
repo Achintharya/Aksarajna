@@ -201,36 +201,41 @@ async def make_request_with_backoff(url, session, max_retries=5):
 
     raise Exception(f"Max retries exceeded for {url}")
 
-async def extract(query: str = None):
+async def extract(query: str = None, urls: list = None):
     """
     Fetch URLs, configure the crawler, and extract structured information in parallel.
     
     Args:
-        query (str, optional): Search query. If None, will prompt the user.
+        query (str, optional): Search query. If None and no URLs provided, will prompt the user.
+        urls (list, optional): List of specific URLs to crawl. If provided, search will be skipped.
     """
-    # Validate query
-    if not query:
-        query = input("Enter search query: ")
-    
-    if not query or not query.strip():
-        logger.error("Empty search query provided")
-        return
-    
-    logger.info(f"Starting extraction process for query: '{query}'")
-    
-    # First try DuckDuckGo search
-    urls = await website_search_ddg(query)
-    
-    # If DuckDuckGo search fails or returns no results, try Serper
-    if not urls:
-        logger.info("DuckDuckGo search returned no results, trying alternative search...")
-        urls = await website_search(query)
+    # If URLs are provided directly, use them instead of searching
+    if urls and len(urls) > 0:
+        logger.info(f"Using {len(urls)} provided URLs directly")
     else:
-        logger.info("Using DuckDuckGo search results...")
-    
-    if not urls:
-        logger.error("No URLs found from either search method.")
-        return
+        # Validate query if no URLs provided
+        if not query:
+            query = input("Enter search query: ")
+        
+        if not query or not query.strip():
+            logger.error("Empty search query provided and no URLs specified")
+            return
+        
+        logger.info(f"Starting extraction process for query: '{query}'")
+        
+        # First try DuckDuckGo search
+        urls = await website_search_ddg(query)
+        
+        # If DuckDuckGo search fails or returns no results, try Serper
+        if not urls:
+            logger.info("DuckDuckGo search returned no results, trying alternative search...")
+            urls = await website_search(query)
+        else:
+            logger.info("Using DuckDuckGo search results...")
+        
+        if not urls:
+            logger.error("No URLs found from either search method.")
+            return
 
     # Save URLs to sources.txt with query as subheading
     sources_path = config.get('paths.sources')
@@ -326,10 +331,18 @@ def main():
     """Main function to handle command-line arguments and run the extraction process"""
     parser = argparse.ArgumentParser(description="Web Context Extraction Tool")
     parser.add_argument("--query", type=str, help="Search query")
+    parser.add_argument("--urls", type=str, help="Comma-separated list of URLs to extract from")
     args = parser.parse_args()
     
+    # Parse URLs if provided
+    urls = None
+    if args.urls:
+        urls = [url.strip() for url in args.urls.split(',') if url.strip()]
+        if not urls:
+            logger.warning("No valid URLs found in the provided list")
+    
     try:
-        asyncio.run(extract(query=args.query))
+        asyncio.run(extract(query=args.query, urls=urls))
     except KeyboardInterrupt:
         logger.info("Process interrupted by user")
     except Exception as e:
