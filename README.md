@@ -59,17 +59,33 @@ This project combines a web context extraction tool and an AI-powered writing as
    cd <repository-directory>
    ```
 
-2. Install the required dependencies:
+2. Install the required Python dependencies:
    ```
    pip install -r requirements.txt
    ```
 
-3. Create a `.env` file in the `config` directory based on the provided `.env.example`:
+3. For the React frontend, install Node.js and npm:
+   - Download and install Node.js from [nodejs.org](https://nodejs.org/)
+   - This will also install npm (Node Package Manager)
+   - Verify the installation with:
+     ```
+     node --version
+     npm --version
+     ```
+
+4. Install the React frontend dependencies:
+   ```
+   cd frontend
+   npm install
+   cd ..
+   ```
+
+5. Create a `.env` file in the `config` directory based on the provided `.env.example`:
    ```
    cp config/.env.example config/.env
    ```
 
-4. Edit the `.env` file to add your API keys:
+6. Edit the `.env` file to add your API keys:
    ```
    # Required for context summarization
    GROQ_API_KEY=your_groq_api_key_here
@@ -87,27 +103,19 @@ This project combines a web context extraction tool and an AI-powered writing as
 
 ### Web UI
 
-The easiest way to use the tool is through the web interface. There are two versions available:
-
-#### Classic Web UI
-
-```
-python src/web_ui.py
-```
-
-#### React Web UI (Modern Interface)
+The easiest way to use the tool is through the web interface:
 
 ```
 python run_react_app.py
 ```
 
-Both versions will start a web server at http://localhost:5000 where you can:
+This will start a web server at http://localhost:5000 where you can:
 - Enter a search query or provide specific URLs as sources
 - Select which components to run
 - Monitor the progress with a real-time progress bar
 - Access the results when the process completes
 
-The React version provides a more modern and responsive user interface with the same functionality.
+The React-based web UI provides a modern and responsive user interface.
 
 ### Command Line Interface
 
@@ -167,7 +175,6 @@ The project uses a centralized configuration system. Default settings are define
   - `context_summarizer.py`: Context summarization module
   - `article_writer.py`: Article writing module
   - `config.py`: Centralized configuration module
-  - `web_ui.py`: Legacy web interface module (kept for backward compatibility)
   - `web_ui_react.py`: React web interface module
 - `frontend/`: Contains the React frontend application
   - `src/`: React source code
@@ -190,4 +197,22 @@ The project uses a centralized configuration system. Default settings are define
 ## Requirements
 
 - Python 3.8+
-- See `requirements.txt` for a complete list of dependencies
+- Node.js and npm (for the React frontend)
+- See `requirements.txt` for a complete list of Python dependencies
+
+### React Frontend Requirements
+
+If you want to use the React frontend, you'll need:
+
+1. Node.js and npm installed on your system
+   - Download from [nodejs.org](https://nodejs.org/)
+   - Verify installation with `node --version` and `npm --version`
+
+2. Install the React frontend dependencies:
+   ```
+   cd frontend
+   npm install
+   cd ..
+   ```
+
+This is only required if you want to use the web UI or make changes to it.

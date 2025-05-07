@@ -2,6 +2,7 @@ import os
 import subprocess
 import sys
 import time
+import shutil
 
 def main():
     """
@@ -9,21 +10,50 @@ def main():
     """
     print("Building React app...")
     
-    # Change to the frontend directory
-    os.chdir('frontend')
+    # Get the absolute path to the frontend directory
+    frontend_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'frontend')
     
-    # Run npm build
-    build_process = subprocess.run(['npm', 'run', 'build'], capture_output=True, text=True)
-    
-    if build_process.returncode != 0:
-        print("Error building React app:")
-        print(build_process.stderr)
+    # Check if npm is available
+    npm_path = shutil.which('npm')
+    if not npm_path:
+        print("Error: npm not found. Please make sure Node.js and npm are installed and in your PATH.")
         return 1
     
-    print("React app built successfully!")
+    print(f"Using npm from: {npm_path}")
     
-    # Change back to the root directory
-    os.chdir('..')
+    # Change to the frontend directory
+    original_dir = os.getcwd()
+    os.chdir(frontend_dir)
+    
+    try:
+        # Check if node_modules exists
+        if not os.path.exists('node_modules'):
+            print("Node modules not found. Running npm install...")
+            install_process = subprocess.run([npm_path, 'install'], capture_output=True, text=True)
+            
+            if install_process.returncode != 0:
+                print("Error installing dependencies:")
+                print(install_process.stderr)
+                return 1
+            
+            print("Dependencies installed successfully!")
+        
+        # Run npm build
+        print("Running npm build in:", os.getcwd())
+        build_process = subprocess.run([npm_path, 'run', 'build'], capture_output=True, text=True)
+        
+        if build_process.returncode != 0:
+            print("Error building React app:")
+            print(build_process.stderr)
+            return 1
+        
+        print("React app built successfully!")
+    except Exception as e:
+        print(f"Error during build process: {e}")
+        return 1
+    finally:
+        # Change back to the original directory
+        os.chdir(original_dir)
     
     # Run the Flask server
     print("Starting Flask server...")
