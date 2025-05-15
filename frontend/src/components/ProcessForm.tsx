@@ -8,6 +8,7 @@ interface ProcessFormProps {
 
 const ProcessForm: React.FC<ProcessFormProps> = ({ onProcessStart }) => {
   // Form state
+  const [inputMethod, setInputMethod] = useState<'search' | 'urls'>('search');
   const [query, setQuery] = useState('');
   const [urls, setUrls] = useState('');
   const [components, setComponents] = useState({
@@ -44,10 +45,16 @@ const ProcessForm: React.FC<ProcessFormProps> = ({ onProcessStart }) => {
       return;
     }
 
-    // For extraction, require either a query or URLs
-    if (components.extract && !query.trim() && !urls.trim()) {
-      setError('Please enter either a search query or specific URLs for web context extraction');
-      return;
+    // For extraction, validate based on selected input method
+    if (components.extract) {
+      if (inputMethod === 'search' && !query.trim()) {
+        setError('Please enter a search query for web context extraction');
+        return;
+      }
+      if (inputMethod === 'urls' && !urls.trim()) {
+        setError('Please enter at least one URL for web context extraction');
+        return;
+      }
     }
 
     // Prepare data
@@ -88,30 +95,66 @@ const ProcessForm: React.FC<ProcessFormProps> = ({ onProcessStart }) => {
           )}
 
           <div className="mb-3">
-            <label htmlFor="query" className="form-label">Search Query</label>
-            <input
-              type="text"
-              className="form-control"
-              id="query"
-              placeholder="Enter search query"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
-            <div className="form-text">Required for web context extraction (unless URLs are provided)</div>
+            <label className="form-label">Input Method</label>
+            <div className="d-flex gap-4">
+              <div className="form-check">
+                <input
+                  className="form-check-input"
+                  type="radio"
+                  id="searchMethod"
+                  name="inputMethod"
+                  checked={inputMethod === 'search'}
+                  onChange={() => setInputMethod('search')}
+                />
+                <label className="form-check-label" htmlFor="searchMethod">
+                  Search Query
+                </label>
+              </div>
+              <div className="form-check">
+                <input
+                  className="form-check-input"
+                  type="radio"
+                  id="urlsMethod"
+                  name="inputMethod"
+                  checked={inputMethod === 'urls'}
+                  onChange={() => setInputMethod('urls')}
+                />
+                <label className="form-check-label" htmlFor="urlsMethod">
+                  Source URLs
+                </label>
+              </div>
+            </div>
           </div>
 
-          <div className="mb-3">
-            <label htmlFor="urls" className="form-label">Source URLs</label>
-            <textarea
-              className="form-control"
-              id="urls"
-              rows={3}
-              placeholder="Enter URLs (one per line or comma-separated)"
-              value={urls}
-              onChange={(e) => setUrls(e.target.value)}
-            ></textarea>
-            <div className="form-text">Optional: Specific URLs to extract from instead of searching</div>
-          </div>
+          {inputMethod === 'search' && (
+            <div className="mb-3">
+              <label htmlFor="query" className="form-label">Search Query</label>
+              <input
+                type="text"
+                className="form-control"
+                id="query"
+                placeholder="Enter search query"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+              <div className="form-text">Enter a search query to find relevant web content</div>
+            </div>
+          )}
+
+          {inputMethod === 'urls' && (
+            <div className="mb-3">
+              <label htmlFor="urls" className="form-label">Source URLs</label>
+              <textarea
+                className="form-control"
+                id="urls"
+                rows={3}
+                placeholder="Enter URLs (one per line or comma-separated)"
+                value={urls}
+                onChange={(e) => setUrls(e.target.value)}
+              ></textarea>
+              <div className="form-text">Enter specific URLs to extract content from</div>
+            </div>
+          )}
 
           <div className="mb-3">
             <label className="form-label">Components to Run</label>
