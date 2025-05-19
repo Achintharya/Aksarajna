@@ -1,0 +1,16 @@
+{
+  "server": {
+    "debug": false,
+    "workers": 4
+  },
+  "logging": {
+    "level": "INFO"
+  },
+  "cache": {
+    "enabled": true,
+    "ttl": 86400
+  },
+  "subscription": {
+    "enabled": true
+  }
+}

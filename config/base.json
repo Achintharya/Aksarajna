@@ -1,0 +1,45 @@
+{
+  "api_keys": {
+    "mistral": "",
+    "groq": "",
+    "serper": ""
+  },
+  "models": {
+    "extraction": "mistral-small-latest",
+    "summarizer": "llama3-70b-8192",
+    "article_writer": "mistral-medium"
+  },
+  "paths": {
+    "data_dir": "./data",
+    "context_json": "./data/context.json",
+    "context_txt": "./data/context.txt",
+    "sources": "./data/sources.txt",
+    "writing_style": "./data/writing_style.txt",
+    "articles_dir": "./articles"
+  },
+  "cache": {
+    "enabled": true,
+    "ttl": 3600
+  },
+  "web_crawling": {
+    "timeout": 30,
+    "backoff_factor": 1
+  },
+  "logging": {
+    "level": "INFO",
+    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    "file": "./logs/application.log"
+  },
+  "subscription": {
+    "enabled": false,
+    "free_tier_limit": 5,
+    "basic_tier_limit": 20,
+    "premium_tier_limit": 100
+  },
+  "server": {
+    "host": "0.0.0.0",
+    "port": 5000,
+    "debug": true,
+    "workers": 1
+  }
+}

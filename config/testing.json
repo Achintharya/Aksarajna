@@ -1,0 +1,18 @@
+{
+  "server": {
+    "debug": true,
+    "workers": 1
+  },
+  "logging": {
+    "level": "DEBUG"
+  },
+  "cache": {
+    "enabled": false
+  },
+  "subscription": {
+    "enabled": true,
+    "free_tier_limit": 999,
+    "basic_tier_limit": 999,
+    "premium_tier_limit": 999
+  }
+}
