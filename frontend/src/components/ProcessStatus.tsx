@@ -12,29 +12,20 @@ const ProcessStatus: React.FC<ProcessStatusProps> = ({ status, onNewProcess }) =
 
   // Force a reflow to ensure the animation works when the progress changes
   useEffect(() => {
-    console.log('Progress changed:', status.progress);
     if (progressBarRef.current) {
       const currentWidth = progressBarRef.current.style.width;
       progressBarRef.current.style.width = currentWidth;
       void progressBarRef.current.offsetWidth; // Force reflow
       progressBarRef.current.style.width = `${status.progress}%`;
-      console.log('Progress bar width updated to:', `${status.progress}%`);
     }
   }, [status.progress]);
 
   // Auto-scroll logs to bottom when new logs are added
   useEffect(() => {
-    console.log('Logs updated, count:', status.logs.length);
     if (logsContainerRef.current) {
       logsContainerRef.current.scrollTop = logsContainerRef.current.scrollHeight;
-      console.log('Scrolled logs container to bottom');
     }
   }, [status.logs]);
-
-  // Log status changes
-  useEffect(() => {
-    console.log('ProcessStatus component received new status:', status);
-  }, [status]);
 
   return (
     <div className="card mb-4">

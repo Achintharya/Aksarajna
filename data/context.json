@@ -1,167 +1,115 @@
 [
   [
     {
-      "summary": "The NVIDIA Drivers page provides access to various drivers and software updates for NVIDIA products. It includes links to regional websites for localized content and pricing, as well as a main menu with categories such as Products, Cloud Services, Data Center, Embedded Systems, Gaming and Creating, Graphics Cards and GPUs, Laptops, Networking, and Professional Workstations. The page also features detailed descriptions and links to various NVIDIA technologies and solutions, including AI-driven platforms, cloud computing, and high-performance computing.",
+      "summary": "The NVIDIA homepage provides an overview of various products and services offered by NVIDIA, including AI-driven platforms, data center solutions, embedded systems, gaming and creating tools, graphics cards, GPUs, laptops, networking, professional workstations, and software tools. It also highlights solutions for artificial intelligence, cloud and data center, design and simulation, high-performance computing, robotics and edge AI, and autonomous vehicles. The page includes links to specific product pages and detailed information about each category.",
       "error": false
     },
     {
-      "summary": "The page provides an overview of NVIDIA's various products and solutions, including CPU architectures, platforms for AI and HPC, embedded systems, gaming and creating tools, graphics cards and GPUs, laptops, networking solutions, professional workstations, software, and tools. It also includes sections on AI, cloud and data center solutions, design and simulation, high-performance computing, robotics and edge AI, autonomous vehicles, and industry-specific solutions.",
+      "summary": "NVIDIA has launched Halos, a comprehensive safety system for autonomous vehicles (AVs). This system unifies vehicle architecture, AI models, chips, software, tools, and services to ensure the safe development of AVs from cloud to car. The company has also expanded its automotive ecosystem to bring physical AI to the streets, collaborating with global automakers, mobility innovators, suppliers, and software providers.",
       "error": false
     },
     {
-      "summary": "The page includes links to detailed information about specific products and technologies such as the Grace CPU, HGX Platform, IGX Platform, MGX Platform, OVX Systems, Jetson, DRIVE AGX, Clara AGX, GeForce graphics cards, G-SYNC monitors, DLSS, RTX, Reflex, RTX AI PCs, NVIDIA Studio, GeForce NOW, NVIDIA App, NVIDIA Broadcast App, SHIELD TV, Blackwell Architecture, Hopper Architecture, Ada Lovelace Architecture, NVIDIA RTX PRO, Virtual GPU, and more.",
+      "summary": "NVIDIA showcased its automotive innovations at CES 2025, highlighting the latest advancements powered by NVIDIA. The company also introduced the Cosmos™ platform, a world foundation model platform designed to accelerate the development of physical-AI-embodied systems such as robots and autonomous vehicles.",
       "error": false
     },
     {
-      "summary": "The page provides information on NVIDIA's software solutions, including AI Blueprints, AI Inference, AI Microservices, Automotive DRIVE, Avatar, Cloud-AI Video Streaming, Cybersecurity, Data Science, Decision Optimization, Generative AI, Healthcare, Industrial AI, Intelligent Video Analytics, NVIDIA Mission Control, NVIDIA AI Enterprise Platform, Physical AI, NVIDIA Run:ai, Robotics, Telecommunications, and more.",
+      "summary": "Hyundai Motor Group (HMG) is leveraging NVIDIA AI and Omniverse for next-gen mobility, focusing on creating safer, smarter vehicles, boosting manufacturing, and advancing robotics. Toyota, Aurora, and Continental have partnered with NVIDIA for next-gen AVs, expanding the adoption of NVIDIA DRIVE across the global automotive ecosystem.",
       "error": false
     },
     {
-      "summary": "The page includes tools such as AI Workbench, API Catalog, Data Center Management, GPU Monitoring, Nsight, NGC Catalog, NVIDIA App for Laptops, NVIDIA NGC, Desktop Manager, RTX Accelerated Creative Apps, and Video Conferencing.",
+      "summary": "NVIDIA's Jetson™ and Isaac™ platforms provide end-to-end solutions for developing and deploying AI-powered autonomous machines and edge computing applications across various industries. The company has also introduced new tools and frameworks to enhance synthetic data generation and improve AI model performance in robotics.",
       "error": false
     },
     {
-      "summary": "The page covers various solutions including AI, cloud and data center, design and simulation, high-performance computing, robotics and edge AI, autonomous vehicles, and industry-specific solutions. It also provides links to detailed information about these solutions.",
+      "summary": "NVIDIA offers solutions for data center and cloud computing, delivering breakthrough performance on enterprise AI and HPC workloads. The company has introduced new AI-first DGX personal systems, AI-enabled storage, and custom AI compute solutions. NVIDIA's Blackwell Ultra GPUs and DGX B300 are designed to meet the computational demands of AI reasoning.",
       "error": false
     },
     {
-      "summary": "The page includes sections on Linux drivers, additional drivers, and NVIDIA Virtual GPU customers. It provides links to download drivers and additional software, and information on how to access purchased licenses.",
+      "summary": "NVIDIA pioneered accelerated computing and is transforming industries with its work in AI and digital twins. The company's GTC events and keynotes feature discussions on AI breakthroughs and digital transformation. NVIDIA also focuses on sustainability, energy efficiency, and career development in AI and data science.",
       "error": false
     },
     {
-      "summary": "The page includes news and recommendations related to NVIDIA products, such as updates on RTX, DLSS, and new gaming hardware like the GeForce RTX 5060 Ti.",
+      "summary": "The content discusses various NVIDIA products and solutions, including data center technologies like HGX, IGX, and MGX platforms, and embedded systems such as Jetson and DRIVE AGX. It also covers gaming and creating tools like GeForce graphics cards, RTX laptops, and G-SYNC monitors. Additionally, it highlights software solutions for AI, data science, and professional workstations, along with networking and high-performance computing (HPC) solutions.",
       "error": false
     },
     {
-      "summary": "The page provides information about NVIDIA drivers, including details on the RTX 5060 Ti graphics card, gaming hardware, and various download options for different types of drivers. It also includes sections for enterprise customers with Virtual GPU licenses, Linux drivers, and additional driver options like CUDA drivers for Mac, Quadro advanced options, and more.",
+      "summary": "The content provides an overview of NVIDIA's AI and machine learning solutions, including agentic AI, conversational AI, and cybersecurity. It also covers data science solutions, generative AI, and inference capabilities. The section emphasizes how AI can add intelligence and efficiency to various business operations.",
       "error": false
     },
     {
-      "summary": "The page offers download links for popular drivers, including GeForce, NVIDIA System, and NVIDIA RTX drivers. It also provides a login portal for enterprise customers with Virtual GPU software licenses.",
+      "summary": "The content discusses NVIDIA's cloud and data center solutions, including AI data platforms, accelerated computing, cloud computing, and sustainable computing. It also covers MLOps, networking, and virtualization solutions, highlighting how these technologies can power AI, HPC, and modern workloads.",
       "error": false
     },
     {
-      "summary": "The page includes a section for Linux drivers, noting that many Linux distributions provide their own packages of the NVIDIA Linux Graphics Driver, which may interact better with the distribution's framework.",
+      "summary": "The content covers NVIDIA's design and simulation solutions, including computer-aided engineering, digital twin development, rendering, robotic simulation, scientific visualization, vehicle simulation, and extended reality. It emphasizes how these solutions can streamline building, operating, and connecting metaverse applications.",
       "error": false
     },
     {
-      "summary": "The page lists additional driver options such as NVIDIA CUDA drivers for Mac, Quadro advanced options, NVIDIA PhysX system software, 3D Vision driver downloads, Quadro Sync firmware, and HGX software.",
+      "summary": "The content provides an overview of NVIDIA's high-performance computing (HPC) solutions, including HPC and AI integration, scientific visualization, simulation and modeling, and quantum computing. It highlights how these solutions can boost accuracy and accelerate simulation workloads.",
       "error": false
     },
     {
-      "summary": "The page provides information on different types of drivers, including Production Branch/Studio drivers for optimal stability and performance, and New Feature Branch (NFB)/Quadro New Feature (QNF) drivers for access to new features and bug fixes.",
+      "summary": "The content discusses NVIDIA's robotics and edge AI solutions, including GPU-accelerated advances in AI perception, simulation, and software. It also covers edge AI for real-time decision-making and vision AI for transforming data into valuable insights.",
       "error": false
     },
     {
-      "summary": "The page explains the difference between various driver types, such as 'All' drivers, 'Game Ready Drivers' for gaming, and 'Studio Drivers' for creative applications. It also provides links to identify graphics card models and understand the differences between NVIDIA RTX, GeForce, and Quadro.",
+      "summary": "The content provides an overview of NVIDIA's autonomous vehicle solutions, including infrastructure, simulation, in-vehicle computing, and safety. It highlights how AI-enhanced vehicles are transforming the future of mobility.",
       "error": false
     },
     {
-      "summary": "The page includes company information, such as links to 'About Us', 'Company Overview', 'Investors', 'Venture Capital', 'NVIDIA Foundation', 'Research', 'Corporate Sustainability', 'Technologies', and 'Careers'.",
+      "summary": "The content covers various industries that NVIDIA serves, including architecture, engineering, construction, automotive, consumer internet, cybersecurity, energy, financial services, healthcare, higher education, game development, manufacturing, media and entertainment, public sector, restaurants, retail, robotics, smart cities, supercomputing, telecommunications, and transportation.",
       "error": false
     },
     {
-      "summary": "The page provides news and events information, including links to the 'Newsroom', 'Company Blog', 'Technical Blog', 'Webinars', 'Stay Informed', 'Events Calendar', 'GTC AI Conference', and 'NVIDIA On-Demand'.",
+      "summary": "The content includes announcements and keynotes from NVIDIA, such as Jensen Huang's keynote at COMPUTEX 2025, NVIDIA NVLink Fusion for custom AI compute, NVIDIA Blackwell and CUDA-X for semiconductor industry acceleration, and the introduction of AI-first DGX personal systems.",
       "error": false
     },
     {
-      "summary": "The page lists popular links such as 'Developers', 'Partners', 'Executive Insights', 'Startups and VCs', 'NVIDIA Connect for ISVs', 'Documentation', 'Technical Training', 'Training for IT Professionals', and 'Professional Services for Data Science'.",
+      "summary": "The content provides information about NVIDIA's GTC AI conference, highlighting how AI is powering change in various industries. It includes quick links to AI-related solutions such as data analytics, machine learning, predictive analytics, recommender systems, speech AI, Apache Spark, and RAPIDS.",
       "error": false
     },
     {
-      "summary": "The page includes social media links for following NVIDIA on Facebook, Instagram, LinkedIn, Twitter, and YouTube. It also provides links for selecting the location, privacy policy, terms of service, accessibility, corporate policies, product security, and contact information.",
+      "summary": "The NVIDIA homepage provides an overview of the company's unique work, which combines science and art to drive technological breakthroughs. It includes sections on the company's story, sustainability efforts, and career development courses in AI and data science. The page also features various news and events, including webinars and conferences, and links to developer resources, partner information, and technical training.",
       "error": false
     },
     {
-      "summary": "The page lists various locations in the Americas, Europe, Asia, and the Middle East, providing links to specific country pages.",
+      "summary": "Company Information: This section includes links to detailed information about NVIDIA, such as the company overview, investor relations, venture capital, foundation, research, corporate sustainability, technologies, and careers. It provides a comprehensive look into the company's operations and initiatives.",
       "error": false
     },
     {
-      "summary": "The page provides information on cookie usage, including required cookies for site functionality, performance cookies for analytics, personalization cookies for enhanced web experience, and advertising cookies for targeted ads. It also includes a cookie settings management section.",
-      "error": false
-    }
-  ],
-  [
-    {
-      "summary": "Nvidia CEO Jensen Huang announced plans to allow customers to deploy rivals' chips in data centers built around Nvidia technology, giving customers more flexibility and allowing for competition. Huang introduced the NVLink Fusion system, which enables the building of customized AI infrastructure combining Nvidia's high-speed links with semiconductors from other providers. Nvidia also announced various product enhancements, including faster software and chipset setups to speed up AI services, as well as new products such as the RTX Pro Server system and DGX Cloud Lepton software.",
+      "summary": "News and Events: This section covers the latest news, company blog, technical blog, webinars, and events calendar. It also includes links to the GTC AI Conference and NVIDIA On-Demand, providing users with up-to-date information and resources.",
       "error": false
     },
     {
-      "summary": "Nvidia's move to open up its AI server ecosystem comes as competitors and partners are racing to develop their own AI semiconductors. Major customers like Microsoft and Amazon are designing their own bespoke parts, which could make Nvidia less essential to data centers. Nvidia has already signed up several partners, including MediaTek, Marvell Technology, and Alchip Technologies, to create custom AI chips that work with Nvidia processor-based gear.",
+      "summary": "Popular Links: This section includes links to developer resources, partner information, executive insights, startups and VCs, ISV programs, documentation, technical training, and professional services for data science. It is a hub for various technical and professional resources.",
       "error": false
     },
     {
-      "summary": "Nvidia's smaller-scale computers, the DGX Spark and DGX Station, will be offered by a broader range of suppliers starting this summer. Local partners like Acer and Gigabyte Technology are joining the list of companies offering these portable and desktop devices. Nvidia also introduced new software for robots and detailed blueprints to help corporations build AI factories. Additionally, Nvidia launched DGX Cloud Lepton software to help cloud computing providers automate the process of hooking up AI developers with the necessary computers.",
-      "error": false
-    }
-  ],
-  [
-    {
-      "summary": "The NVIDIA Story page provides an overview of NVIDIA, inviting users to learn more about the company and its journey. It includes links to various resources such as the NVIDIA Story, a webpage about NVIDIA, a brochure, and a video. The page also includes social media links and information about cookies and privacy policies.",
+      "summary": "Social Media and Privacy: The page includes links to NVIDIA's social media profiles on Facebook, Instagram, LinkedIn, Twitter, and YouTube. It also provides information on privacy policies, data preferences, legal information, accessibility, corporate policies, product security, and contact details.",
       "error": false
     },
     {
-      "summary": "The page includes recommended content for users, such as a webpage about NVIDIA, a brochure titled 'NVIDIA Story', a video titled 'NVIDIA Story Video', and a PDF brochure titled 'NVIDIA In Brief'.",
+      "summary": "Location Selector: The page allows users to select their location from various regions, including The Americas, Europe, Asia, and the Middle East. Each region has specific links to local NVIDIA pages.",
       "error": false
     },
     {
-      "summary": "The page discusses the use of cookies by NVIDIA and third-party partners to enhance website experience, improve performance, and assist in marketing efforts. Users can manage their cookie settings and learn more about the privacy practices through provided links.",
+      "summary": "The latest release of NVIDIA cuML can accelerate scikit-learn, UMAP, and HDBSCAN algorithms by up to 50x. Enterprises using Project Aether to unlock the value of NVIDIA-Accelerated Apache Spark are saving millions. NVIDIA has developed an AI-Q Blueprint to connect AI agents for the future of work, enabling agentic systems to use reasoning and connect to enterprise data. NVIDIA has open-sourced cuOpt, ushering in a new era of decision optimization, with leaders like Gurobi Optimization and HIGHS advancing complex decision-making and supply chain optimization. NVIDIA’s open inference ecosystem delivers top AI performance, cost savings, and scalability. NVIDIA and Microsoft are boosting development on RTX AI PCs with TensorRT™ for RTX™ in Windows ML, accelerating AI in apps, and Project-G Assist helping workflow creation.",
       "error": false
     },
     {
-      "summary": "The cookie settings section explains the different types of cookies used: Required Cookies, Performance Cookies, Personalization Cookies, and Advertising Cookies. Users can adjust their settings for each category.",
-      "error": false
-    }
-  ],
-  [
-    {
-      "summary": "Nvidia has announced a new technology called 'NVLink Fusion' that allows customers and partners to use non-Nvidia CPUs and GPUs in tandem with Nvidia's products and NVLink. This program aims to keep Nvidia at the center of AI development by providing added flexibility and competitiveness in the AI infrastructure market. The announcement was made by Nvidia CEO Jensen Huang at Computex 2025 in Taiwan. Key partners for NVLink Fusion include MediaTek, Marvell, Alchip, Astera Labs, Synopsys, and Cadence. The technology is expected to broaden Nvidia's industry footprint and foster deeper collaboration with custom CPU developers and ASIC designers.",
+      "summary": "NVIDIA RTX™ and NVIDIA Omniverse™ deliver performance to enhance creative workflows and build, operate, and connect metaverse applications. NVIDIA Omniverse Digital Twins help Taiwan manufacturers drive the golden age of industrial AI, offering transformative advances for trillion-dollar industries. NVIDIA expands Omniverse Blueprint for AI factory design and operation, featuring deeper integrations across the AI factory power, cooling, and networking ecosystem. New Cosmos models and physical AI data tools provide developers with unprecedented control. NVIDIA Omniverse expands its ecosystem with a wave of physical AI adoption, accelerating industrial digitalization. NVIDIA Blackwell RTX PRO comes to workstations and servers, redefining visualization, simulation, and scientific computing. NVIDIA unveils an open physical AI dataset for robotics and autonomous vehicles, now open source. OpenUSD workflows advance physical AI for robotics and autonomous vehicles, generating high-fidelity virtual environments. Free self-paced training is available to learn OpenUSD with new Deep Learning Institute (DLI) courses. The Cosmos World Foundation Model Platform accelerates the development of physical-AI-embodied systems.",
       "error": false
     },
     {
-      "index": 1,
-      "error": true,
-      "tags": [
-        "error"
-      ],
-      "content": "'str' object has no attribute 'choices'"
-    }
-  ],
-  [
-    {
-      "summary": "The NVIDIA GeForce Drivers page provides access to the latest drivers for NVIDIA GeForce graphics cards. It includes a variety of products and solutions related to gaming, AI, data center, and professional workstations. The page also offers information on cloud services, embedded systems, and networking solutions. Users can find drivers for different types of GPUs, including those for gaming, professional workstations, and data centers. The page also includes links to various software tools and solutions for AI, data science, and high-performance computing.",
+      "summary": "High-performance computing (HPC) is essential for processing data and performing complex calculations at high speeds, fueling the advancement of computational science. NVIDIA Blackwell and CUDA-X accelerate electronic design automation in the semiconductor industry. NVIDIA is building an accelerated quantum computing research center to advance quantum computing architectures and algorithms. NVIDIA and GE HealthCare collaborate on autonomous diagnostic imaging with NVIDIA Physical AI. NVIDIA Blackwell accelerates computer-aided engineering software for real-time digital twins. Climate tech companies adopt Earth-2 for weather predictions and disaster preparedness. Earth-2 announces new NIM microservices for AI-accelerated models to simulate real-world outcomes. NVIDIA ALCHEMI introduces the first accelerated materials discovery NIM. NVIDIA joins key contributors in a National AI Research Resource pilot, with the U.S. National Science Foundation launching the pilot and NVIDIA as a major contributor.",
       "error": false
     },
     {
-      "summary": "The page provides information on AI-powered computing for medical devices and imaging, gaming, and creating with GeForce Graphics Cards, RTX graphics cards, and laptops. It also covers G-SYNC monitors, DLSS technology, RTX platform, Reflex technology, AI PCs, NVIDIA Studio, GeForce NOW cloud gaming, NVIDIA App, NVIDIA Broadcast App, and SHIELD TV. Additionally, it includes details on graphics cards and GPUs, laptops, networking, professional workstations, software, tools, and various solutions for AI, cloud and data center, design and simulation, high-performance computing, robotics and edge AI, autonomous vehicles, and industries.",
+      "summary": "NVIDIA GeForce RTX powers the world’s fastest GPUs and the ultimate platform for gamers and creators, offering beautiful ray tracing, AI-powered DLSS, and more. The GeForce RTX 5060 Ti and 5080 are out now, powered by the NVIDIA Blackwell architecture, enabling game-changing AI capabilities. NVIDIA DLSS 4 is available in over 125 games and apps, with more coming. NVIDIA RTX Remix adds DLSS 4 with Multi Frame Generation and a $50,000 RTX Remix Mod Contest. Over 700 RTX games and apps are enhanced with DLSS, ray tracing, and AI-powered technologies. Project G-Assist is an AI assistant for GeForce RTX PCs, helping tune, control, and optimize systems. NVIDIA Broadcast Update is available, transforming any room into a home studio with AI effects like Studio Voice and Virtual Key Light.",
       "error": false
     },
     {
-      "summary": "The page includes sections on GeForce drivers, automatic driver updates, manual driver search, and driver results. It provides information on GeForce Game Ready Drivers and NVIDIA Studio Drivers, and includes links to download drivers and visit forums for driver-related discussions.",
-      "error": false
-    },
-    {
-      "summary": "The page provides information on NVIDIA GeForce drivers for various GPU series, including 500, 400, 300, 200, 100, 9, 8, 7, 6, and 5 FX series. It also lists specific laptop GPUs like the RTX 5090, 5080, 5070 Ti, and 5070. The page allows users to select their GPU series, operating system, language, and driver type (Standard or DCH). It also provides options for different download types such as Game Ready Driver and Studio Driver. The page includes links to driver forums, news, and community resources.",
-      "error": false
-    },
-    {
-      "summary": "The page explains the difference between Game Ready Drivers and Studio Drivers. Game Ready Drivers are optimized for gaming, providing day-of-launch support for new games, patches, and DLCs. Studio Drivers are tailored for creative applications like video editing, animation, photography, graphic design, and livestreaming. The page also provides instructions on how to identify the GPU product type and driver type installed on a system.",
-      "error": false
-    },
-    {
-      "summary": "The page includes links to various NVIDIA products such as graphics cards, laptops, G-SYNC monitors, and GeForce NOW cloud gaming. It also provides access to community forums, news, and developer resources. Additionally, it offers support links for drivers, purchase support, and technical support.",
-      "error": false
-    },
-    {
-      "summary": "The page lists social media links for NVIDIA GeForce, including Facebook, Instagram, TikTok, Twitch, and Twitter. It also provides links to NVIDIA's privacy policy, terms of service, accessibility, corporate policies, product security, and contact information.",
-      "error": false
-    },
-    {
-      "summary": "The page includes a list of available locations for NVIDIA services, covering regions in the Americas, Europe, Asia, and the Middle East. It also provides links to specific country pages for localized content.",
-      "error": false
-    },
-    {
-      "summary": "The page discusses the use of cookies and tracking technologies by NVIDIA and its third-party partners. It explains the different types of cookies used, including required, performance, personalization, and advertising cookies. Users can manage their cookie settings and consent to the use of cookies as described in the cookie policy.",
+      "summary": "NVIDIA's automotive solutions offer performance and scalability for designing, visualizing, simulating, and creating future transportation. GM and NVIDIA collaborate on AI for next-gen vehicle experience and manufacturing. NVIDIA launches Halos, a full-stack safety system for autonomous vehicles. NVIDIA expands its automotive ecosystem to bring physical AI to the streets. NVIDIA showcases automotive innovations at CES 2025. The Cosmos World Foundation Model Platform accelerates the development of physical-AI-embodied systems. HMG embraces NVIDIA AI and Omniverse for next-gen mobility, creating safer, smarter transportation solutions.",
       "error": false
     }
   ]
