@@ -3,7 +3,6 @@ import os
 import argparse
 import sys
 import time
-from tqdm import tqdm
 import subprocess
 
 # Add the parent directory to the path so we can import from src
@@ -26,9 +25,6 @@ async def run_script(command, description=None):
     
     logger.info(f"Starting: {' '.join(command)}")
     
-    # Create progress bar
-    progress = tqdm(total=100, desc=description, bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt}')
-    
     try:
         # Set environment variables
         env = os.environ.copy()
@@ -46,8 +42,8 @@ async def run_script(command, description=None):
             errors='replace'
         )
         
-        # Monitor the process
-        progress.update(10)  # Initial progress
+        # Log initial progress
+        logger.info(f"{description}: Started")
         
         # Read output line by line to monitor progress
         stdout_lines = []
@@ -59,13 +55,13 @@ async def run_script(command, description=None):
                 line = pipe.readline()
                 if not line:
                     break
-                lines_list.append(line.strip())
-                # Update progress based on output
-                if "%" in line:
+                line_text = line.strip()
+                lines_list.append(line_text)
+                # Log progress updates
+                if "%" in line_text:
                     try:
-                        percent = int(line.split('%')[0].split('|')[-1].strip())
-                        if percent > progress.n:
-                            progress.update(percent - progress.n)
+                        percent = int(line_text.split('%')[0].split('|')[-1].strip())
+                        logger.info(f"{description}: {percent}% complete")
                     except:
                         pass
                 await asyncio.sleep(0.1)
@@ -77,9 +73,6 @@ async def run_script(command, description=None):
         # Wait for the process to complete
         while process.poll() is None:
             await asyncio.sleep(0.5)
-            # If we're not getting progress updates from output, increment gradually
-            if len(stdout_lines) == 0 and len(stderr_lines) == 0:
-                progress.update(1)
         
         # Cancel the read tasks
         stdout_task.cancel()
@@ -103,18 +96,15 @@ async def run_script(command, description=None):
                 # Check if there's a rate limit error but a basic summary was created
                 if "rate_limit" in stderr.lower() and "created basic summary" in stderr.lower():
                     logger.warning("Context summarizer hit rate limit but created basic summary")
-                    progress.update(100 - progress.n)
-                    progress.close()
+                    logger.info(f"{description}: 100% complete")
                     logger.info(f"Successfully completed with fallback: {script_name}")
                     return True
                 
             logger.error(f"Error running {script_name}: {stderr}")
-            progress.close()
             return False
         
-        # Complete the progress bar
-        progress.update(100 - progress.n)
-        progress.close()
+        # Log completion
+        logger.info(f"{description}: 100% complete")
         
         # Add a small delay to ensure file operations are complete
         await asyncio.sleep(1)
@@ -124,7 +114,6 @@ async def run_script(command, description=None):
     
     except Exception as e:
         logger.error(f"Exception running {script_name}: {str(e)}")
-        progress.close()
         return False
 
 async def main():

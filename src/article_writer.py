@@ -4,7 +4,6 @@ import sys
 import argparse
 import requests
 from datetime import datetime
-from tqdm import tqdm
 
 # Add the parent directory to the path so we can import from src
 sys.path.insert(0, os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
@@ -60,9 +59,8 @@ def generate_chat_response(writing_style, context, query):
     current_date = datetime.now().strftime("%Y-%m-%d")
     current_time = datetime.now().strftime("%H:%M:%S")
     
-    # Create a progress bar for the generation process
-    progress = tqdm(total=100, desc="Generating article", bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt}')
-    progress.update(10)  # Initial progress
+    # Log the start of the generation process
+    logger.info("Generating article: Started")
     
     # Prepare the prompt message
     prompt_message = f"Current Date and Time: {current_date}, {current_time}\n" \
@@ -80,8 +78,7 @@ def generate_chat_response(writing_style, context, query):
             return "Error: Mistral API key not found. Please check your .env file."
         
         logger.info(f"Using model: {model}")
-        
-        progress.update(20)  # Update progress
+        logger.info("Generating article: Preparing API request")
         
         # Prepare the API request
         headers = {
@@ -111,18 +108,13 @@ def generate_chat_response(writing_style, context, query):
         # Parse the response
         response_data = response.json()
         
-        progress.update(70)  # Update progress after generation
-        progress.close()
-        
-        logger.info("Article generation completed successfully")
+        logger.info("Generating article: Completed")
         return response_data['choices'][0]['message']['content']
 
     except requests.exceptions.RequestException as e:
-        progress.close()
         logger.error(f"Mistral API request error: {e}")
         return f"Error generating response: {e}"
     except Exception as e:
-        progress.close()
         logger.error(f"Error generating response: {e}")
         return f"Sorry, I couldn't process your request: {e}"
 
