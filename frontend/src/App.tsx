@@ -20,23 +20,34 @@ function App() {
 
   // Initialize socket connection and fetch status
   useEffect(() => {
+    console.log('App component mounted, initializing socket connection');
     socketService.connect();
     
     // Register for status updates
     const unsubscribe = socketService.onStatusUpdate((newStatus) => {
+      console.log('Status update in App component:', newStatus);
       setStatus(newStatus);
       
       // Show results when process completes successfully
       if (newStatus.completed && !newStatus.error) {
+        console.log('Process completed successfully, showing results');
         setShowResults(true);
       }
     });
     
     // Fetch initial status
-    socketService.fetchStatus().catch(console.error);
+    console.log('Fetching initial status');
+    socketService.fetchStatus()
+      .then(initialStatus => {
+        console.log('Initial status fetched:', initialStatus);
+      })
+      .catch(error => {
+        console.error('Error fetching initial status:', error);
+      });
     
     // Cleanup on unmount
     return () => {
+      console.log('App component unmounting, cleaning up socket connection');
       unsubscribe();
       socketService.disconnect();
     };
@@ -55,7 +66,7 @@ function App() {
 
   return (
     <div className="container mt-4">
-      <h1 className="mb-4">Integrated Web Context and AI Writing Tool</h1>
+      <h1 className="mb-4">Vārnika</h1>
       
       {showForm ? (
         <ProcessForm onProcessStart={handleProcessStart} />

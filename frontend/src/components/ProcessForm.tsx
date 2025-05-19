@@ -228,9 +228,6 @@ const ProcessForm: React.FC<ProcessFormProps> = ({ onProcessStart }) => {
                   value={articleFilename}
                   onChange={(e) => setArticleFilename(e.target.value)}
                 />
-                <div className="form-text">
-                  Optional: Enter a filename for the generated article
-                </div>
               </div>
             </>
           )}

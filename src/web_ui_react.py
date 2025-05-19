@@ -14,7 +14,31 @@ from src.config import logger, config
 # Initialize Flask app
 app = Flask(__name__, 
             static_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'frontend', 'dist'))
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(app, cors_allowed_origins="*", logger=True, engineio_logger=True)
+
+# Log that the app has been initialized
+print("Flask app initialized with Socket.IO")
+
+# Socket.IO event handlers
+@socketio.on('connect')
+def handle_connect():
+    print(f"Client connected: {request.sid}")
+    print(f"Current process status: {process_status}")
+    # Send the current status to the newly connected client
+    socketio.emit('status_update', process_status, room=request.sid)
+    print(f"Sent status_update event to client {request.sid}")
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    print(f"Client disconnected: {request.sid}")
+
+@socketio.on_error()
+def handle_error(e):
+    print(f"Socket.IO error: {e}")
+
+@socketio.on_error_default
+def handle_error_default(e):
+    print(f"Socket.IO default error handler: {e}")
 
 # Global variables to track process status
 process_status = {
@@ -42,24 +66,34 @@ def update_status(step=None, progress=None, log=None, error=None, completed=Fals
     """Update the process status and emit to clients"""
     global process_status
     
+    print(f"Updating status: step={step}, progress={progress}, log={log}, error={error}, completed={completed}")
+    
     if step is not None:
         process_status["current_step"] = step
+        print(f"Updated current_step to: {step}")
     
     if progress is not None:
         process_status["progress"] = progress
+        print(f"Updated progress to: {progress}%")
     
     if log is not None:
         process_status["logs"].append(log)
         logger.info(log)
+        print(f"Added log: {log}")
     
     if error is not None:
         process_status["error"] = error
         logger.error(error)
+        print(f"Set error: {error}")
     
     process_status["completed"] = completed
+    if completed:
+        print("Process marked as completed")
     
     # Emit the updated status to all clients
+    print("Emitting status_update event with data:", process_status)
     socketio.emit('status_update', process_status)
+    print("status_update event emitted")
 
 def run_process(query, urls, components, article_type='detailed', article_filename=''):
     """
@@ -143,7 +177,20 @@ def run_process(query, urls, components, article_type='detailed', article_filena
                 break
                 
             line_text = line.strip()
+            # Print to console for debugging
+            print(f"Process output: {line_text}", flush=True)
             update_status(log=line_text)
+            
+            # Force flush the output to ensure it's displayed immediately
+            sys.stdout.flush()
+            
+            # Add more debug information
+            if "Starting:" in line_text:
+                print(f"DEBUG: Detected component start: {line_text}", flush=True)
+            if "Successfully completed:" in line_text:
+                print(f"DEBUG: Detected component completion: {line_text}", flush=True)
+            if "%" in line_text:
+                print(f"DEBUG: Detected progress update: {line_text}", flush=True)
             
             # Check for component start indicators
             if "Starting:" in line_text:
@@ -197,9 +244,9 @@ def run_process(query, urls, components, article_type='detailed', article_filena
         
         # Wait for process to complete with a timeout
         try:
-            process.wait(timeout=60)  # Wait up to 60 seconds for the process to complete
+            process.wait(timeout=300)  # Wait up to 5 minutes for the process to complete
         except subprocess.TimeoutExpired:
-            update_status(error="Process timed out after 60 seconds")
+            update_status(error="Process timed out after 5 minutes")
             process.kill()
             process.wait()
         

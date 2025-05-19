@@ -57,7 +57,8 @@ def main():
     
     # Run the Flask server
     print("Starting Flask server...")
-    flask_process = subprocess.Popen(['python', 'src/web_ui_react.py'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    # Use subprocess.PIPE for both stdout and stderr to capture all output
+    flask_process = subprocess.Popen(['python', 'src/web_ui_react.py'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1)
     
     # Wait a moment for the server to start
     time.sleep(2)
@@ -69,14 +70,16 @@ def main():
         # Keep the script running until interrupted
         while True:
             # Print any output from the Flask server
-            output = flask_process.stdout.readline()
-            if output:
-                print(output.strip())
+            if flask_process.stdout:
+                output = flask_process.stdout.readline()
+                if output:
+                    print(output.strip())
             
             # Print any errors from the Flask server
-            error = flask_process.stderr.readline()
-            if error:
-                print(error.strip(), file=sys.stderr)
+            if flask_process.stderr:
+                error = flask_process.stderr.readline()
+                if error:
+                    print(error.strip(), file=sys.stderr)
             
             # Check if the Flask server has exited
             if flask_process.poll() is not None:

@@ -5,6 +5,8 @@ body {
 }
 
 .container {
+  display: block;
+  padding-top: 10em;
   max-width: 900px;
 }
 

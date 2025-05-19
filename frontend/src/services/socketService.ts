@@ -18,12 +18,20 @@ class SocketService {
   connect(): void {
     if (this.socket) return;
 
-    // Connect to the server
-    this.socket = io();
+    // Connect to the server with explicit URL and options
+    console.log('Connecting to Socket.IO server at:', window.location.origin);
+    this.socket = io(window.location.origin, {
+      transports: ['websocket', 'polling'],
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      timeout: 20000,
+      forceNew: true
+    });
+    console.log('Socket.IO instance created:', this.socket);
 
     // Set up event listeners
     this.socket.on('connect', () => {
-      console.log('Connected to server');
+      console.log('Connected to server with ID:', this.socket?.id);
     });
 
     this.socket.on('status_update', (status: ProcessStatus) => {
@@ -31,13 +39,33 @@ class SocketService {
       this.notifyStatusUpdate(status);
     });
 
-    this.socket.on('disconnect', () => {
-      console.log('Disconnected from server');
+    this.socket.on('disconnect', (reason) => {
+      console.log('Disconnected from server. Reason:', reason);
     });
 
-    this.socket.on('reconnect', () => {
-      console.log('Reconnected to server');
+    this.socket.on('reconnect', (attemptNumber) => {
+      console.log('Reconnected to server after', attemptNumber, 'attempts');
       this.fetchStatus();
+    });
+
+    this.socket.on('reconnect_attempt', (attemptNumber) => {
+      console.log('Attempting to reconnect:', attemptNumber);
+    });
+
+    this.socket.on('reconnect_error', (error) => {
+      console.error('Reconnection error:', error);
+    });
+
+    this.socket.on('reconnect_failed', () => {
+      console.error('Failed to reconnect to server');
+    });
+
+    this.socket.on('error', (error) => {
+      console.error('Socket.IO error:', error);
+    });
+
+    this.socket.on('connect_error', (error) => {
+      console.error('Connection error:', error);
     });
   }
 
