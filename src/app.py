@@ -2,7 +2,7 @@ import os
 from flask import Flask
 from flask_socketio import SocketIO
 
-from src.api.routes import register_routes
+from src.routes import register_routes
 from src.utils.config_manager import config_manager
 from src.utils.logger import logger
 
