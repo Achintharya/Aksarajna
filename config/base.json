@@ -30,12 +30,6 @@
     "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     "file": "./logs/application.log"
   },
-  "subscription": {
-    "enabled": false,
-    "free_tier_limit": 5,
-    "basic_tier_limit": 20,
-    "premium_tier_limit": 100
-  },
   "server": {
     "host": "0.0.0.0",
     "port": 5000,

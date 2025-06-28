@@ -2,7 +2,6 @@ import os
 from flask import Flask
 from flask_socketio import SocketIO
 
-from src.api.middleware import setup_middleware
 from src.api.routes import register_routes
 from src.utils.config_manager import config_manager
 from src.utils.logger import logger
@@ -19,11 +18,7 @@ def create_app():
     
     # Configure the application
     app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', os.urandom(24).hex())
-    app.config['SUBSCRIPTION_ENABLED'] = config_manager.get('subscription.enabled', False)
     app.config['DEBUG'] = config_manager.get('server.debug', False)
-    
-    # Set up middleware
-    setup_middleware(app)
     
     # Register routes
     register_routes(app)

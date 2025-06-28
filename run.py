@@ -13,7 +13,19 @@ def run_dev():
     """Run the application in development mode."""
     print("Starting Varnika in development mode...")
     os.environ['VARNIKA_ENV'] = 'development'
-    subprocess.run([sys.executable, 'run_react_app.py'])
+    
+    # First build the React app
+    print("Building React frontend...")
+    frontend_dir = os.path.join(os.getcwd(), 'frontend')
+    result = subprocess.run(['npm', 'run', 'build'], cwd=frontend_dir, shell=True)
+    if result.returncode != 0:
+        print("Failed to build React frontend")
+        return
+    
+    # Then start the Flask app
+    env = os.environ.copy()
+    env['PYTHONPATH'] = os.getcwd()
+    subprocess.run([sys.executable, 'src/app.py'], env=env)
 
 def run_prod():
     """Run the application in production mode."""
