@@ -7,10 +7,7 @@ Varnika is an AI-powered article generation platform that extracts web content, 
 - Web content extraction from search queries or specific URLs
 - Context summarization using advanced AI models
 - Article generation in different formats (detailed, summarized, bullet points)
-- Modern React frontend with real-time progress tracking
-- API for programmatic access
-- Subscription-based access model (optional)
-- Containerized deployment with Docker
+- Modern React frontend with real-time progress tracking (under construction).
 
 ## Architecture
 
@@ -110,19 +107,10 @@ The application includes a subscription model that can be enabled in production:
    PASSWORD_SALT=your_secure_password_salt
    ```
 
-3. Implement a payment processor integration (see below)
-
-### Payment Processor Integration
-
-The subscription model is prepared for integration with payment processors like Stripe:
-
-1. Create a new file `src/services/payment_service.py` with your payment processor integration
-2. Update the auth service to use the payment service for subscription updates
-3. Add payment webhook endpoints in the API routes
 
 ## API Usage
 
-The application provides a RESTful API for programmatic access:
+The application provides a RESTful API for programmatic access
 
 ### Authentication
 
