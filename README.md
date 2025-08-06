@@ -7,10 +7,7 @@ Varnika is an AI-powered article generation platform that extracts web content, 
 - Web content extraction from search queries or specific URLs
 - Context summarization using advanced AI models
 - Article generation in different formats (detailed, summarized, bullet points)
-- Modern React frontend with real-time progress tracking
-- API for programmatic access
-- Subscription-based access model (optional)
-- Containerized deployment with Docker
+- Modern React frontend with real-time progress tracking (under construction).
 
 ## Architecture
 
@@ -110,19 +107,10 @@ The application includes a subscription model that can be enabled in production:
    PASSWORD_SALT=your_secure_password_salt
    ```
 
-3. Implement a payment processor integration (see below)
-
-### Payment Processor Integration
-
-The subscription model is prepared for integration with payment processors like Stripe:
-
-1. Create a new file `src/services/payment_service.py` with your payment processor integration
-2. Update the auth service to use the payment service for subscription updates
-3. Add payment webhook endpoints in the API routes
 
 ## API Usage
 
-The application provides a RESTful API for programmatic access:
+The application provides a RESTful API for programmatic access
 
 ### Authentication
 
@@ -147,76 +135,6 @@ curl -X POST http://localhost:5000/api/article/generate \
   -H "X-API-Key: your_api_key" \
   -d '{"query": "AI advancements", "article_type": "detailed"}'
 ```
-
-## Deployment
-
-### Docker Deployment
-
-1. Build the Docker image:
-   ```bash
-   docker build -t varnika:latest .
-   ```
-
-2. Run the container:
-   ```bash
-   docker run -p 5000:5000 \
-     -e MISTRAL_API_KEY=your_mistral_api_key \
-     -e GROQ_API_KEY=your_groq_api_key \
-     -e SERPER_API_KEY=your_serper_api_key \
-     -e VARNIKA_ENV=production \
-     varnika:latest
-   ```
-
-### Cloud Deployment
-
-The application can be deployed to various cloud platforms:
-
-#### AWS Elastic Beanstalk
-
-1. Install the EB CLI:
-   ```bash
-   pip install awsebcli
-   ```
-
-2. Initialize EB:
-   ```bash
-   eb init
-   ```
-
-3. Create an environment:
-   ```bash
-   eb create varnika-production
-   ```
-
-4. Deploy:
-   ```bash
-   eb deploy
-   ```
-
-#### Heroku
-
-1. Install the Heroku CLI and login:
-   ```bash
-   heroku login
-   ```
-
-2. Create a new app:
-   ```bash
-   heroku create varnika-app
-   ```
-
-3. Set environment variables:
-   ```bash
-   heroku config:set MISTRAL_API_KEY=your_mistral_api_key
-   heroku config:set GROQ_API_KEY=your_groq_api_key
-   heroku config:set SERPER_API_KEY=your_serper_api_key
-   heroku config:set VARNIKA_ENV=production
-   ```
-
-4. Deploy:
-   ```bash
-   git push heroku main
-   ```
 
 ## License
 
