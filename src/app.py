@@ -1,6 +1,5 @@
 import os
 from flask import Flask
-from flask_socketio import SocketIO
 
 from src.routes import register_routes
 from src.utils.config_manager import config_manager
@@ -14,7 +13,7 @@ def create_app():
         Flask: The configured Flask application.
     """
     # Create the Flask application
-    app = Flask(__name__, static_folder='../frontend/dist', static_url_path='')
+    app = Flask(__name__)
     
     # Configure the application
     app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', os.urandom(24).hex())
@@ -23,57 +22,21 @@ def create_app():
     # Register routes
     register_routes(app)
     
-    # Add a route to serve the React app
-    @app.route('/', defaults={'path': ''})
-    @app.route('/<path:path>')
-    def serve(path):
-        """Serve the React app."""
-        if path != "" and os.path.exists(app.static_folder + '/' + path):
-            return app.send_static_file(path)
-        return app.send_static_file('index.html')
-    
     logger.info(f"Flask application created in {config_manager.env} mode")
     return app
 
-def create_socketio(app):
-    """
-    Create and configure the SocketIO instance.
-    
-    Args:
-        app: The Flask application.
-        
-    Returns:
-        SocketIO: The configured SocketIO instance.
-    """
-    socketio = SocketIO(app, cors_allowed_origins="*")
-    
-    # Define SocketIO event handlers
-    @socketio.on('connect')
-    def handle_connect():
-        """Handle client connection."""
-        logger.debug('Client connected')
-    
-    @socketio.on('disconnect')
-    def handle_disconnect():
-        """Handle client disconnection."""
-        logger.debug('Client disconnected')
-    
-    logger.info("SocketIO initialized")
-    return socketio
-
 def run_app():
     """
-    Run the Flask application with SocketIO.
+    Run the Flask application.
     """
     app = create_app()
-    socketio = create_socketio(app)
     
     host = config_manager.get('server.host', '0.0.0.0')
     port = int(config_manager.get('server.port', 5000))
     debug = config_manager.get('server.debug', False)
     
     logger.info(f"Starting server on {host}:{port} (debug: {debug})")
-    socketio.run(app, host=host, port=port, debug=debug, allow_unsafe_werkzeug=True)
+    app.run(host=host, port=port, debug=debug)
 
 if __name__ == '__main__':
     run_app()

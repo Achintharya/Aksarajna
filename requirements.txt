@@ -2,16 +2,8 @@
 asyncio
 requests>=2.31.0
 pydantic>=2.0.0
-pydantic[email]
 python-dotenv>=1.0.0
 flask>=2.3.0
-flask-socketio>=5.3.0
-gunicorn>=21.2.0
-
-# API and authentication
-PyJWT>=2.8.0
-bcrypt>=4.0.0
-email-validator>=2.0.0
 
 # Web crawling and search
 crawl4ai>=0.5.0
