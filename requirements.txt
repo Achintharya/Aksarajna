@@ -3,6 +3,13 @@ asyncio
 requests>=2.31.0
 pydantic>=2.0.0
 python-dotenv>=1.0.0
+
+# FastAPI and related
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+python-multipart>=0.0.6
+
+# Legacy Flask (optional, for old endpoints)
 flask>=2.3.0
 
 # Web crawling and search
