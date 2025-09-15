@@ -117,7 +117,7 @@ async def process_article_generation(job_id: str, query: str, article_type: str,
         
         # Generate filename if not provided
         if not filename:
-            filename = f"article_{query.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            filename = f"article_{query.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d')}"
         
         result = generate_article(query=article_query, filename=filename)
         
@@ -289,8 +289,20 @@ async def list_articles():
 @app.get("/api/articles/{filename}")
 async def get_article(filename: str):
     """
-    Download a specific article
+    Download a specific article or sources.txt
     """
+    # Special handling for sources.txt
+    if filename == "sources.txt":
+        sources_path = Path("./data/sources.txt")
+        if not sources_path.exists():
+            # Return empty content if file doesn't exist
+            return ""
+        
+        # Read and return the content directly
+        with open(sources_path, "r", encoding="utf-8") as f:
+            return f.read()
+    
+    # Regular article handling
     file_path = Path(f"./articles/{filename}")
     
     if not file_path.exists() or not file_path.is_file():
@@ -299,11 +311,9 @@ async def get_article(filename: str):
             detail=f"Article {filename} not found"
         )
     
-    return FileResponse(
-        path=file_path,
-        media_type="text/plain",
-        filename=filename
-    )
+    # Return the content directly as text
+    with open(file_path, "r", encoding="utf-8") as f:
+        return f.read()
 
 @app.delete("/api/articles/{filename}")
 async def delete_article(filename: str):

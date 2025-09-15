@@ -35,7 +35,7 @@ def prompt_for_file_name():
     file_name = input('Enter the file name to save the article: ')
     if not file_name:
         print("Empty file name provided, using default")
-        file_name = f"article_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        file_name = f"article_{datetime.now().strftime('%Y%m%d')}"
     
     # Ensure the file has a .txt extension
     if not file_name.endswith('.txt'):
