@@ -7,9 +7,14 @@ import random
 import aiohttp
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
-from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode, LLMConfig
-from crawl4ai.extraction_strategy import LLMExtractionStrategy
+try:
+    from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode, LLMConfig
+    from crawl4ai.extraction_strategy import LLMExtractionStrategy
+    CRAWL4AI_AVAILABLE = True
+except ImportError:
+    CRAWL4AI_AVAILABLE = False
 from duckduckgo_search import DDGS
+from bs4 import BeautifulSoup
 import time
 
 # Load .env from config directory
@@ -103,6 +108,56 @@ async def make_request_with_backoff(url, headers, max_retries=5):
 
     raise Exception("Max retries exceeded")
 
+async def simple_extract(urls, query):
+    """Simple extraction without Playwright - fallback method"""
+    output_data = []
+    
+    for url in urls:
+        try:
+            print(f"Extracting from: {url}")
+            response = requests.get(url, timeout=10, headers={
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            })
+            
+            if response.status_code == 200:
+                soup = BeautifulSoup(response.text, 'html.parser')
+                
+                # Remove script and style elements
+                for script in soup(["script", "style"]):
+                    script.decompose()
+                
+                # Get text
+                text = soup.get_text()
+                lines = (line.strip() for line in text.splitlines())
+                chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
+                text = ' '.join(chunk for chunk in chunks if chunk)
+                
+                # Limit text length and create summary
+                text = text[:3000]  # First 3000 characters
+                
+                summary_data = {
+                    "summary": f"Content from {url} about {query}: {text[:500]}...",  # First 500 chars as summary
+                    "error": False
+                }
+                output_data.append(summary_data)
+                print(f"✓ Extracted content from {url}")
+            else:
+                print(f"✗ Failed to fetch {url}: Status {response.status_code}")
+                
+        except Exception as e:
+            print(f"✗ Error extracting from {url}: {e}")
+            output_data.append({
+                "summary": f"Failed to extract from {url}",
+                "error": True
+            })
+    
+    # Save to context.json
+    with open("./data/context.json", "w", encoding='utf-8') as file:
+        json.dump(output_data, file, indent=2)
+    
+    print(f"\nSaved {len(output_data)} extractions to data/context.json")
+    return output_data
+
 async def extract(query: str = None):
     """Fetch URLs, configure the crawler, and extract structured information in parallel."""
     if not query:
@@ -129,35 +184,45 @@ async def extract(query: str = None):
             f.write(f"- {url}\n")
         f.write("\n")  # Add extra newline for readability
 
-    browser_config = BrowserConfig(headless=True, verbose=True)
+    # Try crawl4ai first if available
+    if CRAWL4AI_AVAILABLE:
+        try:
+            browser_config = BrowserConfig(headless=True, verbose=True)
 
-    extraction_strategy = LLMExtractionStrategy(
-        llm_config=LLMConfig(provider="mistral/mistral-small-latest", api_token=os.getenv("MISTRAL_API_KEY")),
-        schema=PageSummary.model_json_schema()
-    )
+            extraction_strategy = LLMExtractionStrategy(
+                llm_config=LLMConfig(provider="mistral/mistral-small-latest", api_token=os.getenv("MISTRAL_API_KEY")),
+                schema=PageSummary.model_json_schema()
+            )
 
-    async with AsyncWebCrawler(config=browser_config) as crawler:
-        # Crawl all URLs concurrently
-        results = await crawler.arun_many(urls=urls, config=CrawlerRunConfig(
-            cache_mode=CacheMode.BYPASS,
-            extraction_strategy=extraction_strategy
-        ))
+            async with AsyncWebCrawler(config=browser_config) as crawler:
+                # Crawl all URLs concurrently
+                results = await crawler.arun_many(urls=urls, config=CrawlerRunConfig(
+                    cache_mode=CacheMode.BYPASS,
+                    extraction_strategy=extraction_strategy
+                ))
 
-    # Process results and save to file
-    with open("./data/context.json", "w") as file:
-        output_data = []  # Initialize a list to hold all summaries
+            # Process results and save to file
+            with open("./data/context.json", "w") as file:
+                output_data = []  # Initialize a list to hold all summaries
 
-        for url, result in zip(urls, results):
-            if result.success:
-                page_summary = json.loads(result.extracted_content)
-                output_data.append(page_summary)  # Append each summary to the list
-            else:
-                print(f"Crawl failed for {url}\n")
+                for url, result in zip(urls, results):
+                    if result.success:
+                        page_summary = json.loads(result.extracted_content)
+                        output_data.append(page_summary)  # Append each summary to the list
+                    else:
+                        print(f"Crawl failed for {url}\n")
 
-        # Write the entire list as a JSON array
-        json.dump(output_data, file, indent=2)  # Use json.dump to write the list to the file
+                # Write the entire list as a JSON array
+                json.dump(output_data, file, indent=2)  # Use json.dump to write the list to the file
 
-        print("\nWrote extracted info to file")
+                print("\nWrote extracted info to file")
+        except Exception as e:
+            print(f"Crawl4AI failed: {e}")
+            print("Falling back to simple extraction...")
+            await simple_extract(urls, query)
+    else:
+        print("Crawl4AI not available, using simple extraction...")
+        await simple_extract(urls, query)
 
 if __name__ == "__main__":
     asyncio.run(extract())
