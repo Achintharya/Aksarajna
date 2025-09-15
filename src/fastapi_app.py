@@ -122,14 +122,14 @@ async def process_article_generation(job_id: str, query: str, article_type: str,
         result = generate_article(query=article_query, filename=filename)
         
         if result == 0:
-            article_path = f"./articles/{filename}.txt"
+            article_path = f"./articles/{filename}.md"
             update_job_status(
                 job_id, 
                 "completed", 
                 "Article generated successfully", 
                 100,
                 result={
-                    "filename": f"{filename}.txt",
+                    "filename": f"{filename}.md",
                     "path": article_path,
                     "query": query,
                     "type": article_type
@@ -272,14 +272,16 @@ async def list_articles():
         return {"articles": []}
     
     articles = []
-    for file_path in articles_dir.glob("*.txt"):
-        file_stat = file_path.stat()
-        articles.append({
-            "filename": file_path.name,
-            "size": file_stat.st_size,
-            "created": datetime.fromtimestamp(file_stat.st_ctime).isoformat(),
-            "modified": datetime.fromtimestamp(file_stat.st_mtime).isoformat()
-        })
+    # Look for both .txt and .md files
+    for pattern in ["*.txt", "*.md"]:
+        for file_path in articles_dir.glob(pattern):
+            file_stat = file_path.stat()
+            articles.append({
+                "filename": file_path.name,
+                "size": file_stat.st_size,
+                "created": datetime.fromtimestamp(file_stat.st_ctime).isoformat(),
+                "modified": datetime.fromtimestamp(file_stat.st_mtime).isoformat()
+            })
     
     # Sort by modified date descending
     articles.sort(key=lambda x: x["modified"], reverse=True)
@@ -289,11 +291,15 @@ async def list_articles():
 @app.get("/api/articles/{filename}")
 async def get_article(filename: str):
     """
-    Download a specific article or sources.txt
+    Download a specific article or sources file
     """
-    # Special handling for sources.txt
-    if filename == "sources.txt":
-        sources_path = Path("./data/sources.txt")
+    # Special handling for sources files
+    if filename in ["sources.txt", "sources.md"]:
+        # Try .md first, then .txt for backward compatibility
+        sources_path = Path("./data/sources.md")
+        if not sources_path.exists():
+            sources_path = Path("./data/sources.txt")
+        
         if not sources_path.exists():
             # Return empty content if file doesn't exist
             return ""
@@ -344,8 +350,11 @@ async def get_current_context():
     """
     context_data = {}
     
-    # Read sources
-    sources_path = Path("./data/sources.txt")
+    # Read sources (try .md first, then .txt)
+    sources_path = Path("./data/sources.md")
+    if not sources_path.exists():
+        sources_path = Path("./data/sources.txt")
+    
     if sources_path.exists():
         with open(sources_path, "r", encoding="utf-8") as f:
             context_data["sources"] = f.read()
@@ -370,11 +379,12 @@ async def clear_context():
     Clear the current context data
     """
     try:
-        # Clear sources
-        sources_path = Path("./data/sources.txt")
-        if sources_path.exists():
-            with open(sources_path, "w", encoding="utf-8") as f:
-                f.write("")
+        # Clear sources (both .md and .txt)
+        for sources_file in ["sources.md", "sources.txt"]:
+            sources_path = Path(f"./data/{sources_file}")
+            if sources_path.exists():
+                with open(sources_path, "w", encoding="utf-8") as f:
+                    f.write("")
         
         # Clear context JSON
         context_json_path = Path("./data/context.json")

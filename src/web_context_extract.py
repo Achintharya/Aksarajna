@@ -177,11 +177,11 @@ async def extract(query: str = None):
         print("No URLs found from either search method.")
         return
 
-    # Save URLs to sources.txt with query as subheading
-    with open("./data/sources.txt", "a", encoding='utf-8') as f:
+    # Save URLs to sources.md with query as subheading
+    with open("./data/sources.md", "a", encoding='utf-8') as f:
         f.write(f"\n## {query}\n")
         for url in urls:
-            f.write(f"- {url}\n")
+            f.write(f"- [{url}]({url})\n")  # Make URLs clickable in markdown
         f.write("\n")  # Add extra newline for readability
 
     # Try crawl4ai first if available

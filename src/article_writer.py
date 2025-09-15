@@ -37,9 +37,9 @@ def prompt_for_file_name():
         print("Empty file name provided, using default")
         file_name = f"article_{datetime.now().strftime('%Y%m%d')}"
     
-    # Ensure the file has a .txt extension
-    if not file_name.endswith('.txt'):
-        file_name = f"{file_name}.txt"
+    # Ensure the file has a .md extension
+    if not file_name.endswith('.md'):
+        file_name = f"{file_name}.md"
     
     articles_dir = "./articles"
     return os.path.join(articles_dir, file_name)
@@ -178,8 +178,8 @@ def start(query=None, filename=None):
         if filename:
             # Use the provided filename
             file_name = filename
-            if not file_name.endswith('.txt'):
-                file_name = f"{file_name}.txt"
+            if not file_name.endswith('.md'):
+                file_name = f"{file_name}.md"
             articles_dir = "./articles"
             file_path = os.path.join(articles_dir, file_name)
         else:
