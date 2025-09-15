@@ -71,7 +71,7 @@ def generate_chat_response(writing_style, context, query):
 
     try:
         # Get the model and API key from environment
-        model = "mistral-medium"
+        model = "mistral-small-latest"
         api_key = os.getenv("MISTRAL_API_KEY")
         
         if not api_key:
@@ -92,7 +92,7 @@ def generate_chat_response(writing_style, context, query):
         payload = {
             "model": model,
             "messages": [
-                {"role": "system", "content": "### You are an AI that imitates a writing style (without including any info from it) to write nonredundantly about the context provided, WITHOUT hallucination. write to display as markdown file###"},
+                {"role": "system", "content": "### You are an AI that imitates a writing style (without including any info from it) to write nonredundantly about the context provided, WITHOUT hallucination. write in markdown file format###"},
                 {"role": "user", "content": prompt_message}
             ]
         }
