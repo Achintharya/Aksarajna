@@ -1,27 +1,23 @@
-**Test Article Information**
+**Sanskrit Overview and History**
 
-The following are key points about "Test Article" based on various sources:
+* **Origin and History:** Sanskrit has its origins as Vedic Sanskrit, dating back as early as 1700-1200 BCE, and was orally preserved as a part of the Vedic chanting tradition.
+* **Standardization:** The scholar Panini standardized Vedic Sanskrit into Classical Sanskrit around 500 BCE by defining the grammar.
+* **Etymology and Nomenclature:** The term "Sanskrit" is derived from the Sanskrit word "saṁskṛta," which means "refined, cultured, or enriched."
+* **Language History:** Vedic Sanskrit was the language of the Vedas, ancient Hindu scriptures, and later developed into Classical Sanskrit, which was used for literary and philosophical works.
+* **Importance of Sanskrit:** Sanskrit is a highly inflected language with a complex grammar system, and is considered a crucial part of Indian and Hindu culture.
 
-1. **Overview**:
-	* Test article is a versatile term that can refer to different concepts depending on the context.
-	* It can refer to a sample or a prototype used in the aerospace industry to test new technologies or vehicles.
-	* In the medical field, a test article may refer to a new treatment or therapy being tested for its safety and efficacy.
-2. **Definition and Context**:
-	* Test article can be defined as a sample or prototype used to test the feasibility, safety, or effectiveness of a product, technology, or treatment.
-	* It can be used in various industries, including aerospace, medical research, and pharmaceuticals.
-3. **Related Concepts**:
-	* Test article is related to the concept of clinical trials, which involve testing new treatments or therapies on human subjects.
-	* It is also related to the concept of prototype, which is a preliminary or experimental version of a product, technology, or system.
-4. **Government and Regulatory Agencies**:
-	* The FDA (U.S. Food and Drug Administration) regulates the use of test articles in the medical field, particularly in the context of clinical trials.
-	* Other government agencies, such as the Federal Aviation Administration (FAA), also regulate the use of test articles in specific industries.
-5. **Emergency Use**:
-	* In emergency situations, test articles may be used to test new technologies or treatments without meeting the standard regulatory requirements.
-	* This is the case for FDA-regulated test articles, which may be used in emergency situations under specific circumstances.
+**Sanskrit Language and Its Usage**
 
-**References**
+* **Language Characteristics:** Sanskrit is an Indo-European language, and is known for its complex grammar and vocabulary.
+* **Usage:** Sanskrit is used in various aspects of Indian culture, including literature, philosophy, religion, and art.
+* **Standardization:** Classical Sanskrit is the standardized form of the language, although other dialects, such as Vedic Sanskrit and Prakrit, also exist.
 
-* [1] Test Article - Wikipedia (https://en.wikipedia.org/wiki/Test_article)
-* [2] Test article (aerospace) - Wikipedia (https://en.wikipedia.org/wiki/Test_article_(aerospace))
-* [3] Test Article – Medical School Office of Research (https://az.research.umich.edu/medschool/glossary/test-article/)
-* [4] Emergency Use of FDA-Regulated Test Articles - Office of Research (https://www.uab.edu/research/home/emergency-use-of-fda-regulated-test-articles)
+**Sanskrit Education and Institutions**
+
+* **Recognized Courses:** Several institutions offer courses in Sanskrit, including the Central Sanskrit Universities Act, 2020, which recognizes various courses and degrees in the field.
+* **Institutes and Research Centers:** Various research centers and institutes, such as the Adarsh Shodh Sansthan and the Adarsh Mahavidyalaya, are dedicated to the study and research of Sanskrit.
+
+**Sanskrit in Modern Times**
+
+* **Language Preservation:** Efforts are being made to preserve and promote the use of Sanskrit in modern times, including the development of new languages and dialects.
+* **Modern Applications:** Sanskrit is being used in various modern applications, such as computer programming, software development, and even music composition.
