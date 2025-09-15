@@ -92,7 +92,7 @@ def generate_chat_response(writing_style, context, query):
         payload = {
             "model": model,
             "messages": [
-                {"role": "system", "content": "### You are an AI that imitates a writing style (without including any info from it) to write nonredundantly about the context provided, WITH NO HALLUCINATION. NEVER USE BOLD FORMATTING###"},
+                {"role": "system", "content": "### You are an AI that imitates a writing style (without including any info from it) to write nonredundantly about the context provided, WITHOUT hallucination. NEVER use bold formatting ###"},
                 {"role": "user", "content": prompt_message}
             ]
         }
