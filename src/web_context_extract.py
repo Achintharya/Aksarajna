@@ -7,12 +7,13 @@ import random
 import aiohttp
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
-from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode
+from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode, LLMConfig
 from crawl4ai.extraction_strategy import LLMExtractionStrategy
 from duckduckgo_search import DDGS
 import time
 
-load_dotenv(dotenv_path='./config/.env')
+# Load .env from config directory
+load_dotenv('config/.env')
 
 class PageSummary(BaseModel):
     summary: str = Field(..., description="Detailed page summary realted to query")
@@ -102,9 +103,10 @@ async def make_request_with_backoff(url, headers, max_retries=5):
 
     raise Exception("Max retries exceeded")
 
-async def extract(query: str):
+async def extract(query: str = None):
     """Fetch URLs, configure the crawler, and extract structured information in parallel."""
-    query = input("Enter search query: ")
+    if not query:
+        query = input("Enter search query: ")
     
     # First try DuckDuckGo search
     urls = await website_search_ddg(query)
@@ -130,8 +132,7 @@ async def extract(query: str):
     browser_config = BrowserConfig(headless=True, verbose=True)
 
     extraction_strategy = LLMExtractionStrategy(
-        provider="mistral/mistral-small-latest",
-        api_token=os.getenv("MISTRAL_API_KEY"),
+        llm_config=LLMConfig(provider="mistral/mistral-small-latest", api_token=os.getenv("MISTRAL_API_KEY")),
         schema=PageSummary.model_json_schema()
     )
 
@@ -158,5 +159,5 @@ async def extract(query: str):
 
         print("\nWrote extracted info to file")
 
-        
-asyncio.run(extract(query=str))
+if __name__ == "__main__":
+    asyncio.run(extract())
