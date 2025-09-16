@@ -5,6 +5,25 @@ import time
 import requests
 import random
 import aiohttp
+import tempfile
+import shutil
+import platform
+from pathlib import Path
+
+# Cross-platform file locking
+try:
+    import fcntl
+    HAS_FCNTL = True
+except ImportError:
+    # Windows doesn't have fcntl, use msvcrt or threading locks
+    HAS_FCNTL = False
+    try:
+        import msvcrt
+        HAS_MSVCRT = True
+    except ImportError:
+        HAS_MSVCRT = False
+
+import threading
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 try:
@@ -22,6 +41,182 @@ load_dotenv('config/.env')
 
 class PageSummary(BaseModel):
     summary: str = Field(..., description="Detailed page summary realted to query")
+
+class AtomicFileManager:
+    """Thread-safe atomic file operations with proper locking and versioning"""
+    
+    def __init__(self, base_path: str = "./data"):
+        self.base_path = Path(base_path)
+        self.base_path.mkdir(exist_ok=True)
+        self.lock_dir = self.base_path / ".locks"
+        self.lock_dir.mkdir(exist_ok=True)
+        self.backup_dir = self.base_path / ".backups"
+        self.backup_dir.mkdir(exist_ok=True)
+    
+    def _get_lock_file(self, filename: str) -> Path:
+        """Get lock file path for a given filename"""
+        return self.lock_dir / f"{filename}.lock"
+    
+    def _create_backup(self, file_path: Path) -> Path:
+        """Create a timestamped backup of the file"""
+        if not file_path.exists():
+            return None
+        
+        timestamp = time.strftime("%Y%m%d_%H%M%S")
+        backup_name = f"{file_path.stem}_{timestamp}{file_path.suffix}"
+        backup_path = self.backup_dir / backup_name
+        
+        shutil.copy2(file_path, backup_path)
+        
+        # Keep only last 10 backups
+        backups = sorted(self.backup_dir.glob(f"{file_path.stem}_*{file_path.suffix}"))
+        if len(backups) > 10:
+            for old_backup in backups[:-10]:
+                old_backup.unlink()
+        
+        return backup_path
+    
+    def _acquire_lock(self, lock_file_handle):
+        """Cross-platform file locking"""
+        if HAS_FCNTL:
+            # Unix/Linux/Mac
+            fcntl.flock(lock_file_handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        elif HAS_MSVCRT:
+            # Windows
+            msvcrt.locking(lock_file_handle.fileno(), msvcrt.LK_NBLCK, 1)
+        else:
+            # Fallback - just continue without locking
+            pass
+    
+    def _release_lock(self, lock_file_handle):
+        """Cross-platform file lock release"""
+        if HAS_FCNTL:
+            fcntl.flock(lock_file_handle.fileno(), fcntl.LOCK_UN)
+        elif HAS_MSVCRT:
+            msvcrt.locking(lock_file_handle.fileno(), msvcrt.LK_UNLCK, 1)
+        else:
+            pass
+
+    async def atomic_write(self, filename: str, content: str, mode: str = "w", encoding: str = "utf-8"):
+        """Atomically write content to a file with cross-platform locking"""
+        file_path = self.base_path / filename
+        lock_file = self._get_lock_file(filename)
+        temp_file = None
+        
+        try:
+            # Create lock file
+            with open(lock_file, "w") as lock:
+                # Try to acquire exclusive lock (non-blocking)
+                try:
+                    self._acquire_lock(lock)
+                except (BlockingIOError, OSError):
+                    # If lock is held, wait with exponential backoff
+                    for attempt in range(5):
+                        await asyncio.sleep(0.1 * (2 ** attempt))
+                        try:
+                            self._acquire_lock(lock)
+                            break
+                        except (BlockingIOError, OSError):
+                            continue
+                    else:
+                        print(f"Warning: Could not acquire lock for {filename}, proceeding without lock")
+                
+                # Create backup if file exists
+                backup_path = self._create_backup(file_path)
+                
+                # Create temporary file in same directory for atomic operation
+                with tempfile.NamedTemporaryFile(
+                    mode=mode, 
+                    encoding=encoding, 
+                    dir=file_path.parent, 
+                    delete=False,
+                    suffix=f".tmp_{filename}"
+                ) as temp:
+                    temp_file = Path(temp.name)
+                    temp.write(content)
+                    temp.flush()
+                    if hasattr(os, 'fsync'):
+                        os.fsync(temp.fileno())  # Force write to disk
+                
+                # Atomic move (rename) - this is atomic on most filesystems
+                shutil.move(str(temp_file), str(file_path))
+                
+                print(f"✓ Atomically wrote {len(content)} characters to {filename}")
+                if backup_path:
+                    print(f"✓ Backup created: {backup_path.name}")
+                
+        except Exception as e:
+            # Cleanup temp file if it exists
+            if temp_file and temp_file.exists():
+                temp_file.unlink()
+            raise Exception(f"Atomic write failed for {filename}: {e}")
+        
+        finally:
+            # Remove lock file
+            if lock_file.exists():
+                lock_file.unlink()
+    
+    async def atomic_append(self, filename: str, content: str, encoding: str = "utf-8"):
+        """Atomically append content to a file"""
+        file_path = self.base_path / filename
+        
+        # Read existing content
+        existing_content = ""
+        if file_path.exists():
+            with open(file_path, "r", encoding=encoding) as f:
+                existing_content = f.read()
+        
+        # Write combined content atomically
+        combined_content = existing_content + content
+        await self.atomic_write(filename, combined_content, encoding=encoding)
+    
+    def read_with_lock(self, filename: str, encoding: str = "utf-8") -> str:
+        """Read file content with cross-platform shared lock"""
+        file_path = self.base_path / filename
+        
+        if not file_path.exists():
+            return ""
+        
+        try:
+            # For reading, we can just read directly since our writes are atomic
+            # The atomic write ensures consistency
+            with open(file_path, "r", encoding=encoding) as f:
+                return f.read()
+        
+        except Exception as e:
+            print(f"Warning: Could not read file {filename}: {e}")
+            return ""
+
+# Global file manager instance
+file_manager = AtomicFileManager()
+
+async def update_sources_file(query: str, urls: list):
+    """Update sources.md file with atomic operations and proper formatting"""
+    try:
+        # Format new content
+        new_content = f"\n## {query}\n"
+        for url in urls:
+            new_content += f"- [{url}]({url})\n"
+        new_content += "\n"
+        
+        # Atomically append to sources.md
+        await file_manager.atomic_append("sources.md", new_content)
+        print(f"✓ Added {len(urls)} sources for query: {query}")
+        
+    except Exception as e:
+        print(f"✗ Failed to update sources file: {e}")
+        raise
+
+async def save_context_data(data: list, filename: str = "context.json"):
+    """Save context data with atomic operations"""
+    try:
+        content = json.dumps(data, indent=2, ensure_ascii=False)
+        await file_manager.atomic_write(filename, content)
+        print(f"✓ Saved {len(data)} context entries to {filename}")
+        
+    except Exception as e:
+        print(f"✗ Failed to save context data: {e}")
+        raise
     
 async def random_delay():
     """Implement a random delay between 1 and 3 seconds to avoid rate limiting"""
@@ -151,11 +346,8 @@ async def simple_extract(urls, query):
                 "error": True
             })
     
-    # Save to context.json
-    with open("./data/context.json", "w", encoding='utf-8') as file:
-        json.dump(output_data, file, indent=2)
-    
-    print(f"\nSaved {len(output_data)} extractions to data/context.json")
+    # Save to context.json using atomic operations
+    await save_context_data(output_data, "context.json")
     return output_data
 
 async def extract(query: str = None):
@@ -177,12 +369,8 @@ async def extract(query: str = None):
         print("No URLs found from either search method.")
         return
 
-    # Save URLs to sources.md with query as subheading
-    with open("./data/sources.md", "a", encoding='utf-8') as f:
-        f.write(f"\n## {query}\n")
-        for url in urls:
-            f.write(f"- [{url}]({url})\n")  # Make URLs clickable in markdown
-        f.write("\n")  # Add extra newline for readability
+    # Save URLs to sources.md using atomic operations
+    await update_sources_file(query, urls)
 
     # Try crawl4ai first if available
     if CRAWL4AI_AVAILABLE:

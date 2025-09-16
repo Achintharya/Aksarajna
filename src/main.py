@@ -24,7 +24,7 @@ from dotenv import load_dotenv
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import the existing modules
-from src.web_context_extract import extract as web_extract
+from src.web_context_extract import extract as web_extract, file_manager
 from src.context_summarizer import summarize_context
 from src.article_writer import start as generate_article
 
@@ -287,48 +287,98 @@ async def list_jobs(limit: int = 10, offset: int = 0):
 @app.get("/api/articles")
 async def list_articles():
     """
-    List all generated articles
+    List all generated articles with enhanced debugging
     """
+    # Get current working directory for debugging
+    current_dir = os.getcwd()
     articles_dir = Path("./articles")
+    
+    # Debug information
+    debug_info = {
+        "current_directory": current_dir,
+        "articles_path": str(articles_dir.absolute()),
+        "articles_exists": articles_dir.exists(),
+        "environment": os.getenv("ENVIRONMENT", "local")
+    }
+    
+    print(f"🔍 Debug - Current directory: {current_dir}")
+    print(f"🔍 Debug - Articles path: {articles_dir.absolute()}")
+    print(f"🔍 Debug - Articles directory exists: {articles_dir.exists()}")
+    
     if not articles_dir.exists():
-        return {"articles": []}
+        print("⚠️  Articles directory does not exist, creating it...")
+        articles_dir.mkdir(parents=True, exist_ok=True)
+        return {
+            "articles": [],
+            "debug": debug_info,
+            "message": "Articles directory created"
+        }
     
     articles = []
     # Look for both .txt and .md files
     for pattern in ["*.txt", "*.md"]:
-        for file_path in articles_dir.glob(pattern):
-            file_stat = file_path.stat()
-            articles.append({
-                "filename": file_path.name,
-                "size": file_stat.st_size,
-                "created": datetime.fromtimestamp(file_stat.st_ctime).isoformat(),
-                "modified": datetime.fromtimestamp(file_stat.st_mtime).isoformat()
-            })
+        matching_files = list(articles_dir.glob(pattern))
+        print(f"🔍 Debug - Found {len(matching_files)} files matching {pattern}")
+        
+        for file_path in matching_files:
+            try:
+                file_stat = file_path.stat()
+                article_info = {
+                    "filename": file_path.name,
+                    "size": file_stat.st_size,
+                    "created": datetime.fromtimestamp(file_stat.st_ctime).isoformat(),
+                    "modified": datetime.fromtimestamp(file_stat.st_mtime).isoformat(),
+                    "path": str(file_path.absolute())
+                }
+                articles.append(article_info)
+                print(f"✓ Found article: {file_path.name} ({file_stat.st_size} bytes)")
+            except Exception as e:
+                print(f"✗ Error reading file {file_path}: {e}")
     
     # Sort by modified date descending
     articles.sort(key=lambda x: x["modified"], reverse=True)
     
-    return {"articles": articles}
+    print(f"📊 Total articles found: {len(articles)}")
+    
+    return {
+        "articles": articles,
+        "debug": debug_info,
+        "total_count": len(articles)
+    }
 
 @app.get("/api/articles/{filename}")
 async def get_article(filename: str):
     """
-    Download a specific article or sources file
+    Download a specific article or sources file with atomic operations and cache control
     """
+    from fastapi import Response
+    
     # Special handling for sources files
     if filename in ["sources.txt", "sources.md"]:
-        # Try .md first, then .txt for backward compatibility
-        sources_path = Path("./data/sources.md")
-        if not sources_path.exists():
-            sources_path = Path("./data/sources.txt")
-        
-        if not sources_path.exists():
-            # Return empty content if file doesn't exist
-            return ""
-        
-        # Read and return the content directly
-        with open(sources_path, "r", encoding="utf-8") as f:
-            return f.read()
+        try:
+            # Use atomic file manager for thread-safe reading
+            content = file_manager.read_with_lock("sources.md")
+            
+            # If sources.md is empty, try sources.txt for backward compatibility
+            if not content:
+                content = file_manager.read_with_lock("sources.txt")
+            
+            # Create response with cache-busting headers
+            response = Response(
+                content=content, 
+                media_type="text/plain; charset=utf-8"
+            )
+            response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+            response.headers["ETag"] = f'"{hash(content)}"'
+            response.headers["Last-Modified"] = datetime.now().strftime("%a, %d %b %Y %H:%M:%S GMT")
+            
+            return response
+            
+        except Exception as e:
+            print(f"Error reading sources file: {e}")
+            return Response(content="", media_type="text/plain")
     
     # Regular article handling
     file_path = Path(f"./articles/{filename}")
@@ -339,9 +389,30 @@ async def get_article(filename: str):
             detail=f"Article {filename} not found"
         )
     
-    # Return the content directly as text
-    with open(file_path, "r", encoding="utf-8") as f:
-        return f.read()
+    try:
+        # Read article content with proper encoding
+        with open(file_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        
+        # Create response with appropriate headers
+        response = Response(
+            content=content, 
+            media_type="text/plain; charset=utf-8"
+        )
+        
+        # Add cache headers for articles (can be cached for a short time)
+        file_stat = file_path.stat()
+        response.headers["Last-Modified"] = datetime.fromtimestamp(file_stat.st_mtime).strftime("%a, %d %b %Y %H:%M:%S GMT")
+        response.headers["ETag"] = f'"{file_stat.st_mtime}-{file_stat.st_size}"'
+        response.headers["Cache-Control"] = "public, max-age=300"  # Cache for 5 minutes
+        
+        return response
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to read article: {str(e)}"
+        )
 
 @app.delete("/api/articles/{filename}")
 async def delete_article(filename: str):
