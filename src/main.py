@@ -6,7 +6,7 @@ Main application file with integrated FastAPI backend
 
 from fastapi import FastAPI, BackgroundTasks, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi.responses import JSONResponse, FileResponse, Response
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from enum import Enum
@@ -786,6 +786,136 @@ async def process_article_generation_from_urls(job_id: str, urls: List[str], que
             
     except Exception as e:
         update_job_status(job_id, "failed", f"Article generation from URLs failed: {str(e)}", 0, error=str(e))
+
+# ============================================================================
+# Writing Style API Endpoints
+# ============================================================================
+
+class WritingStyleUpdateRequest(BaseModel):
+    content: str = Field(..., description="New content for writing_style.txt file")
+
+@app.get("/api/writing-style")
+async def get_writing_style():
+    """
+    Get the current writing style content
+    """
+    try:
+        writing_style_path = Path("./data/writing_style.txt")
+        
+        if not writing_style_path.exists():
+            return Response(content="", media_type="text/plain; charset=utf-8")
+        
+        with open(writing_style_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        
+        # Create response with cache-busting headers
+        response = Response(
+            content=content, 
+            media_type="text/plain; charset=utf-8"
+        )
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        response.headers["ETag"] = f'"{hash(content)}"'
+        response.headers["Last-Modified"] = datetime.now().strftime("%a, %d %b %Y %H:%M:%S GMT")
+        
+        return response
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to read writing style: {str(e)}"
+        )
+
+@app.put("/api/writing-style")
+async def update_writing_style(request: WritingStyleUpdateRequest):
+    """
+    Update the writing style content
+    """
+    try:
+        # Ensure data directory exists
+        data_dir = Path("./data")
+        data_dir.mkdir(exist_ok=True)
+        
+        writing_style_path = Path("./data/writing_style.txt")
+        
+        # Write the new content
+        with open(writing_style_path, "w", encoding="utf-8") as f:
+            f.write(request.content)
+        
+        return {
+            "message": "Writing style updated successfully",
+            "content_length": len(request.content),
+            "timestamp": datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update writing style: {str(e)}"
+        )
+
+@app.delete("/api/writing-style")
+async def clear_writing_style():
+    """
+    Clear the writing style content
+    """
+    try:
+        writing_style_path = Path("./data/writing_style.txt")
+        
+        if writing_style_path.exists():
+            with open(writing_style_path, "w", encoding="utf-8") as f:
+                f.write("")
+        
+        return {
+            "message": "Writing style cleared successfully",
+            "timestamp": datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to clear writing style: {str(e)}"
+        )
+
+@app.get("/api/writing-style/info")
+async def get_writing_style_info():
+    """
+    Get information about the writing style file
+    """
+    try:
+        writing_style_path = Path("./data/writing_style.txt")
+        
+        if not writing_style_path.exists():
+            return {
+                "exists": False,
+                "size": 0,
+                "created": None,
+                "modified": None,
+                "content_preview": ""
+            }
+        
+        file_stat = writing_style_path.stat()
+        
+        # Read first 200 characters for preview
+        with open(writing_style_path, "r", encoding="utf-8") as f:
+            content = f.read()
+            preview = content[:200] + "..." if len(content) > 200 else content
+        
+        return {
+            "exists": True,
+            "size": file_stat.st_size,
+            "created": datetime.fromtimestamp(file_stat.st_ctime).isoformat(),
+            "modified": datetime.fromtimestamp(file_stat.st_mtime).isoformat(),
+            "content_length": len(content),
+            "content_preview": preview
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get writing style info: {str(e)}"
+        )
 
 # ============================================================================
 # Main Entry Point
