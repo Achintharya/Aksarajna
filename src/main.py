@@ -532,7 +532,7 @@ class ExtractFromUrlsRequest(BaseModel):
 
 class GenerateFromUrlsRequest(BaseModel):
     urls: List[str] = Field(..., description="List of URLs to extract content from and generate article")
-    query: Optional[str] = Field("Article from URLs", description="Topic/title for the article")
+    query: Optional[str] = Field(None, description="Topic/title for the article (optional)")
     article_type: Optional[ArticleType] = Field(ArticleType.detailed, description="Type of article to generate")
     filename: Optional[str] = Field(None, description="Custom filename for the generated article")
 
@@ -700,7 +700,7 @@ async def process_url_extraction(job_id: str, urls: List[str], query: str, save_
     except Exception as e:
         update_job_status(job_id, "failed", f"URL extraction failed: {str(e)}", 0, error=str(e))
 
-async def process_article_generation_from_urls(job_id: str, urls: List[str], query: str, article_type: str, filename: str):
+async def process_article_generation_from_urls(job_id: str, urls: List[str], query: Optional[str], article_type: str, filename: Optional[str]):
     """Background task for article generation from URLs"""
     try:
         # Step 1: Validate URLs
@@ -715,6 +715,10 @@ async def process_article_generation_from_urls(job_id: str, urls: List[str], que
         
         if not valid_urls:
             raise Exception("No valid URLs provided")
+        
+        # Use default query if none provided
+        if not query:
+            query = "Article from URLs"
         
         # Step 2: Extract content from URLs
         update_job_status(job_id, "processing", f"Extracting content from {len(valid_urls)} URLs...", 20)
@@ -737,12 +741,19 @@ async def process_article_generation_from_urls(job_id: str, urls: List[str], que
         # Step 4: Article Generation
         update_job_status(job_id, "processing", "Generating article...", 90)
         
-        # Map article type to query
-        article_queries = {
-            "detailed": f"Write a detailed comprehensive article about '{query}' based on the provided context",
-            "summarized": f"Write a concise summary article about '{query}' based on the provided context",
-            "points": f"Write an article in bullet points about '{query}' based on the provided context"
-        }
+        # Map article type to query - use generic prompts when no specific query
+        if query == "Article from URLs":
+            article_queries = {
+                "detailed": "Write a detailed comprehensive article based on the provided context",
+                "summarized": "Write a concise summary article based on the provided context", 
+                "points": "Write an article in bullet points based on the provided context"
+            }
+        else:
+            article_queries = {
+                "detailed": f"Write a detailed comprehensive article about '{query}' based on the provided context",
+                "summarized": f"Write a concise summary article about '{query}' based on the provided context",
+                "points": f"Write an article in bullet points about '{query}' based on the provided context"
+            }
         
         article_query = article_queries.get(article_type, article_queries["detailed"])
         
