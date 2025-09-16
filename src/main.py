@@ -24,7 +24,7 @@ from dotenv import load_dotenv
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import the existing modules
-from src.web_context_extract import extract as web_extract, file_manager
+from src.web_context_extract import extract as web_extract, file_manager, simple_extract, update_sources_file
 from src.context_summarizer import summarize_context
 from src.article_writer import start as generate_article
 
@@ -525,6 +525,11 @@ class SourcesAppendRequest(BaseModel):
     query: str = Field(..., description="Query/topic name for the new section")
     urls: List[str] = Field(..., description="List of URLs to add")
 
+class ExtractFromUrlsRequest(BaseModel):
+    urls: List[str] = Field(..., description="List of URLs to extract content from")
+    query: Optional[str] = Field("Custom URLs", description="Query/topic name for context")
+    save_to_sources: Optional[bool] = Field(True, description="Whether to save URLs to sources.md")
+
 @app.post("/api/sources/append")
 async def append_to_sources(request: SourcesAppendRequest):
     """
@@ -570,6 +575,89 @@ async def clear_sources():
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to clear sources: {str(e)}"
         )
+
+@app.post("/api/extract/urls", response_model=JobResponse)
+async def extract_from_urls(request: ExtractFromUrlsRequest, background_tasks: BackgroundTasks):
+    """
+    Extract content from a list of custom URLs
+    """
+    job_id = str(uuid.uuid4())
+    
+    # Initialize job in store
+    job_store[job_id] = {
+        "job_id": job_id,
+        "status": "pending",
+        "message": "URL extraction job created",
+        "progress": 0,
+        "result": None,
+        "error": None,
+        "created_at": datetime.now().isoformat(),
+        "updated_at": datetime.now().isoformat()
+    }
+    
+    # Add background task for URL extraction
+    background_tasks.add_task(
+        process_url_extraction,
+        job_id,
+        request.urls,
+        request.query,
+        request.save_to_sources
+    )
+    
+    return JobResponse(
+        job_id=job_id,
+        message=f"Content extraction started for {len(request.urls)} URLs"
+    )
+
+async def process_url_extraction(job_id: str, urls: List[str], query: str, save_to_sources: bool):
+    """Background task for URL content extraction"""
+    try:
+        update_job_status(job_id, "processing", "Starting content extraction from URLs...", 10)
+        
+        # Validate URLs
+        valid_urls = []
+        for url in urls:
+            if url.startswith(('http://', 'https://')):
+                valid_urls.append(url)
+            else:
+                print(f"⚠️  Skipping invalid URL: {url}")
+        
+        if not valid_urls:
+            raise Exception("No valid URLs provided")
+        
+        update_job_status(job_id, "processing", f"Extracting content from {len(valid_urls)} URLs...", 30)
+        
+        # Extract content using simple_extract function
+        extracted_data = await simple_extract(valid_urls, query)
+        
+        update_job_status(job_id, "processing", "Content extraction completed", 70)
+        
+        # Save URLs to sources.md if requested
+        if save_to_sources:
+            update_job_status(job_id, "processing", "Saving URLs to sources.md...", 80)
+            await update_sources_file(query, valid_urls)
+        
+        # Count successful extractions
+        successful_extractions = sum(1 for item in extracted_data if not item.get("error", False))
+        failed_extractions = len(extracted_data) - successful_extractions
+        
+        update_job_status(
+            job_id, 
+            "completed", 
+            "URL extraction completed successfully", 
+            100,
+            result={
+                "total_urls": len(valid_urls),
+                "successful_extractions": successful_extractions,
+                "failed_extractions": failed_extractions,
+                "query": query,
+                "saved_to_sources": save_to_sources,
+                "extracted_data": extracted_data
+            }
+        )
+        
+    except Exception as e:
+        update_job_status(job_id, "failed", f"URL extraction failed: {str(e)}", 0, error=str(e))
 
 # ============================================================================
 # Main Entry Point
