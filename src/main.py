@@ -530,6 +530,12 @@ class ExtractFromUrlsRequest(BaseModel):
     query: Optional[str] = Field("Custom URLs", description="Query/topic name for context")
     save_to_sources: Optional[bool] = Field(True, description="Whether to save URLs to sources.md")
 
+class GenerateFromUrlsRequest(BaseModel):
+    urls: List[str] = Field(..., description="List of URLs to extract content from and generate article")
+    query: Optional[str] = Field("Article from URLs", description="Topic/title for the article")
+    article_type: Optional[ArticleType] = Field(ArticleType.detailed, description="Type of article to generate")
+    filename: Optional[str] = Field(None, description="Custom filename for the generated article")
+
 @app.post("/api/sources/append")
 async def append_to_sources(request: SourcesAppendRequest):
     """
@@ -609,6 +615,41 @@ async def extract_from_urls(request: ExtractFromUrlsRequest, background_tasks: B
         message=f"Content extraction started for {len(request.urls)} URLs"
     )
 
+@app.post("/api/generate/from-urls", response_model=JobResponse)
+async def generate_article_from_urls(request: GenerateFromUrlsRequest, background_tasks: BackgroundTasks):
+    """
+    Generate an article from a list of URLs
+    Extracts content from URLs, then generates an article
+    """
+    job_id = str(uuid.uuid4())
+    
+    # Initialize job in store
+    job_store[job_id] = {
+        "job_id": job_id,
+        "status": "pending",
+        "message": "Article generation from URLs job created",
+        "progress": 0,
+        "result": None,
+        "error": None,
+        "created_at": datetime.now().isoformat(),
+        "updated_at": datetime.now().isoformat()
+    }
+    
+    # Add background task for URL-based article generation
+    background_tasks.add_task(
+        process_article_generation_from_urls,
+        job_id,
+        request.urls,
+        request.query,
+        request.article_type,
+        request.filename
+    )
+    
+    return JobResponse(
+        job_id=job_id,
+        message=f"Article generation from {len(request.urls)} URLs started"
+    )
+
 async def process_url_extraction(job_id: str, urls: List[str], query: str, save_to_sources: bool):
     """Background task for URL content extraction"""
     try:
@@ -658,6 +699,82 @@ async def process_url_extraction(job_id: str, urls: List[str], query: str, save_
         
     except Exception as e:
         update_job_status(job_id, "failed", f"URL extraction failed: {str(e)}", 0, error=str(e))
+
+async def process_article_generation_from_urls(job_id: str, urls: List[str], query: str, article_type: str, filename: str):
+    """Background task for article generation from URLs"""
+    try:
+        # Step 1: Validate URLs
+        update_job_status(job_id, "processing", "Validating URLs...", 5)
+        
+        valid_urls = []
+        for url in urls:
+            if url.startswith(('http://', 'https://')):
+                valid_urls.append(url)
+            else:
+                print(f"⚠️  Skipping invalid URL: {url}")
+        
+        if not valid_urls:
+            raise Exception("No valid URLs provided")
+        
+        # Step 2: Extract content from URLs
+        update_job_status(job_id, "processing", f"Extracting content from {len(valid_urls)} URLs...", 20)
+        extracted_data = await simple_extract(valid_urls, query)
+        
+        # Count successful extractions
+        successful_extractions = sum(1 for item in extracted_data if not item.get("error", False))
+        if successful_extractions == 0:
+            raise Exception("Failed to extract content from any URLs")
+        
+        update_job_status(job_id, "processing", f"Successfully extracted content from {successful_extractions} URLs", 40)
+        
+        # Step 3: Context Summarization
+        update_job_status(job_id, "processing", "Summarizing extracted content...", 60)
+        summarize_result = summarize_context()
+        if summarize_result != 0:
+            raise Exception("Context summarization failed")
+        update_job_status(job_id, "processing", "Content summarized successfully", 80)
+        
+        # Step 4: Article Generation
+        update_job_status(job_id, "processing", "Generating article...", 90)
+        
+        # Map article type to query
+        article_queries = {
+            "detailed": f"Write a detailed comprehensive article about '{query}' based on the provided context",
+            "summarized": f"Write a concise summary article about '{query}' based on the provided context",
+            "points": f"Write an article in bullet points about '{query}' based on the provided context"
+        }
+        
+        article_query = article_queries.get(article_type, article_queries["detailed"])
+        
+        # Generate filename if not provided
+        if not filename:
+            safe_query = query.replace(' ', '_').replace('/', '_').replace('\\', '_')
+            filename = f"article_{safe_query}_{datetime.now().strftime('%Y%m%d')}"
+        
+        result = generate_article(query=article_query, filename=filename)
+        
+        if result == 0:
+            article_path = f"./articles/{filename}.md"
+            update_job_status(
+                job_id, 
+                "completed", 
+                "Article generated successfully from URLs", 
+                100,
+                result={
+                    "filename": f"{filename}.md",
+                    "path": article_path,
+                    "query": query,
+                    "type": article_type,
+                    "source_urls": valid_urls,
+                    "successful_extractions": successful_extractions,
+                    "total_urls": len(valid_urls)
+                }
+            )
+        else:
+            raise Exception("Article generation failed")
+            
+    except Exception as e:
+        update_job_status(job_id, "failed", f"Article generation from URLs failed: {str(e)}", 0, error=str(e))
 
 # ============================================================================
 # Main Entry Point
