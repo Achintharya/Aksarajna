@@ -498,6 +498,79 @@ async def clear_context():
             detail=f"Failed to clear context: {str(e)}"
         )
 
+class SourcesUpdateRequest(BaseModel):
+    content: str = Field(..., description="New content for sources.md file")
+
+@app.put("/api/sources")
+async def update_sources(request: SourcesUpdateRequest):
+    """
+    Update the entire sources.md file content
+    """
+    try:
+        # Use atomic file manager for thread-safe writing
+        await file_manager.atomic_write("sources.md", request.content)
+        
+        return {
+            "message": "Sources updated successfully",
+            "content_length": len(request.content),
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update sources: {str(e)}"
+        )
+
+class SourcesAppendRequest(BaseModel):
+    query: str = Field(..., description="Query/topic name for the new section")
+    urls: List[str] = Field(..., description="List of URLs to add")
+
+@app.post("/api/sources/append")
+async def append_to_sources(request: SourcesAppendRequest):
+    """
+    Append a new section to sources.md file
+    """
+    try:
+        # Format new content
+        new_content = f"\n## {request.query}\n"
+        for url in request.urls:
+            new_content += f"- [{url}]({url})\n"
+        new_content += "\n"
+        
+        # Use atomic file manager for thread-safe appending
+        await file_manager.atomic_append("sources.md", new_content)
+        
+        return {
+            "message": f"Added {len(request.urls)} sources for '{request.query}'",
+            "query": request.query,
+            "urls_added": len(request.urls),
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to append to sources: {str(e)}"
+        )
+
+@app.delete("/api/sources")
+async def clear_sources():
+    """
+    Clear the sources.md file
+    """
+    try:
+        # Use atomic file manager to clear the file
+        await file_manager.atomic_write("sources.md", "")
+        
+        return {
+            "message": "Sources cleared successfully",
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to clear sources: {str(e)}"
+        )
+
 # ============================================================================
 # Main Entry Point
 # ============================================================================
