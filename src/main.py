@@ -28,6 +28,7 @@ from src.web_context_extract import extract as web_extract, file_manager, simple
 from src.context_summarizer import summarize_context
 from src.article_writer import start as generate_article
 from src.auth import get_current_user, get_optional_user, require_admin, auth_health_check
+from src.supabase_client import storage_manager, db_manager
 
 # Load environment variables from config/.env
 load_dotenv('config/.env')
@@ -291,66 +292,44 @@ async def list_jobs(limit: int = 10, offset: int = 0):
     }
 
 @app.get("/api/articles")
-async def list_articles():
+async def list_articles(current_user: Dict = Depends(get_current_user)):
     """
-    List all generated articles with enhanced debugging
+    List all generated articles for the current user from Supabase Storage
     """
-    # Get current working directory for debugging
-    current_dir = os.getcwd()
-    articles_dir = Path("./articles")
-    
-    # Debug information
-    debug_info = {
-        "current_directory": current_dir,
-        "articles_path": str(articles_dir.absolute()),
-        "articles_exists": articles_dir.exists(),
-        "environment": os.getenv("ENVIRONMENT", "local")
-    }
-    
-    print(f"🔍 Debug - Current directory: {current_dir}")
-    print(f"🔍 Debug - Articles path: {articles_dir.absolute()}")
-    print(f"🔍 Debug - Articles directory exists: {articles_dir.exists()}")
-    
-    if not articles_dir.exists():
-        print("⚠️  Articles directory does not exist, creating it...")
-        articles_dir.mkdir(parents=True, exist_ok=True)
-        return {
-            "articles": [],
-            "debug": debug_info,
-            "message": "Articles directory created"
-        }
-    
-    articles = []
-    # Look for both .txt and .md files
-    for pattern in ["*.txt", "*.md"]:
-        matching_files = list(articles_dir.glob(pattern))
-        print(f"🔍 Debug - Found {len(matching_files)} files matching {pattern}")
+    try:
+        user_id = current_user["id"]
+        print(f"🔍 Fetching articles for user: {user_id}")
         
-        for file_path in matching_files:
-            try:
-                file_stat = file_path.stat()
-                article_info = {
-                    "filename": file_path.name,
-                    "size": file_stat.st_size,
-                    "created": datetime.fromtimestamp(file_stat.st_ctime).isoformat(),
-                    "modified": datetime.fromtimestamp(file_stat.st_mtime).isoformat(),
-                    "path": str(file_path.absolute())
-                }
-                articles.append(article_info)
-                print(f"✓ Found article: {file_path.name} ({file_stat.st_size} bytes)")
-            except Exception as e:
-                print(f"✗ Error reading file {file_path}: {e}")
-    
-    # Sort by modified date descending
-    articles.sort(key=lambda x: x["modified"], reverse=True)
-    
-    print(f"📊 Total articles found: {len(articles)}")
-    
-    return {
-        "articles": articles,
-        "debug": debug_info,
-        "total_count": len(articles)
-    }
+        # Get user's articles from Supabase
+        articles = await storage_manager.list_user_articles(user_id)
+        
+        # Transform database records to match frontend expectations
+        formatted_articles = []
+        for article in articles:
+            formatted_articles.append({
+                "filename": article["filename"],
+                "size": article.get("content_length", 0),
+                "created": article["created_at"],
+                "modified": article["updated_at"],
+                "title": article.get("title", "Untitled Article"),
+                "storage_path": article["storage_path"]
+            })
+        
+        print(f"📊 Total articles found for user {user_id}: {len(formatted_articles)}")
+        
+        return {
+            "articles": formatted_articles,
+            "total_count": len(formatted_articles),
+            "user_id": user_id,
+            "storage": "supabase"
+        }
+        
+    except Exception as e:
+        print(f"❌ Error fetching articles: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to fetch articles: {str(e)}"
+        )
 
 @app.get("/api/articles/{filename}")
 async def get_article(filename: str):
