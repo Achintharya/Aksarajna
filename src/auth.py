@@ -20,11 +20,12 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Load environment variables
-# Try multiple possible paths for the .env file
+# Try multiple possible paths for the .env file (for local development)
 env_paths = [
     'config/.env',
     '../config/.env',
-    os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config', '.env')
+    os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config', '.env'),
+    '.env'  # Also try current directory
 ]
 
 env_loaded = False
@@ -36,19 +37,26 @@ for env_path in env_paths:
         break
 
 if not env_loaded:
-    logger.warning("No .env file found, trying to load from system environment")
+    logger.info("No .env file found, using system environment variables (production mode)")
     load_dotenv()  # Load from system environment
 
 # Supabase project URL from environment
 SUPABASE_PROJECT_URL = os.getenv('SUPABASE_PROJECT_URL')
 
 if not SUPABASE_PROJECT_URL:
-    # Print debug information
+    # Print debug information for troubleshooting
     logger.error("SUPABASE_PROJECT_URL not found in environment variables")
     logger.error(f"Current working directory: {os.getcwd()}")
     logger.error(f"Script directory: {os.path.dirname(__file__)}")
     logger.error(f"Available env vars starting with SUPABASE: {[k for k in os.environ.keys() if k.startswith('SUPABASE')]}")
-    raise ValueError("SUPABASE_PROJECT_URL environment variable is required")
+    
+    # In production, provide more helpful error message
+    if os.getenv('RENDER'):  # Render sets this environment variable
+        logger.error("Running on Render: Please set SUPABASE_PROJECT_URL in Render dashboard environment variables")
+        raise ValueError("SUPABASE_PROJECT_URL environment variable must be set in Render dashboard")
+    else:
+        logger.error("Please ensure SUPABASE_PROJECT_URL is set in your .env file or system environment")
+        raise ValueError("SUPABASE_PROJECT_URL environment variable is required")
 
 # Remove trailing slash if present
 SUPABASE_PROJECT_URL = SUPABASE_PROJECT_URL.rstrip('/')
