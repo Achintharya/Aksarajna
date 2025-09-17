@@ -27,6 +27,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.web_context_extract import extract as web_extract, file_manager, simple_extract, update_sources_file
 from src.context_summarizer import summarize_context
 from src.article_writer import start as generate_article
+from src.auth import get_current_user, get_optional_user, require_admin, auth_health_check
 
 # Load environment variables from config/.env
 load_dotenv('config/.env')
@@ -189,6 +190,11 @@ async def health_check():
         "status": "healthy",
         "timestamp": datetime.now().isoformat()
     }
+
+@app.get("/auth/health")
+async def auth_health():
+    """Authentication service health check"""
+    return await auth_health_check()
 
 @app.post("/api/search", response_model=JobResponse)
 async def search_web_content(request: WebSearchRequest, background_tasks: BackgroundTasks):
