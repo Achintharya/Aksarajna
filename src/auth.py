@@ -20,12 +20,34 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Load environment variables
-load_dotenv('config/.env')
+# Try multiple possible paths for the .env file
+env_paths = [
+    'config/.env',
+    '../config/.env',
+    os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config', '.env')
+]
+
+env_loaded = False
+for env_path in env_paths:
+    if os.path.exists(env_path):
+        load_dotenv(env_path)
+        env_loaded = True
+        logger.info(f"Loaded environment variables from: {env_path}")
+        break
+
+if not env_loaded:
+    logger.warning("No .env file found, trying to load from system environment")
+    load_dotenv()  # Load from system environment
 
 # Supabase project URL from environment
 SUPABASE_PROJECT_URL = os.getenv('SUPABASE_PROJECT_URL')
 
 if not SUPABASE_PROJECT_URL:
+    # Print debug information
+    logger.error("SUPABASE_PROJECT_URL not found in environment variables")
+    logger.error(f"Current working directory: {os.getcwd()}")
+    logger.error(f"Script directory: {os.path.dirname(__file__)}")
+    logger.error(f"Available env vars starting with SUPABASE: {[k for k in os.environ.keys() if k.startswith('SUPABASE')]}")
     raise ValueError("SUPABASE_PROJECT_URL environment variable is required")
 
 # Remove trailing slash if present
