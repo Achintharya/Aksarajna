@@ -13,6 +13,9 @@ python-multipart>=0.0.6
 python-jose[cryptography]>=3.3.0
 httpx>=0.25.0
 
+# Supabase Storage and Database
+supabase>=2.0.0
+
 # Legacy Flask (optional, for old endpoints)
 flask>=2.3.0
 

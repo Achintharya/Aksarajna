@@ -332,52 +332,38 @@ async def list_articles(current_user: Dict = Depends(get_current_user)):
         )
 
 @app.get("/api/articles/{filename}")
-async def get_article(filename: str):
+async def get_article(filename: str, current_user: Dict = Depends(get_current_user)):
     """
-    Download a specific article or sources file with atomic operations and cache control
+    Download a specific article from user's Supabase Storage
     """
-    from fastapi import Response
-    
-    # Special handling for sources files
-    if filename in ["sources.txt", "sources.md"]:
-        try:
-            # Use atomic file manager for thread-safe reading
-            content = file_manager.read_with_lock("sources.md")
-            
-            # If sources.md is empty, try sources.txt for backward compatibility
-            if not content:
-                content = file_manager.read_with_lock("sources.txt")
+    try:
+        user_id = current_user["id"]
+        
+        # Special handling for sources files
+        if filename in ["sources.txt", "sources.md"]:
+            content = await storage_manager.get_sources(user_id)
             
             # Create response with cache-busting headers
             response = Response(
-                content=content, 
+                content=content or "", 
                 media_type="text/plain; charset=utf-8"
             )
             response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
             response.headers["Pragma"] = "no-cache"
             response.headers["Expires"] = "0"
-            response.headers["ETag"] = f'"{hash(content)}"'
+            response.headers["ETag"] = f'"{hash(content or "")}"'
             response.headers["Last-Modified"] = datetime.now().strftime("%a, %d %b %Y %H:%M:%S GMT")
             
             return response
-            
-        except Exception as e:
-            print(f"Error reading sources file: {e}")
-            return Response(content="", media_type="text/plain")
-    
-    # Regular article handling
-    file_path = Path(f"./articles/{filename}")
-    
-    if not file_path.exists() or not file_path.is_file():
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Article {filename} not found"
-        )
-    
-    try:
-        # Read article content with proper encoding
-        with open(file_path, "r", encoding="utf-8") as f:
-            content = f.read()
+        
+        # Regular article handling from Supabase Storage
+        content = await storage_manager.get_article(user_id, filename)
+        
+        if content is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Article {filename} not found"
+            )
         
         # Create response with appropriate headers
         response = Response(
@@ -386,13 +372,14 @@ async def get_article(filename: str):
         )
         
         # Add cache headers for articles (can be cached for a short time)
-        file_stat = file_path.stat()
-        response.headers["Last-Modified"] = datetime.fromtimestamp(file_stat.st_mtime).strftime("%a, %d %b %Y %H:%M:%S GMT")
-        response.headers["ETag"] = f'"{file_stat.st_mtime}-{file_stat.st_size}"'
+        response.headers["Last-Modified"] = datetime.now().strftime("%a, %d %b %Y %H:%M:%S GMT")
+        response.headers["ETag"] = f'"{hash(content)}"'
         response.headers["Cache-Control"] = "public, max-age=300"  # Cache for 5 minutes
         
         return response
         
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -400,21 +387,26 @@ async def get_article(filename: str):
         )
 
 @app.delete("/api/articles/{filename}")
-async def delete_article(filename: str):
+async def delete_article(filename: str, current_user: Dict = Depends(get_current_user)):
     """
-    Delete a specific article
+    Delete a specific article from user's Supabase Storage
     """
-    file_path = Path(f"./articles/{filename}")
-    
-    if not file_path.exists():
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Article {filename} not found"
-        )
-    
     try:
-        file_path.unlink()
+        user_id = current_user["id"]
+        
+        # Delete article from Supabase Storage and database
+        success = await storage_manager.delete_article(user_id, filename)
+        
+        if not success:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Article {filename} not found or could not be deleted"
+            )
+        
         return {"message": f"Article {filename} deleted successfully"}
+        
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -487,19 +479,30 @@ class SourcesUpdateRequest(BaseModel):
     content: str = Field(..., description="New content for sources.md file")
 
 @app.put("/api/sources")
-async def update_sources(request: SourcesUpdateRequest):
+async def update_sources(request: SourcesUpdateRequest, current_user: Dict = Depends(get_current_user)):
     """
-    Update the entire sources.md file content
+    Update the entire sources.md file content for the current user
     """
     try:
-        # Use atomic file manager for thread-safe writing
-        await file_manager.atomic_write("sources.md", request.content)
+        user_id = current_user["id"]
+        
+        # Upload sources to user's Supabase Storage
+        result = await storage_manager.upload_sources(user_id, request.content)
+        
+        if not result.get("success"):
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to upload sources: {result.get('error', 'Unknown error')}"
+            )
         
         return {
             "message": "Sources updated successfully",
             "content_length": len(request.content),
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
+            "storage": "supabase"
         }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -549,18 +552,29 @@ async def append_to_sources(request: SourcesAppendRequest):
         )
 
 @app.delete("/api/sources")
-async def clear_sources():
+async def clear_sources(current_user: Dict = Depends(get_current_user)):
     """
-    Clear the sources.md file
+    Clear the sources.md file for the current user
     """
     try:
-        # Use atomic file manager to clear the file
-        await file_manager.atomic_write("sources.md", "")
+        user_id = current_user["id"]
+        
+        # Clear sources by uploading empty content
+        result = await storage_manager.upload_sources(user_id, "")
+        
+        if not result.get("success"):
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to clear sources: {result.get('error', 'Unknown error')}"
+            )
         
         return {
             "message": "Sources cleared successfully",
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
+            "storage": "supabase"
         }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -780,28 +794,25 @@ class WritingStyleUpdateRequest(BaseModel):
     content: str = Field(..., description="New content for writing_style.txt file")
 
 @app.get("/api/writing-style")
-async def get_writing_style():
+async def get_writing_style(current_user: Dict = Depends(get_current_user)):
     """
-    Get the current writing style content
+    Get the current writing style content for the current user
     """
     try:
-        writing_style_path = Path("./data/writing_style.txt")
+        user_id = current_user["id"]
         
-        if not writing_style_path.exists():
-            return Response(content="", media_type="text/plain; charset=utf-8")
-        
-        with open(writing_style_path, "r", encoding="utf-8") as f:
-            content = f.read()
+        # Get writing style from user's Supabase Storage
+        content = await storage_manager.get_writing_style(user_id)
         
         # Create response with cache-busting headers
         response = Response(
-            content=content, 
+            content=content or "", 
             media_type="text/plain; charset=utf-8"
         )
         response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"
-        response.headers["ETag"] = f'"{hash(content)}"'
+        response.headers["ETag"] = f'"{hash(content or "")}"'
         response.headers["Last-Modified"] = datetime.now().strftime("%a, %d %b %Y %H:%M:%S GMT")
         
         return response
@@ -813,27 +824,31 @@ async def get_writing_style():
         )
 
 @app.put("/api/writing-style")
-async def update_writing_style(request: WritingStyleUpdateRequest):
+async def update_writing_style(request: WritingStyleUpdateRequest, current_user: Dict = Depends(get_current_user)):
     """
-    Update the writing style content
+    Update the writing style content for the current user
     """
     try:
-        # Ensure data directory exists
-        data_dir = Path("./data")
-        data_dir.mkdir(exist_ok=True)
+        user_id = current_user["id"]
         
-        writing_style_path = Path("./data/writing_style.txt")
+        # Upload writing style to user's Supabase Storage
+        result = await storage_manager.upload_writing_style(user_id, request.content)
         
-        # Write the new content
-        with open(writing_style_path, "w", encoding="utf-8") as f:
-            f.write(request.content)
+        if not result.get("success"):
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to upload writing style: {result.get('error', 'Unknown error')}"
+            )
         
         return {
             "message": "Writing style updated successfully",
             "content_length": len(request.content),
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
+            "storage": "supabase"
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -841,22 +856,30 @@ async def update_writing_style(request: WritingStyleUpdateRequest):
         )
 
 @app.delete("/api/writing-style")
-async def clear_writing_style():
+async def clear_writing_style(current_user: Dict = Depends(get_current_user)):
     """
-    Clear the writing style content
+    Clear the writing style content for the current user
     """
     try:
-        writing_style_path = Path("./data/writing_style.txt")
+        user_id = current_user["id"]
         
-        if writing_style_path.exists():
-            with open(writing_style_path, "w", encoding="utf-8") as f:
-                f.write("")
+        # Delete writing style from user's Supabase Storage
+        success = await storage_manager.delete_writing_style(user_id)
+        
+        if not success:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to clear writing style"
+            )
         
         return {
             "message": "Writing style cleared successfully",
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
+            "storage": "supabase"
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
