@@ -4,7 +4,7 @@ Varnika - AI-Powered Article Generation System
 Main application file with integrated FastAPI backend
 """
 
-from fastapi import FastAPI, BackgroundTasks, HTTPException, status
+from fastapi import FastAPI, BackgroundTasks, HTTPException, status, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, FileResponse, Response
 from pydantic import BaseModel, Field
