@@ -197,6 +197,194 @@ async def auth_health():
     """Authentication service health check"""
     return await auth_health_check()
 
+# ============================================================================
+# Admin API Endpoints
+# ============================================================================
+
+@app.get("/api/admin/users")
+async def admin_list_users(current_user: Dict = Depends(require_admin)):
+    """
+    List all users (admin only)
+    """
+    try:
+        # Use service role to bypass RLS
+        from src.supabase_client import supabase
+        
+        # Query auth.users table
+        result = supabase.auth.admin.list_users()
+        
+        if result.users:
+            users = []
+            for user in result.users:
+                users.append({
+                    "id": user.id,
+                    "email": user.email,
+                    "created_at": user.created_at,
+                    "last_sign_in_at": user.last_sign_in_at,
+                    "email_confirmed_at": user.email_confirmed_at
+                })
+            
+            return {
+                "users": users,
+                "total_count": len(users)
+            }
+        else:
+            return {"users": [], "total_count": 0}
+            
+    except Exception as e:
+        print(f"❌ Error fetching users: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to fetch users: {str(e)}"
+        )
+
+@app.delete("/api/admin/deleteUser")
+async def admin_delete_user(request: dict, current_user: Dict = Depends(require_admin)):
+    """
+    Delete a user by ID (admin only)
+    """
+    try:
+        user_id = request.get("userId")
+        if not user_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="User ID is required"
+            )
+        
+        # Prevent admin from deleting themselves
+        if user_id == current_user["id"]:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Cannot delete your own account"
+            )
+        
+        # Use service role to delete user
+        from src.supabase_client import supabase
+        
+        # Delete user (this will cascade delete their articles due to foreign key)
+        result = supabase.auth.admin.delete_user(user_id)
+        
+        return {"message": f"User {user_id} deleted successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error deleting user: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete user: {str(e)}"
+        )
+
+@app.get("/api/admin/articles")
+async def admin_list_articles(current_user: Dict = Depends(require_admin)):
+    """
+    List all articles with user information (admin only)
+    """
+    try:
+        # Use service role to bypass RLS
+        from src.supabase_client import supabase
+        
+        # Query articles table with user email join
+        result = supabase.table("articles").select("""
+            id,
+            user_id,
+            filename,
+            title,
+            storage_path,
+            content_length,
+            created_at,
+            updated_at
+        """).execute()
+        
+        if result.data:
+            # Get user emails for each article
+            articles_with_users = []
+            user_cache = {}  # Cache user emails to avoid repeated queries
+            
+            for article in result.data:
+                user_id = article["user_id"]
+                
+                # Get user email from cache or fetch it
+                if user_id not in user_cache:
+                    try:
+                        user_result = supabase.auth.admin.get_user_by_id(user_id)
+                        user_cache[user_id] = user_result.user.email if user_result.user else "Unknown"
+                    except:
+                        user_cache[user_id] = "Unknown"
+                
+                article_with_user = {
+                    **article,
+                    "user_email": user_cache[user_id]
+                }
+                articles_with_users.append(article_with_user)
+            
+            # Sort by created_at descending
+            articles_with_users.sort(key=lambda x: x["created_at"], reverse=True)
+            
+            return {
+                "articles": articles_with_users,
+                "total_count": len(articles_with_users)
+            }
+        else:
+            return {"articles": [], "total_count": 0}
+            
+    except Exception as e:
+        print(f"❌ Error fetching articles: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to fetch articles: {str(e)}"
+        )
+
+@app.delete("/api/admin/deleteArticle")
+async def admin_delete_article(request: dict, current_user: Dict = Depends(require_admin)):
+    """
+    Delete an article by ID (admin only)
+    """
+    try:
+        article_id = request.get("articleId")
+        if not article_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Article ID is required"
+            )
+        
+        # Use service role to bypass RLS
+        from src.supabase_client import supabase
+        
+        # First get article details
+        article_result = supabase.table("articles").select("*").eq("id", article_id).execute()
+        
+        if not article_result.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Article not found"
+            )
+        
+        article = article_result.data[0]
+        user_id = article["user_id"]
+        filename = article["filename"]
+        
+        # Delete from storage
+        storage_path = f"{user_id}/articles/{filename}"
+        try:
+            supabase.storage.from_("articles").remove([storage_path])
+        except Exception as storage_error:
+            print(f"Warning: Failed to delete from storage: {storage_error}")
+        
+        # Delete from database
+        supabase.table("articles").delete().eq("id", article_id).execute()
+        
+        return {"message": f"Article {filename} deleted successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error deleting article: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete article: {str(e)}"
+        )
+
 @app.post("/api/search", response_model=JobResponse)
 async def search_web_content(request: WebSearchRequest, background_tasks: BackgroundTasks):
     """
