@@ -105,15 +105,10 @@ async def fetch_jwks() -> Dict[str, Any]:
     
     try:
         logger.info(f"Fetching JWKS from {JWKS_URL}")
-        
-        # Include required apikey header for Supabase JWKS endpoint
-        headers = {
-            "apikey": SUPABASE_ANON_KEY,
-            "Content-Type": "application/json"
-        }
+    
         
         async with httpx.AsyncClient(timeout=10.0) as client:
-            response = await client.get(JWKS_URL, headers=headers)
+            response = await client.get(JWKS_URL)
             response.raise_for_status()
             
         jwks_data = response.json()
