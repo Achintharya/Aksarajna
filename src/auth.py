@@ -40,8 +40,9 @@ if not env_loaded:
     logger.info("No .env file found, using system environment variables (production mode)")
     load_dotenv()  # Load from system environment
 
-# Supabase project URL from environment
+# Supabase configuration from environment
 SUPABASE_PROJECT_URL = os.getenv('SUPABASE_PROJECT_URL')
+SUPABASE_ANON_KEY = os.getenv('SUPABASE_ANON_KEY')
 
 if not SUPABASE_PROJECT_URL:
     # Print debug information for troubleshooting
@@ -58,11 +59,20 @@ if not SUPABASE_PROJECT_URL:
         logger.error("Please ensure SUPABASE_PROJECT_URL is set in your .env file or system environment")
         raise ValueError("SUPABASE_PROJECT_URL environment variable is required")
 
+if not SUPABASE_ANON_KEY:
+    logger.error("SUPABASE_ANON_KEY not found in environment variables")
+    if os.getenv('RENDER'):
+        logger.error("Running on Render: Please set SUPABASE_ANON_KEY in Render dashboard environment variables")
+        raise ValueError("SUPABASE_ANON_KEY environment variable must be set in Render dashboard")
+    else:
+        logger.error("Please ensure SUPABASE_ANON_KEY is set in your .env file or system environment")
+        raise ValueError("SUPABASE_ANON_KEY environment variable is required")
+
 # Remove trailing slash if present
 SUPABASE_PROJECT_URL = SUPABASE_PROJECT_URL.rstrip('/')
 
-# JWKS endpoint
-JWKS_URL = f"{SUPABASE_PROJECT_URL}/auth/v1/jwks"
+# JWKS endpoint - Use correct Supabase JWKS URL
+JWKS_URL = f"{SUPABASE_PROJECT_URL}/auth/v1/.well-known/jwks.json"
 
 # HTTP Bearer token scheme
 security = HTTPBearer()
@@ -96,8 +106,14 @@ async def fetch_jwks() -> Dict[str, Any]:
     try:
         logger.info(f"Fetching JWKS from {JWKS_URL}")
         
+        # Include required apikey header for Supabase JWKS endpoint
+        headers = {
+            "apikey": SUPABASE_ANON_KEY,
+            "Content-Type": "application/json"
+        }
+        
         async with httpx.AsyncClient(timeout=10.0) as client:
-            response = await client.get(JWKS_URL)
+            response = await client.get(JWKS_URL, headers=headers)
             response.raise_for_status()
             
         jwks_data = response.json()
