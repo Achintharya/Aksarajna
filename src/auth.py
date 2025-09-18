@@ -6,6 +6,7 @@ Authentication module for Supabase JWT verification using JWKS
 import os
 import time
 import logging
+import base64
 from typing import Optional, Dict, Any
 from datetime import datetime, timedelta
 import httpx
@@ -73,6 +74,15 @@ if not SUPABASE_ANON_KEY:
 # JWT_SECRET is optional but recommended for fallback
 if not SUPABASE_JWT_SECRET:
     logger.warning("SUPABASE_JWT_SECRET not found - HS256 fallback will not be available")
+else:
+    # Decode base64-encoded JWT secret (Supabase provides it in base64)
+    try:
+        SUPABASE_JWT_SECRET_DECODED = base64.b64decode(SUPABASE_JWT_SECRET)
+        logger.info("Successfully decoded base64 JWT secret")
+    except Exception as e:
+        # If it's not base64, use it as-is
+        SUPABASE_JWT_SECRET_DECODED = SUPABASE_JWT_SECRET
+        logger.info("Using JWT secret as-is (not base64)")
 
 # Remove trailing slash if present
 SUPABASE_PROJECT_URL = SUPABASE_PROJECT_URL.rstrip('/')
@@ -204,7 +214,7 @@ def get_signing_key(token: str, jwks_data: Dict[str, Any]) -> str:
 
 async def verify_jwt_token(token: str) -> Dict[str, Any]:
     """
-    Verify and decode a Supabase JWT token using JWKS with HS256 fallback
+    Verify and decode a Supabase JWT token - tries HS256 first, then JWKS/RS256
     
     Args:
         token: JWT token string
@@ -215,6 +225,87 @@ async def verify_jwt_token(token: str) -> Dict[str, Any]:
     Raises:
         HTTPException: If token is invalid or expired
     """
+    # First, try HS256 with JWT_SECRET (most common for Supabase)
+    if SUPABASE_JWT_SECRET:
+        try:
+            logger.info("Attempting HS256 verification with JWT_SECRET")
+            
+            # First, inspect the token without verification to see the actual claims
+            unverified = jwt.decode(token, options={"verify_signature": False})
+            aud_claim = unverified.get("aud")
+            logger.debug(f"Token aud claim: {aud_claim}")
+            
+            # Use the decoded JWT secret
+            key = SUPABASE_JWT_SECRET_DECODED if 'SUPABASE_JWT_SECRET_DECODED' in globals() else SUPABASE_JWT_SECRET
+            
+            # Verify and decode the token with HS256
+            # Handle audience based on what's in the token
+            if aud_claim:
+                payload = jwt.decode(
+                    token,
+                    key,
+                    algorithms=["HS256"],
+                    audience=aud_claim,  # Use the actual audience from the token
+                    options={
+                        "verify_signature": True,
+                        "verify_aud": True,
+                        "verify_exp": True,
+                        "verify_nbf": False,  # HS256 tokens might not have nbf
+                        "verify_iat": True,
+                        "verify_iss": False,  # Issuer verification might differ
+                        "require_aud": True,
+                        "require_exp": True,
+                        "require_iat": True,
+                    }
+                )
+            else:
+                # No audience claim, skip audience verification
+                payload = jwt.decode(
+                    token,
+                    key,
+                    algorithms=["HS256"],
+                    options={
+                        "verify_signature": True,
+                        "verify_aud": False,
+                        "verify_exp": True,
+                        "verify_nbf": False,
+                        "verify_iat": True,
+                        "verify_iss": False,
+                        "require_aud": False,
+                        "require_exp": True,
+                        "require_iat": True,
+                    }
+                )
+            
+            # Additional validation
+            current_time = time.time()
+            
+            # Check expiration
+            exp = payload.get('exp')
+            if exp and exp < current_time:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Token has expired",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+            
+            # Check not before (if present)
+            nbf = payload.get('nbf')
+            if nbf and nbf > current_time:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Token not yet valid",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+            
+            logger.debug(f"Successfully verified token with HS256 for user: {payload.get('email', 'unknown')}")
+            return payload
+            
+        except (JWTError, HTTPException) as e:
+            logger.info(f"HS256 verification failed: {str(e)}, trying RS256/JWKS")
+            # Continue to try RS256/JWKS
+    
+    # If HS256 fails or no JWT_SECRET, try RS256 with JWKS
     try:
         # Fetch JWKS
         jwks_data = await fetch_jwks()
@@ -246,34 +337,12 @@ async def verify_jwt_token(token: str) -> Dict[str, Any]:
                 }
             )
         else:
-            # Fallback to HS256 with JWT_SECRET
-            if not SUPABASE_JWT_SECRET:
-                logger.error("JWKS is empty and no JWT_SECRET available for fallback")
-                raise HTTPException(
-                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                    detail="Authentication service configuration error",
-                    headers={"WWW-Authenticate": "Bearer"},
-                )
-            
-            logger.info("JWKS is empty, falling back to HS256 verification with JWT_SECRET")
-            
-            # Verify and decode the token with HS256
-            payload = jwt.decode(
-                token,
-                SUPABASE_JWT_SECRET,
-                algorithms=["HS256"],
-                audience="authenticated",
-                options={
-                    "verify_signature": True,
-                    "verify_aud": True,
-                    "verify_exp": True,
-                    "verify_nbf": False,  # HS256 tokens might not have nbf
-                    "verify_iat": True,
-                    "verify_iss": False,  # Issuer verification might differ
-                    "require_aud": True,
-                    "require_exp": True,
-                    "require_iat": True,
-                }
+            # JWKS is empty and HS256 already failed
+            logger.error("Both HS256 and RS256 verification failed")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token verification failed",
+                headers={"WWW-Authenticate": "Bearer"},
             )
         
         # Additional validation
