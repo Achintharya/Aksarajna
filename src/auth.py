@@ -44,6 +44,7 @@ if not env_loaded:
 SUPABASE_PROJECT_URL = os.getenv('SUPABASE_PROJECT_URL')
 SUPABASE_ANON_KEY = os.getenv('SUPABASE_ANON_KEY')
 SUPABASE_JWT_SECRET = os.getenv('SUPABASE_JWT_SECRET')  # For HS256 fallback
+SUPABASE_SERVICE_ROLE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY')  # For server-side operations
 
 if not SUPABASE_PROJECT_URL:
     # Print debug information for troubleshooting
@@ -112,8 +113,8 @@ async def fetch_jwks() -> Dict[str, Any]:
         logger.info(f"Fetching JWKS from {JWKS_URL}")
     
         headers = {
-            "apikey": SUPABASE_ANON_KEY,
-            "Authorization": f"Bearer {SUPABASE_ANON_KEY}",  # <-- add this too
+            "apikey": SUPABASE_SERVICE_ROLE_KEY,
+            "Authorization": f"Bearer {SUPABASE_SERVICE_ROLE_KEY}",
             "Content-Type": "application/json"
         }
 
