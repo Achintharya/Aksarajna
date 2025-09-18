@@ -43,6 +43,7 @@ if not env_loaded:
 # Supabase configuration from environment
 SUPABASE_PROJECT_URL = os.getenv('SUPABASE_PROJECT_URL')
 SUPABASE_ANON_KEY = os.getenv('SUPABASE_ANON_KEY')
+SUPABASE_JWT_SECRET = os.getenv('SUPABASE_JWT_SECRET')  # For HS256 fallback
 
 if not SUPABASE_PROJECT_URL:
     # Print debug information for troubleshooting
@@ -67,6 +68,10 @@ if not SUPABASE_ANON_KEY:
     else:
         logger.error("Please ensure SUPABASE_ANON_KEY is set in your .env file or system environment")
         raise ValueError("SUPABASE_ANON_KEY environment variable is required")
+
+# JWT_SECRET is optional but recommended for fallback
+if not SUPABASE_JWT_SECRET:
+    logger.warning("SUPABASE_JWT_SECRET not found - HS256 fallback will not be available")
 
 # Remove trailing slash if present
 SUPABASE_PROJECT_URL = SUPABASE_PROJECT_URL.rstrip('/')
@@ -106,9 +111,14 @@ async def fetch_jwks() -> Dict[str, Any]:
     try:
         logger.info(f"Fetching JWKS from {JWKS_URL}")
     
-        
+        headers = {
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": f"Bearer {SUPABASE_ANON_KEY}",  # <-- add this too
+            "Content-Type": "application/json"
+        }
+
         async with httpx.AsyncClient(timeout=10.0) as client:
-            response = await client.get(JWKS_URL)
+            response = await client.get(JWKS_URL, headers=headers)
             response.raise_for_status()
             
         jwks_data = response.json()
@@ -193,7 +203,7 @@ def get_signing_key(token: str, jwks_data: Dict[str, Any]) -> str:
 
 async def verify_jwt_token(token: str) -> Dict[str, Any]:
     """
-    Verify and decode a Supabase JWT token using JWKS
+    Verify and decode a Supabase JWT token using JWKS with HS256 fallback
     
     Args:
         token: JWT token string
@@ -208,27 +218,62 @@ async def verify_jwt_token(token: str) -> Dict[str, Any]:
         # Fetch JWKS
         jwks_data = await fetch_jwks()
         
-        # Get signing key
-        signing_key = get_signing_key(token, jwks_data)
-        
-        # Verify and decode the token
-        payload = jwt.decode(
-            token,
-            signing_key,
-            algorithms=["RS256"],
-            audience="authenticated",
-            options={
-                "verify_signature": True,
-                "verify_aud": True,
-                "verify_exp": True,
-                "verify_nbf": True,
-                "verify_iat": True,
-                "verify_iss": True,
-                "require_aud": True,
-                "require_exp": True,
-                "require_iat": True,
-            }
-        )
+        # Check if JWKS has keys
+        if jwks_data.get('keys') and len(jwks_data.get('keys', [])) > 0:
+            # Use RS256 with JWKS
+            logger.info("Using RS256 verification with JWKS")
+            
+            # Get signing key
+            signing_key = get_signing_key(token, jwks_data)
+            
+            # Verify and decode the token with RS256
+            payload = jwt.decode(
+                token,
+                signing_key,
+                algorithms=["RS256"],
+                audience="authenticated",
+                options={
+                    "verify_signature": True,
+                    "verify_aud": True,
+                    "verify_exp": True,
+                    "verify_nbf": True,
+                    "verify_iat": True,
+                    "verify_iss": True,
+                    "require_aud": True,
+                    "require_exp": True,
+                    "require_iat": True,
+                }
+            )
+        else:
+            # Fallback to HS256 with JWT_SECRET
+            if not SUPABASE_JWT_SECRET:
+                logger.error("JWKS is empty and no JWT_SECRET available for fallback")
+                raise HTTPException(
+                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                    detail="Authentication service configuration error",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+            
+            logger.info("JWKS is empty, falling back to HS256 verification with JWT_SECRET")
+            
+            # Verify and decode the token with HS256
+            payload = jwt.decode(
+                token,
+                SUPABASE_JWT_SECRET,
+                algorithms=["HS256"],
+                audience="authenticated",
+                options={
+                    "verify_signature": True,
+                    "verify_aud": True,
+                    "verify_exp": True,
+                    "verify_nbf": False,  # HS256 tokens might not have nbf
+                    "verify_iat": True,
+                    "verify_iss": False,  # Issuer verification might differ
+                    "require_aud": True,
+                    "require_exp": True,
+                    "require_iat": True,
+                }
+            )
         
         # Additional validation
         current_time = time.time()
@@ -242,7 +287,7 @@ async def verify_jwt_token(token: str) -> Dict[str, Any]:
                 headers={"WWW-Authenticate": "Bearer"},
             )
         
-        # Check not before
+        # Check not before (if present)
         nbf = payload.get('nbf')
         if nbf and nbf > current_time:
             raise HTTPException(
