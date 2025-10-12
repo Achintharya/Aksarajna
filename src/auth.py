@@ -232,7 +232,8 @@ async def verify_jwt_token(token: str) -> Dict[str, Any]:
             logger.info("Attempting HS256 verification with JWT_SECRET")
             
             # First, inspect the token without verification to see the actual claims
-            unverified = jwt.decode(token, options={"verify_signature": False})
+            # Pass None as key when not verifying signature
+            unverified = jwt.decode(token, key=None, options={"verify_signature": False})
             aud_claim = unverified.get("aud")
             logger.debug(f"Token aud claim: {aud_claim}")
             
