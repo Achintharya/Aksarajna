@@ -235,48 +235,29 @@ async def verify_jwt_token(token: str) -> Dict[str, Any]:
             # Pass None as key when not verifying signature
             unverified = jwt.decode(token, key=None, options={"verify_signature": False})
             aud_claim = unverified.get("aud")
-            logger.debug(f"Token aud claim: {aud_claim}")
+            logger.info(f"Token aud claim: {aud_claim}, type: {type(aud_claim)}")
             
             # Use the decoded JWT secret
             key = SUPABASE_JWT_SECRET_DECODED if 'SUPABASE_JWT_SECRET_DECODED' in globals() else SUPABASE_JWT_SECRET
+            
             # Verify and decode the token with HS256
-            # Handle audience based on what's in the token
-            if aud_claim:
-                payload = jwt.decode(
-                    token,
-                    key,
-                    algorithms=["HS256"],
-                    audience=aud_claim,  # Use the actual audience from the token
-                    options={
-                        "verify_signature": True,
-                        "verify_aud": True,
-                        "verify_exp": True,
-                        "verify_nbf": False,  # HS256 tokens might not have nbf
-                        "verify_iat": True,
-                        "verify_iss": False,  # Issuer verification might differ
-                        "require_aud": True,
-                        "require_exp": True,
-                        "require_iat": True,
-                    }
-                )
-            else:
-                # No audience claim, skip audience verification
-                payload = jwt.decode(
-                    token,
-                    key,
-                    algorithms=["HS256"],
-                    options={
-                        "verify_signature": True,
-                        "verify_aud": False,
-                        "verify_exp": True,
-                        "verify_nbf": False,
-                        "verify_iat": True,
-                        "verify_iss": False,
-                        "require_aud": False,
-                        "require_exp": True,
-                        "require_iat": True,
-                    }
-                )
+            # Don't verify audience as it can vary between tokens
+            payload = jwt.decode(
+                token,
+                key,
+                algorithms=["HS256"],
+                options={
+                    "verify_signature": True,
+                    "verify_aud": False,  # Skip audience verification
+                    "verify_exp": True,
+                    "verify_nbf": False,  # HS256 tokens might not have nbf
+                    "verify_iat": True,
+                    "verify_iss": False,  # Issuer verification might differ
+                    "require_aud": False,  # Don't require audience
+                    "require_exp": True,
+                    "require_iat": True,
+                }
+            )
             
             # Additional validation
             current_time = time.time()
