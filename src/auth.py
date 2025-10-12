@@ -75,14 +75,15 @@ if not SUPABASE_ANON_KEY:
 if not SUPABASE_JWT_SECRET:
     logger.warning("SUPABASE_JWT_SECRET not found - HS256 fallback will not be available")
 else:
+    logger.info(f"SUPABASE_JWT_SECRET found (length: {len(SUPABASE_JWT_SECRET)} chars)")
     # Decode base64-encoded JWT secret (Supabase provides it in base64)
     try:
         SUPABASE_JWT_SECRET_DECODED = base64.b64decode(SUPABASE_JWT_SECRET)
-        logger.info("Successfully decoded base64 JWT secret")
+        logger.info(f"Successfully decoded base64 JWT secret (decoded length: {len(SUPABASE_JWT_SECRET_DECODED)} bytes)")
     except Exception as e:
         # If it's not base64, use it as-is
         SUPABASE_JWT_SECRET_DECODED = SUPABASE_JWT_SECRET
-        logger.info("Using JWT secret as-is (not base64)")
+        logger.info(f"Using JWT secret as-is (not base64): {e}")
 
 # Remove trailing slash if present
 SUPABASE_PROJECT_URL = SUPABASE_PROJECT_URL.rstrip('/')
@@ -237,7 +238,6 @@ async def verify_jwt_token(token: str) -> Dict[str, Any]:
             
             # Use the decoded JWT secret
             key = SUPABASE_JWT_SECRET_DECODED if 'SUPABASE_JWT_SECRET_DECODED' in globals() else SUPABASE_JWT_SECRET
-            
             # Verify and decode the token with HS256
             # Handle audience based on what's in the token
             if aud_claim:
