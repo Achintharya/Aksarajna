@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """
 Authentication module for Supabase JWT verification using JWKS
+Supports both legacy JWT keys and new API keys with ES256 signing
 """
 
 import os
 import time
 import logging
 import base64
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from datetime import datetime, timedelta
 import httpx
 from jose import jwt, jwk, JWTError
@@ -21,12 +22,11 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Load environment variables
-# Try multiple possible paths for the .env file (for local development)
 env_paths = [
     'config/.env',
     '../config/.env',
     os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config', '.env'),
-    '.env'  # Also try current directory
+    '.env'
 ]
 
 env_loaded = False
@@ -39,56 +39,56 @@ for env_path in env_paths:
 
 if not env_loaded:
     logger.info("No .env file found, using system environment variables (production mode)")
-    load_dotenv()  # Load from system environment
+    load_dotenv()
 
-# Supabase configuration from environment
+# Supabase configuration - Support both legacy and new keys
 SUPABASE_PROJECT_URL = os.getenv('SUPABASE_PROJECT_URL')
+
+# New API Keys (preferred)
+SUPABASE_PUBLISHABLE_KEY = os.getenv('SUPABASE_PUBLISHABLE_KEY')
+SUPABASE_SECRET_KEY = os.getenv('SUPABASE_SECRET_KEY')
+
+# Legacy Keys (fallback during migration)
 SUPABASE_ANON_KEY = os.getenv('SUPABASE_ANON_KEY')
-SUPABASE_JWT_SECRET = os.getenv('SUPABASE_JWT_SECRET')  # For HS256 fallback
-SUPABASE_SERVICE_ROLE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY')  # For server-side operations
+SUPABASE_SERVICE_ROLE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY')
+SUPABASE_JWT_SECRET = os.getenv('SUPABASE_JWT_SECRET')
 
-if not SUPABASE_PROJECT_URL:
-    # Print debug information for troubleshooting
-    logger.error("SUPABASE_PROJECT_URL not found in environment variables")
-    logger.error(f"Current working directory: {os.getcwd()}")
-    logger.error(f"Script directory: {os.path.dirname(__file__)}")
-    logger.error(f"Available env vars starting with SUPABASE: {[k for k in os.environ.keys() if k.startswith('SUPABASE')]}")
-    
-    # In production, provide more helpful error message
-    if os.getenv('RENDER'):  # Render sets this environment variable
-        logger.error("Running on Render: Please set SUPABASE_PROJECT_URL in Render dashboard environment variables")
-        raise ValueError("SUPABASE_PROJECT_URL environment variable must be set in Render dashboard")
-    else:
-        logger.error("Please ensure SUPABASE_PROJECT_URL is set in your .env file or system environment")
-        raise ValueError("SUPABASE_PROJECT_URL environment variable is required")
-
-if not SUPABASE_ANON_KEY:
-    logger.error("SUPABASE_ANON_KEY not found in environment variables")
-    if os.getenv('RENDER'):
-        logger.error("Running on Render: Please set SUPABASE_ANON_KEY in Render dashboard environment variables")
-        raise ValueError("SUPABASE_ANON_KEY environment variable must be set in Render dashboard")
-    else:
-        logger.error("Please ensure SUPABASE_ANON_KEY is set in your .env file or system environment")
-        raise ValueError("SUPABASE_ANON_KEY environment variable is required")
-
-# JWT_SECRET is optional but recommended for fallback
-if not SUPABASE_JWT_SECRET:
-    logger.warning("SUPABASE_JWT_SECRET not found - HS256 fallback will not be available")
+# Determine which keys to use
+USE_NEW_KEYS = bool(SUPABASE_SECRET_KEY and SUPABASE_PUBLISHABLE_KEY)
+if USE_NEW_KEYS:
+    logger.info("Using new Supabase API keys (sb_secret_*, sb_publishable_*)")
+    API_KEY_FOR_SERVER = SUPABASE_SECRET_KEY
+    API_KEY_FOR_CLIENT = SUPABASE_PUBLISHABLE_KEY
 else:
-    logger.info(f"SUPABASE_JWT_SECRET found (length: {len(SUPABASE_JWT_SECRET)} chars)")
-    # Decode base64-encoded JWT secret (Supabase provides it in base64)
+    logger.warning("Using legacy Supabase JWT keys - Migration to new keys recommended")
+    API_KEY_FOR_SERVER = SUPABASE_SERVICE_ROLE_KEY
+    API_KEY_FOR_CLIENT = SUPABASE_ANON_KEY
+
+# Validate required configuration
+if not SUPABASE_PROJECT_URL:
+    error_msg = "SUPABASE_PROJECT_URL environment variable is required"
+    logger.error(error_msg)
+    if os.getenv('RENDER'):
+        logger.error("Running on Render: Please set SUPABASE_PROJECT_URL in Render dashboard")
+    raise ValueError(error_msg)
+
+if not API_KEY_FOR_SERVER:
+    error_msg = "Server API key is required (SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY)"
+    logger.error(error_msg)
+    raise ValueError(error_msg)
+
+# Process legacy JWT secret if available
+SUPABASE_JWT_SECRET_DECODED = None
+if SUPABASE_JWT_SECRET:
     try:
         SUPABASE_JWT_SECRET_DECODED = base64.b64decode(SUPABASE_JWT_SECRET)
-        logger.info(f"Successfully decoded base64 JWT secret (decoded length: {len(SUPABASE_JWT_SECRET_DECODED)} bytes)")
+        logger.info(f"Decoded legacy JWT secret (length: {len(SUPABASE_JWT_SECRET_DECODED)} bytes)")
     except Exception as e:
-        # If it's not base64, use it as-is
         SUPABASE_JWT_SECRET_DECODED = SUPABASE_JWT_SECRET
-        logger.info(f"Using JWT secret as-is (not base64): {e}")
+        logger.info(f"Using JWT secret as-is: {e}")
 
-# Remove trailing slash if present
+# JWKS endpoint
 SUPABASE_PROJECT_URL = SUPABASE_PROJECT_URL.rstrip('/')
-
-# JWKS endpoint - Use correct Supabase JWKS URL
 JWKS_URL = f"{SUPABASE_PROJECT_URL}/auth/v1/.well-known/jwks.json"
 
 # HTTP Bearer token scheme
@@ -101,33 +101,38 @@ _jwks_cache = {
 }
 
 # Cache duration (10 minutes)
-JWKS_CACHE_DURATION = 600  # seconds
+JWKS_CACHE_DURATION = 600
+
+# Supported algorithms - ES256 preferred, with fallbacks
+SUPPORTED_ALGORITHMS = ["ES256", "RS256", "HS256"]
 
 async def fetch_jwks() -> Dict[str, Any]:
     """
     Fetch JWKS from Supabase with caching
-    
-    Returns:
-        JWKS dictionary
-        
-    Raises:
-        HTTPException: If JWKS fetching fails
+    Supports both legacy and new API key formats
     """
     current_time = time.time()
     
-    # Check if cache is still valid
+    # Check cache validity
     if _jwks_cache['keys'] and current_time < _jwks_cache['expires_at']:
         logger.debug("Using cached JWKS")
         return _jwks_cache['keys']
     
     try:
         logger.info(f"Fetching JWKS from {JWKS_URL}")
-    
+        
+        # Use appropriate headers based on key type
         headers = {
-            "apikey": SUPABASE_SERVICE_ROLE_KEY,
-            "Authorization": f"Bearer {SUPABASE_SERVICE_ROLE_KEY}",
             "Content-Type": "application/json"
         }
+        
+        if USE_NEW_KEYS:
+            # New API keys use different header format
+            headers["apikey"] = API_KEY_FOR_SERVER
+        else:
+            # Legacy keys
+            headers["apikey"] = API_KEY_FOR_SERVER
+            headers["Authorization"] = f"Bearer {API_KEY_FOR_SERVER}"
 
         async with httpx.AsyncClient(timeout=10.0) as client:
             response = await client.get(JWKS_URL, headers=headers)
@@ -139,7 +144,14 @@ async def fetch_jwks() -> Dict[str, Any]:
         _jwks_cache['keys'] = jwks_data
         _jwks_cache['expires_at'] = current_time + JWKS_CACHE_DURATION
         
-        logger.info(f"Successfully fetched and cached JWKS with {len(jwks_data.get('keys', []))} keys")
+        # Log key information
+        keys = jwks_data.get('keys', [])
+        logger.info(f"Fetched {len(keys)} keys from JWKS")
+        for key in keys:
+            alg = key.get('alg', 'unknown')
+            kid = key.get('kid', 'unknown')
+            logger.debug(f"  Key: alg={alg}, kid={kid[:8]}...")
+        
         return jwks_data
         
     except httpx.TimeoutException:
@@ -164,236 +176,172 @@ async def fetch_jwks() -> Dict[str, Any]:
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-def get_signing_key(token: str, jwks_data: Dict[str, Any]) -> str:
+def get_signing_key_for_algorithm(token: str, jwks_data: Dict[str, Any], algorithm: str) -> Optional[str]:
     """
-    Get the signing key for a JWT token from JWKS
+    Get the signing key for a JWT token from JWKS for a specific algorithm
     
     Args:
         token: JWT token string
         jwks_data: JWKS data
+        algorithm: Algorithm to look for (ES256, RS256, etc.)
         
     Returns:
-        Signing key for the token
-        
-    Raises:
-        HTTPException: If signing key not found
+        Signing key for the token or None if not found
     """
     try:
-        # Decode token header without verification to get kid
+        # Get token header
         unverified_header = jwt.get_unverified_header(token)
         kid = unverified_header.get('kid')
+        token_alg = unverified_header.get('alg')
         
-        if not kid:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Token missing key ID (kid)",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
+        logger.debug(f"Token header: alg={token_alg}, kid={kid[:8] if kid else 'None'}...")
         
-        # Find the key with matching kid
+        # Look for matching key
         for key in jwks_data.get('keys', []):
-            if key.get('kid') == kid:
-                # Convert JWK to PEM format
-                public_key = jwk.construct(key)
-                return public_key.to_pem().decode('utf-8')
+            key_alg = key.get('alg')
+            key_kid = key.get('kid')
+            
+            # Match by algorithm and optionally by kid
+            if key_alg == algorithm:
+                if not kid or key_kid == kid:
+                    logger.debug(f"Found matching key: alg={key_alg}, kid={key_kid[:8] if key_kid else 'None'}...")
+                    public_key = jwk.construct(key)
+                    return public_key.to_pem().decode('utf-8')
         
-        # Key not found
-        logger.warning(f"Signing key not found for kid: {kid}")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token: signing key not found",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        return None
         
-    except JWTError as e:
-        logger.warning(f"JWT header decode error: {str(e)}")
+    except Exception as e:
+        logger.debug(f"Error getting signing key for {algorithm}: {str(e)}")
+        return None
+
+async def verify_jwt_token(token: str) -> Dict[str, Any]:
+    """
+    Verify and decode a Supabase JWT token
+    Supports ES256 (preferred), RS256, and HS256 (legacy) algorithms
+    """
+    # Inspect token without verification
+    try:
+        unverified = jwt.decode(token, key=None, options={"verify_signature": False})
+        token_alg = jwt.get_unverified_header(token).get('alg')
+        logger.info(f"Token algorithm: {token_alg}, aud: {unverified.get('aud')}")
+    except Exception as e:
+        logger.error(f"Failed to decode token header: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token format",
             headers={"WWW-Authenticate": "Bearer"},
         )
-
-async def verify_jwt_token(token: str) -> Dict[str, Any]:
-    """
-    Verify and decode a Supabase JWT token - tries HS256 first, then JWKS/RS256
     
-    Args:
-        token: JWT token string
+    # Try JWKS-based verification first (ES256 and RS256)
+    try:
+        jwks_data = await fetch_jwks()
         
-    Returns:
-        Decoded token payload
-        
-    Raises:
-        HTTPException: If token is invalid or expired
-    """
-    # First, try HS256 with JWT_SECRET (most common for Supabase)
-    if SUPABASE_JWT_SECRET:
+        if jwks_data.get('keys'):
+            # Try algorithms in order of preference
+            for algorithm in ["ES256", "RS256"]:
+                signing_key = get_signing_key_for_algorithm(token, jwks_data, algorithm)
+                if signing_key:
+                    try:
+                        logger.info(f"Attempting {algorithm} verification with JWKS")
+                        payload = jwt.decode(
+                            token,
+                            signing_key,
+                            algorithms=[algorithm],
+                            options={
+                                "verify_signature": True,
+                                "verify_aud": False,  # Skip audience verification for flexibility
+                                "verify_exp": True,
+                                "verify_nbf": False,
+                                "verify_iat": True,
+                                "verify_iss": False,
+                                "require_exp": True,
+                                "require_iat": True,
+                            }
+                        )
+                        
+                        # Additional validation
+                        if not validate_token_claims(payload):
+                            continue
+                            
+                        logger.info(f"Successfully verified token with {algorithm}")
+                        return payload
+                        
+                    except JWTError as e:
+                        logger.debug(f"{algorithm} verification failed: {str(e)}")
+                        continue
+    
+    except Exception as e:
+        logger.warning(f"JWKS verification failed: {str(e)}")
+    
+    # Fallback to HS256 with legacy JWT secret
+    if SUPABASE_JWT_SECRET_DECODED:
         try:
-            logger.info("Attempting HS256 verification with JWT_SECRET")
-            
-            # First, inspect the token without verification to see the actual claims
-            # Pass None as key when not verifying signature
-            unverified = jwt.decode(token, key=None, options={"verify_signature": False})
-            aud_claim = unverified.get("aud")
-            logger.info(f"Token aud claim: {aud_claim}, type: {type(aud_claim)}")
-            
-            # Use the decoded JWT secret
-            key = SUPABASE_JWT_SECRET_DECODED if 'SUPABASE_JWT_SECRET_DECODED' in globals() else SUPABASE_JWT_SECRET
-            
-            # Verify and decode the token with HS256
-            # Don't verify audience as it can vary between tokens
+            logger.info("Attempting HS256 verification with legacy JWT secret")
             payload = jwt.decode(
                 token,
-                key,
+                SUPABASE_JWT_SECRET_DECODED,
                 algorithms=["HS256"],
                 options={
                     "verify_signature": True,
-                    "verify_aud": False,  # Skip audience verification
+                    "verify_aud": False,
                     "verify_exp": True,
-                    "verify_nbf": False,  # HS256 tokens might not have nbf
+                    "verify_nbf": False,
                     "verify_iat": True,
-                    "verify_iss": False,  # Issuer verification might differ
-                    "require_aud": False,  # Don't require audience
+                    "verify_iss": False,
                     "require_exp": True,
                     "require_iat": True,
                 }
             )
             
-            # Additional validation
-            current_time = time.time()
-            
-            # Check expiration
-            exp = payload.get('exp')
-            if exp and exp < current_time:
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Token has expired",
-                    headers={"WWW-Authenticate": "Bearer"},
-                )
-            
-            # Check not before (if present)
-            nbf = payload.get('nbf')
-            if nbf and nbf > current_time:
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Token not yet valid",
-                    headers={"WWW-Authenticate": "Bearer"},
-                )
-            
-            logger.debug(f"Successfully verified token with HS256 for user: {payload.get('email', 'unknown')}")
-            return payload
-            
-        except (JWTError, HTTPException) as e:
-            logger.info(f"HS256 verification failed: {str(e)}, trying RS256/JWKS")
-            # Continue to try RS256/JWKS
+            if validate_token_claims(payload):
+                logger.info("Successfully verified token with HS256 (legacy)")
+                return payload
+                
+        except JWTError as e:
+            logger.debug(f"HS256 verification failed: {str(e)}")
     
-    # If HS256 fails or no JWT_SECRET, try RS256 with JWKS
-    try:
-        # Fetch JWKS
-        jwks_data = await fetch_jwks()
+    # All verification methods failed
+    logger.error("All token verification methods failed")
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Token verification failed",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+def validate_token_claims(payload: Dict[str, Any]) -> bool:
+    """
+    Validate token claims for expiration and other requirements
+    
+    Args:
+        payload: Decoded JWT payload
         
-        # Check if JWKS has keys
-        if jwks_data.get('keys') and len(jwks_data.get('keys', [])) > 0:
-            # Use RS256 with JWKS
-            logger.info("Using RS256 verification with JWKS")
-            
-            # Get signing key
-            signing_key = get_signing_key(token, jwks_data)
-            
-            # Verify and decode the token with RS256
-            payload = jwt.decode(
-                token,
-                signing_key,
-                algorithms=["RS256"],
-                audience="authenticated",
-                options={
-                    "verify_signature": True,
-                    "verify_aud": True,
-                    "verify_exp": True,
-                    "verify_nbf": True,
-                    "verify_iat": True,
-                    "verify_iss": True,
-                    "require_aud": True,
-                    "require_exp": True,
-                    "require_iat": True,
-                }
-            )
-        else:
-            # JWKS is empty and HS256 already failed
-            logger.error("Both HS256 and RS256 verification failed")
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Token verification failed",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-        
-        # Additional validation
-        current_time = time.time()
-        
-        # Check expiration
-        exp = payload.get('exp')
-        if exp and exp < current_time:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Token has expired",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-        
-        # Check not before (if present)
-        nbf = payload.get('nbf')
-        if nbf and nbf > current_time:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Token not yet valid",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-        
-        logger.debug(f"Successfully verified token for user: {payload.get('email', 'unknown')}")
-        return payload
-        
-    except HTTPException:
-        # Re-raise HTTP exceptions as-is
-        raise
-    except JWTError as e:
-        logger.warning(f"JWT verification failed: {str(e)}")
-        if "expired" in str(e).lower():
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Token has expired",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-        elif "signature" in str(e).lower():
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token signature",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-    except Exception as e:
-        logger.error(f"Unexpected error during token verification: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token verification failed",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+    Returns:
+        True if claims are valid, False otherwise
+    """
+    current_time = time.time()
+    
+    # Check expiration
+    exp = payload.get('exp')
+    if exp and exp < current_time:
+        logger.debug("Token has expired")
+        return False
+    
+    # Check not before (if present)
+    nbf = payload.get('nbf')
+    if nbf and nbf > current_time:
+        logger.debug("Token not yet valid")
+        return False
+    
+    # Check for required user ID
+    if not payload.get('sub'):
+        logger.debug("Token missing user ID (sub)")
+        return False
+    
+    return True
 
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> Dict[str, Any]:
     """
     Dependency to get current authenticated user from JWT token
-    
-    Args:
-        credentials: HTTP Authorization credentials
-        
-    Returns:
-        User information from JWT payload
-        
-    Raises:
-        HTTPException: If authentication fails
     """
     if not credentials:
         raise HTTPException(
@@ -405,7 +353,7 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     token = credentials.credentials
     payload = await verify_jwt_token(token)
     
-    # Extract user information from payload
+    # Extract user information
     user_info = {
         "id": payload.get("sub"),
         "email": payload.get("email"),
@@ -430,12 +378,6 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
 async def get_optional_user(credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)) -> Optional[Dict[str, Any]]:
     """
     Optional dependency to get current user (doesn't raise error if no token)
-    
-    Args:
-        credentials: HTTP Authorization credentials (optional)
-        
-    Returns:
-        User information if authenticated, None otherwise
     """
     if not credentials:
         return None
@@ -448,15 +390,6 @@ async def get_optional_user(credentials: Optional[HTTPAuthorizationCredentials] 
 async def require_admin(current_user: Dict[str, Any] = Depends(get_current_user)) -> Dict[str, Any]:
     """
     Dependency that requires admin role
-    
-    Args:
-        current_user: Current authenticated user
-        
-    Returns:
-        User information if admin
-        
-    Raises:
-        HTTPException: If user is not admin
     """
     user_role = current_user.get("role", "authenticated")
     app_metadata = current_user.get("app_metadata", {})
@@ -478,76 +411,59 @@ async def require_admin(current_user: Dict[str, Any] = Depends(get_current_user)
     return current_user
 
 # Utility functions
+def get_api_key_type() -> str:
+    """Get the type of API keys being used"""
+    return "new" if USE_NEW_KEYS else "legacy"
+
 def create_auth_headers(token: str) -> Dict[str, str]:
-    """
-    Create authorization headers for API requests
+    """Create authorization headers for API requests"""
+    headers = {"Authorization": f"Bearer {token}"}
     
-    Args:
-        token: JWT token
-        
-    Returns:
-        Headers dictionary with Authorization header
-    """
-    return {"Authorization": f"Bearer {token}"}
+    # Add API key header if using new keys
+    if USE_NEW_KEYS:
+        headers["apikey"] = API_KEY_FOR_SERVER
+    
+    return headers
 
 def extract_user_id(current_user: Dict[str, Any]) -> str:
-    """
-    Extract user ID from current user info
-    
-    Args:
-        current_user: Current user information
-        
-    Returns:
-        User ID string
-    """
+    """Extract user ID from current user info"""
     return current_user["id"]
 
 def extract_user_email(current_user: Dict[str, Any]) -> str:
-    """
-    Extract user email from current user info
-    
-    Args:
-        current_user: Current user information
-        
-    Returns:
-        User email string
-    """
-    return current_user["email"]
+    """Extract user email from current user info"""
+    return current_user.get("email", "")
 
 def is_token_expired(current_user: Dict[str, Any]) -> bool:
-    """
-    Check if the current user's token is expired
-    
-    Args:
-        current_user: Current user information
-        
-    Returns:
-        True if token is expired, False otherwise
-    """
+    """Check if the current user's token is expired"""
     exp = current_user.get("exp")
     if not exp:
         return True
-    
     return exp < time.time()
 
 # Health check for authentication service
 async def auth_health_check() -> Dict[str, Any]:
     """
     Health check for authentication service
-    
-    Returns:
-        Health status information
     """
     try:
         # Try to fetch JWKS
         jwks_data = await fetch_jwks()
-        keys_count = len(jwks_data.get('keys', []))
+        keys = jwks_data.get('keys', [])
+        
+        # Analyze key types
+        key_algorithms = {}
+        for key in keys:
+            alg = key.get('alg', 'unknown')
+            key_algorithms[alg] = key_algorithms.get(alg, 0) + 1
         
         return {
             "status": "healthy",
             "jwks_url": JWKS_URL,
-            "keys_count": keys_count,
-            "cache_expires_at": datetime.fromtimestamp(_jwks_cache['expires_at']).isoformat(),
+            "keys_count": len(keys),
+            "key_algorithms": key_algorithms,
+            "api_key_type": get_api_key_type(),
+            "es256_available": "ES256" in key_algorithms,
+            "cache_expires_at": datetime.fromtimestamp(_jwks_cache['expires_at']).isoformat() if _jwks_cache['expires_at'] else None,
             "timestamp": datetime.now().isoformat()
         }
     except Exception as e:
@@ -555,5 +471,25 @@ async def auth_health_check() -> Dict[str, Any]:
             "status": "unhealthy",
             "error": str(e),
             "jwks_url": JWKS_URL,
+            "api_key_type": get_api_key_type(),
             "timestamp": datetime.now().isoformat()
         }
+
+# Migration status check
+def get_migration_status() -> Dict[str, Any]:
+    """
+    Get the current migration status
+    """
+    return {
+        "migration_phase": "in_progress" if not USE_NEW_KEYS else "completed",
+        "using_new_keys": USE_NEW_KEYS,
+        "new_keys_configured": bool(SUPABASE_SECRET_KEY and SUPABASE_PUBLISHABLE_KEY),
+        "legacy_keys_configured": bool(SUPABASE_SERVICE_ROLE_KEY and SUPABASE_ANON_KEY),
+        "jwt_secret_configured": bool(SUPABASE_JWT_SECRET),
+        "recommendations": [] if USE_NEW_KEYS else [
+            "Create new API keys in Supabase Dashboard",
+            "Set SUPABASE_PUBLISHABLE_KEY and SUPABASE_SECRET_KEY environment variables",
+            "Create ES256 signing key in Supabase Dashboard",
+            "Test authentication with new keys before removing legacy keys"
+        ]
+    }

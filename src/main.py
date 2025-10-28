@@ -33,7 +33,7 @@ from src.article_writer import start as generate_article
 USE_NEW_AUTH = os.getenv('USE_NEW_AUTH', 'true').lower() == 'true'
 
 if USE_NEW_AUTH:
-    from src.auth_v2 import (
+    from auth import (
         get_current_user, 
         get_optional_user, 
         require_admin, 
