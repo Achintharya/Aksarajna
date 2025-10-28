@@ -27,7 +27,25 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.web_context_extract import extract as web_extract, file_manager, simple_extract, update_sources_file
 from src.context_summarizer import summarize_context
 from src.article_writer import start as generate_article
-from src.auth import get_current_user, get_optional_user, require_admin, auth_health_check
+
+# Use auth_v2 for migration to new API keys
+# Once stable, rename auth_v2.py to auth.py and remove this conditional
+USE_NEW_AUTH = os.getenv('USE_NEW_AUTH', 'true').lower() == 'true'
+
+if USE_NEW_AUTH:
+    from src.auth_v2 import (
+        get_current_user, 
+        get_optional_user, 
+        require_admin, 
+        auth_health_check,
+        get_migration_status
+    )
+    print("✅ Using auth_v2 with new API key support")
+else:
+    from src.auth import get_current_user, get_optional_user, require_admin, auth_health_check
+    get_migration_status = None  # Not available in old auth
+    print("⚠️ Using legacy auth - migration to auth_v2 recommended")
+
 from src.supabase_client import storage_manager, db_manager
 
 # Load environment variables from config/.env
@@ -196,6 +214,17 @@ async def health_check():
 async def auth_health():
     """Authentication service health check"""
     return await auth_health_check()
+
+@app.get("/auth/migration-status")
+async def auth_migration_status():
+    """Check API key migration status"""
+    if get_migration_status:
+        return get_migration_status()
+    else:
+        return {
+            "error": "Migration status not available",
+            "message": "Using legacy auth module - switch to auth_v2 for migration status"
+        }
 
 # ============================================================================
 # Admin API Endpoints

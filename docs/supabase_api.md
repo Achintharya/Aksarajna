@@ -17,11 +17,13 @@ The JWT token is obtained from Supabase authentication and contains the user's I
 ## Storage Architecture
 
 ### Supabase Storage Buckets
+
 - `articles`: User articles stored as `{user_id}/articles/{filename}`
 - `sources`: User sources stored as `{user_id}/sources/sources.md`
 - `writing-styles`: User writing styles stored as `{user_id}/styles/writing_style.txt`
 
 ### Database Tables
+
 - `articles`: Metadata for user articles with Row Level Security (RLS)
 
 ## API Endpoints
@@ -29,12 +31,14 @@ The JWT token is obtained from Supabase authentication and contains the user's I
 ### Articles
 
 #### List User Articles
+
 ```http
 GET /api/articles
 Authorization: Bearer <jwt_token>
 ```
 
 **Response:**
+
 ```json
 {
   "articles": [
@@ -54,6 +58,7 @@ Authorization: Bearer <jwt_token>
 ```
 
 #### Get Article Content
+
 ```http
 GET /api/articles/{filename}
 Authorization: Bearer <jwt_token>
@@ -62,12 +67,14 @@ Authorization: Bearer <jwt_token>
 **Response:** Article content as plain text
 
 #### Delete Article
+
 ```http
 DELETE /api/articles/{filename}
 Authorization: Bearer <jwt_token>
 ```
 
 **Response:**
+
 ```json
 {
   "message": "Article {filename} deleted successfully"
@@ -77,6 +84,7 @@ Authorization: Bearer <jwt_token>
 ### Sources
 
 #### Update Sources
+
 ```http
 PUT /api/sources
 Authorization: Bearer <jwt_token>
@@ -88,6 +96,7 @@ Content-Type: application/json
 ```
 
 **Response:**
+
 ```json
 {
   "message": "Sources updated successfully",
@@ -98,6 +107,7 @@ Content-Type: application/json
 ```
 
 #### Get Sources
+
 ```http
 GET /api/articles/sources.md
 Authorization: Bearer <jwt_token>
@@ -106,12 +116,14 @@ Authorization: Bearer <jwt_token>
 **Response:** Sources content as plain text
 
 #### Clear Sources
+
 ```http
 DELETE /api/sources
 Authorization: Bearer <jwt_token>
 ```
 
 **Response:**
+
 ```json
 {
   "message": "Sources cleared successfully",
@@ -123,6 +135,7 @@ Authorization: Bearer <jwt_token>
 ### Writing Style
 
 #### Get Writing Style
+
 ```http
 GET /api/writing-style
 Authorization: Bearer <jwt_token>
@@ -131,6 +144,7 @@ Authorization: Bearer <jwt_token>
 **Response:** Writing style content as plain text
 
 #### Update Writing Style
+
 ```http
 PUT /api/writing-style
 Authorization: Bearer <jwt_token>
@@ -142,6 +156,7 @@ Content-Type: application/json
 ```
 
 **Response:**
+
 ```json
 {
   "message": "Writing style updated successfully",
@@ -152,12 +167,14 @@ Content-Type: application/json
 ```
 
 #### Clear Writing Style
+
 ```http
 DELETE /api/writing-style
 Authorization: Bearer <jwt_token>
 ```
 
 **Response:**
+
 ```json
 {
   "message": "Writing style cleared successfully",
@@ -226,6 +243,7 @@ const updateSources = async (content) => {
 ### Common Errors
 
 #### Authentication Errors
+
 ```json
 {
   "detail": "Authorization header missing"
@@ -245,6 +263,7 @@ const updateSources = async (content) => {
 ```
 
 #### Resource Errors
+
 ```json
 {
   "detail": "Article example.md not found"
@@ -354,6 +373,7 @@ CREATE POLICY "Users can access own articles" ON articles
 ### Storage Buckets
 
 Create the following buckets in Supabase Storage:
+
 - `articles` (private)
 - `sources` (private)
 - `writing-styles` (private)
@@ -395,6 +415,7 @@ Test performance with multiple concurrent users and large files.
 ## Support
 
 For issues or questions:
+
 1. Check the error logs for detailed error messages
 2. Verify Supabase configuration and connectivity
 3. Test authentication tokens and user permissions
