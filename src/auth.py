@@ -257,6 +257,40 @@ async def verify_jwt_token(token: str) -> Dict[str, Any]:
     except Exception as e:
         logger.warning(f"JWKS verification failed: {str(e)}")
     
+    # Try HS256 with legacy JWT secret as final fallback (for existing tokens)
+    legacy_jwt_secret = os.getenv('SUPABASE_JWT_SECRET')
+    if legacy_jwt_secret:
+        try:
+            # Decode base64 JWT secret if needed
+            try:
+                jwt_secret_decoded = base64.b64decode(legacy_jwt_secret)
+            except:
+                jwt_secret_decoded = legacy_jwt_secret
+                
+            logger.info("Attempting HS256 verification with legacy JWT secret (for existing tokens)")
+            payload = jwt.decode(
+                token,
+                jwt_secret_decoded,
+                algorithms=["HS256"],
+                options={
+                    "verify_signature": True,
+                    "verify_aud": False,
+                    "verify_exp": True,
+                    "verify_nbf": False,
+                    "verify_iat": True,
+                    "verify_iss": False,
+                    "require_exp": True,
+                    "require_iat": True,
+                }
+            )
+            
+            if validate_token_claims(payload):
+                logger.info("Successfully verified token with HS256 (legacy)")
+                return payload
+                
+        except JWTError as e:
+            logger.debug(f"HS256 verification failed: {str(e)}")
+    
     # All verification methods failed
     logger.error("Token verification failed - no valid signing key found")
     raise HTTPException(

@@ -8,8 +8,9 @@ from typing import Optional, Dict, Any, List
 from supabase import create_client, Client
 from dotenv import load_dotenv
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
+import re
 
 # Load environment variables
 load_dotenv('config/.env')
@@ -17,18 +18,37 @@ load_dotenv('config/.env')
 # Configure logging
 logger = logging.getLogger(__name__)
 
-# Supabase configuration - Using new API keys
+# Supabase configuration
 SUPABASE_URL = os.getenv('SUPABASE_PROJECT_URL')
-SUPABASE_KEY = os.getenv('SUPABASE_SECRET_KEY')  # Secret key for backend operations
+SUPABASE_SECRET_KEY = os.getenv('SUPABASE_SECRET_KEY')  # New secret key format
+
+# For Python client compatibility, try legacy key if new key doesn't work
+# The supabase-py client may not support new key format yet
+SUPABASE_KEY = SUPABASE_SECRET_KEY
+
+# Fallback to legacy service role key if available
+if not SUPABASE_KEY or (SUPABASE_KEY and SUPABASE_KEY.startswith('sb_secret_')):
+    legacy_key = os.getenv('SUPABASE_SERVICE_ROLE_KEY')
+    if legacy_key:
+        logger.info("Using legacy service role key for Python client compatibility")
+        SUPABASE_KEY = legacy_key
+    elif SUPABASE_KEY:
+        # Try using the new secret key anyway
+        logger.warning("Using new secret key format - may not be fully supported by supabase-py")
 
 if not SUPABASE_URL:
     raise ValueError("SUPABASE_PROJECT_URL environment variable is required")
 
 if not SUPABASE_KEY:
-    raise ValueError("SUPABASE_SECRET_KEY environment variable is required")
+    raise ValueError("SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY environment variable is required")
 
 # Initialize Supabase client
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+try:
+    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+    logger.info("Supabase client initialized successfully")
+except Exception as e:
+    logger.error(f"Failed to initialize Supabase client: {e}")
+    raise
 
 # Storage bucket names
 ARTICLES_BUCKET = "articles"
@@ -36,25 +56,32 @@ SOURCES_BUCKET = "sources"
 STYLES_BUCKET = "writing-styles"
 
 class SupabaseStorageManager:
-    """Manager class for Supabase Storage operations"""
+    """Manager class for Supabase Storage operations (synchronous)"""
     
     def __init__(self):
         self.client = supabase
         
-    async def ensure_buckets_exist(self):
+    def ensure_buckets_exist(self):
         """Ensure all required storage buckets exist"""
         buckets_to_create = [ARTICLES_BUCKET, SOURCES_BUCKET, STYLES_BUCKET]
         
         try:
             # Get existing buckets
             existing_buckets = self.client.storage.list_buckets()
-            existing_names = [bucket.name for bucket in existing_buckets]
+            existing_names = [bucket.name for bucket in existing_buckets] if existing_buckets else []
             
             # Create missing buckets
             for bucket_name in buckets_to_create:
                 if bucket_name not in existing_names:
                     logger.info(f"Creating storage bucket: {bucket_name}")
-                    self.client.storage.create_bucket(bucket_name, {"public": False})
+                    try:
+                        self.client.storage.create_bucket(
+                            id=bucket_name,
+                            options={"public": False}
+                        )
+                    except Exception as e:
+                        # Bucket might already exist or have different error
+                        logger.warning(f"Could not create bucket {bucket_name}: {e}")
                     
         except Exception as e:
             logger.error(f"Error ensuring buckets exist: {e}")
@@ -71,16 +98,16 @@ class SupabaseStorageManager:
         """Generate storage path for user writing style"""
         return f"{user_id}/styles/{filename}"
         
-    async def upload_article(self, user_id: str, filename: str, content: str) -> Dict[str, Any]:
-        """Upload article content to user's storage"""
+    def upload_article(self, user_id: str, filename: str, content: str) -> Dict[str, Any]:
+        """Upload article content to user's storage (synchronous)"""
         try:
             file_path = self.get_user_article_path(user_id, filename)
             
             # Upload to storage
             result = self.client.storage.from_(ARTICLES_BUCKET).upload(
-                file_path, 
-                content.encode('utf-8'),
-                {"content-type": "text/markdown"}
+                path=file_path, 
+                file=content.encode('utf-8'),
+                file_options={"content-type": "text/markdown"}
             )
             
             # Insert metadata into database
@@ -90,8 +117,7 @@ class SupabaseStorageManager:
                 "title": self._extract_title_from_filename(filename),
                 "storage_path": file_path,
                 "content_length": len(content),
-                "created_at": datetime.now().isoformat(),
-                "updated_at": datetime.now().isoformat()
+                # Let database handle timestamps with defaults
             }
             
             db_result = self.client.table("articles").insert(article_data).execute()
@@ -99,45 +125,52 @@ class SupabaseStorageManager:
             logger.info(f"Successfully uploaded article {filename} for user {user_id}")
             return {
                 "success": True,
-                "storage_result": result,
-                "db_result": db_result,
-                "file_path": file_path
+                "storage_path": file_path,
+                "db_result": db_result.data if hasattr(db_result, 'data') else db_result
             }
             
         except Exception as e:
             logger.error(f"Error uploading article: {e}")
             return {"success": False, "error": str(e)}
             
-    async def get_article(self, user_id: str, filename: str) -> Optional[str]:
-        """Get article content from user's storage"""
+    def get_article(self, user_id: str, filename: str) -> Optional[str]:
+        """Get article content from user's storage (synchronous)"""
         try:
             file_path = self.get_user_article_path(user_id, filename)
             
             # Download from storage
             result = self.client.storage.from_(ARTICLES_BUCKET).download(file_path)
             
-            if result:
+            # Handle different return types
+            if isinstance(result, bytes):
                 return result.decode('utf-8')
-            return None
-            
+            elif isinstance(result, str):
+                return result
+            else:
+                logger.warning(f"Unexpected download result type: {type(result)}")
+                return str(result) if result else None
+                
         except Exception as e:
             logger.error(f"Error getting article: {e}")
             return None
             
-    async def list_user_articles(self, user_id: str) -> List[Dict[str, Any]]:
-        """List all articles for a specific user"""
+    def list_user_articles(self, user_id: str) -> List[Dict[str, Any]]:
+        """List all articles for a specific user (synchronous)"""
         try:
             # Query database for user's articles
             result = self.client.table("articles").select("*").eq("user_id", user_id).order("updated_at", desc=True).execute()
             
-            return result.data if result.data else []
-            
+            if hasattr(result, 'data'):
+                return result.data if result.data else []
+            else:
+                return []
+                
         except Exception as e:
             logger.error(f"Error listing user articles: {e}")
             return []
             
-    async def delete_article(self, user_id: str, filename: str) -> bool:
-        """Delete article from user's storage and database"""
+    def delete_article(self, user_id: str, filename: str) -> bool:
+        """Delete article from user's storage and database (synchronous)"""
         try:
             file_path = self.get_user_article_path(user_id, filename)
             
@@ -154,78 +187,101 @@ class SupabaseStorageManager:
             logger.error(f"Error deleting article: {e}")
             return False
             
-    async def upload_sources(self, user_id: str, content: str) -> Dict[str, Any]:
-        """Upload sources content to user's storage"""
+    def upload_sources(self, user_id: str, content: str) -> Dict[str, Any]:
+        """Upload sources content to user's storage (synchronous)"""
         try:
             file_path = self.get_user_sources_path(user_id)
             
-            # Upload to storage
+            # Try to update first, then upload if doesn't exist
+            try:
+                # Delete existing file first
+                self.client.storage.from_(SOURCES_BUCKET).remove([file_path])
+            except:
+                pass  # File might not exist
+            
+            # Upload new content
             result = self.client.storage.from_(SOURCES_BUCKET).upload(
-                file_path,
-                content.encode('utf-8'),
-                {"content-type": "text/markdown", "upsert": "true"}
+                path=file_path,
+                file=content.encode('utf-8'),
+                file_options={"content-type": "text/markdown"}
             )
             
             logger.info(f"Successfully uploaded sources for user {user_id}")
-            return {"success": True, "result": result, "file_path": file_path}
+            return {"success": True, "file_path": file_path}
             
         except Exception as e:
             logger.error(f"Error uploading sources: {e}")
             return {"success": False, "error": str(e)}
             
-    async def get_sources(self, user_id: str) -> Optional[str]:
-        """Get sources content from user's storage"""
+    def get_sources(self, user_id: str) -> Optional[str]:
+        """Get sources content from user's storage (synchronous)"""
         try:
             file_path = self.get_user_sources_path(user_id)
             
             # Download from storage
             result = self.client.storage.from_(SOURCES_BUCKET).download(file_path)
             
-            if result:
+            # Handle different return types
+            if isinstance(result, bytes):
                 return result.decode('utf-8')
-            return ""
-            
+            elif isinstance(result, str):
+                return result
+            else:
+                return ""
+                
         except Exception as e:
-            logger.error(f"Error getting sources: {e}")
+            # Sources might not exist yet, return empty string
+            logger.debug(f"Sources not found or error: {e}")
             return ""
             
-    async def upload_writing_style(self, user_id: str, content: str) -> Dict[str, Any]:
-        """Upload writing style content to user's storage"""
+    def upload_writing_style(self, user_id: str, content: str) -> Dict[str, Any]:
+        """Upload writing style content to user's storage (synchronous)"""
         try:
             file_path = self.get_user_style_path(user_id)
             
-            # Upload to storage
+            # Try to delete existing file first
+            try:
+                self.client.storage.from_(STYLES_BUCKET).remove([file_path])
+            except:
+                pass  # File might not exist
+            
+            # Upload new content
             result = self.client.storage.from_(STYLES_BUCKET).upload(
-                file_path,
-                content.encode('utf-8'),
-                {"content-type": "text/plain", "upsert": "true"}
+                path=file_path,
+                file=content.encode('utf-8'),
+                file_options={"content-type": "text/plain"}
             )
             
             logger.info(f"Successfully uploaded writing style for user {user_id}")
-            return {"success": True, "result": result, "file_path": file_path}
+            return {"success": True, "file_path": file_path}
             
         except Exception as e:
             logger.error(f"Error uploading writing style: {e}")
             return {"success": False, "error": str(e)}
             
-    async def get_writing_style(self, user_id: str) -> Optional[str]:
-        """Get writing style content from user's storage"""
+    def get_writing_style(self, user_id: str) -> Optional[str]:
+        """Get writing style content from user's storage (synchronous)"""
         try:
             file_path = self.get_user_style_path(user_id)
             
             # Download from storage
             result = self.client.storage.from_(STYLES_BUCKET).download(file_path)
             
-            if result:
+            # Handle different return types
+            if isinstance(result, bytes):
                 return result.decode('utf-8')
-            return ""
-            
+            elif isinstance(result, str):
+                return result
+            else:
+                return ""
+                
         except Exception as e:
-            logger.error(f"Error getting writing style: {e}")
+            # Writing style might not exist yet, return empty string
+            logger.debug(f"Writing style not found or error: {e}")
             return ""
             
-    async def delete_writing_style(self, user_id: str) -> bool:
-        """Delete writing style from user's storage"""
+    def delete_writing_style(self, user_id: str) -> bool:
+        """Delete writing style from user's storage (synchronous)"""
         try:
             file_path = self.get_user_style_path(user_id)
             
@@ -244,11 +300,10 @@ class SupabaseStorageManager:
         # Remove file extension and common prefixes
         title = filename.replace('.md', '').replace('.txt', '').replace('article_', '')
         
-        # Replace underscores with spaces and remove date patterns
+        # Replace underscores with spaces
         title = title.replace('_', ' ')
         
         # Remove date patterns (YYYYMMDD)
-        import re
         title = re.sub(r'\d{8}', '', title).strip()
         
         # Capitalize first letter of each word
@@ -259,14 +314,62 @@ class SupabaseStorageManager:
 # Global storage manager instance
 storage_manager = SupabaseStorageManager()
 
+# Compatibility wrappers for async calls in main.py
+async def upload_article(user_id: str, filename: str, content: str) -> Dict[str, Any]:
+    """Async wrapper for compatibility"""
+    return storage_manager.upload_article(user_id, filename, content)
+
+async def get_article(user_id: str, filename: str) -> Optional[str]:
+    """Async wrapper for compatibility"""
+    return storage_manager.get_article(user_id, filename)
+
+async def list_user_articles(user_id: str) -> List[Dict[str, Any]]:
+    """Async wrapper for compatibility"""
+    return storage_manager.list_user_articles(user_id)
+
+async def delete_article(user_id: str, filename: str) -> bool:
+    """Async wrapper for compatibility"""
+    return storage_manager.delete_article(user_id, filename)
+
+async def upload_sources(user_id: str, content: str) -> Dict[str, Any]:
+    """Async wrapper for compatibility"""
+    return storage_manager.upload_sources(user_id, content)
+
+async def get_sources(user_id: str) -> Optional[str]:
+    """Async wrapper for compatibility"""
+    return storage_manager.get_sources(user_id)
+
+async def upload_writing_style(user_id: str, content: str) -> Dict[str, Any]:
+    """Async wrapper for compatibility"""
+    return storage_manager.upload_writing_style(user_id, content)
+
+async def get_writing_style(user_id: str) -> Optional[str]:
+    """Async wrapper for compatibility"""
+    return storage_manager.get_writing_style(user_id)
+
+async def delete_writing_style(user_id: str) -> bool:
+    """Async wrapper for compatibility"""
+    return storage_manager.delete_writing_style(user_id)
+
+# Add compatibility methods to storage_manager for existing code
+storage_manager.upload_article = upload_article
+storage_manager.get_article = get_article
+storage_manager.list_user_articles = list_user_articles
+storage_manager.delete_article = delete_article
+storage_manager.upload_sources = upload_sources
+storage_manager.get_sources = get_sources
+storage_manager.upload_writing_style = upload_writing_style
+storage_manager.get_writing_style = get_writing_style
+storage_manager.delete_writing_style = delete_writing_style
+
 # Database helper functions
 class SupabaseDBManager:
-    """Manager class for Supabase Database operations"""
+    """Manager class for Supabase Database operations (synchronous)"""
     
     def __init__(self):
         self.client = supabase
         
-    async def ensure_tables_exist(self):
+    def ensure_tables_exist(self):
         """Ensure all required database tables exist"""
         # Note: Tables should be created via Supabase Dashboard or migrations
         # This is just for reference of the expected schema
@@ -287,20 +390,19 @@ class SupabaseDBManager:
         -- Enable Row Level Security
         ALTER TABLE articles ENABLE ROW LEVEL SECURITY;
         
-        -- Policy: Users can only access their own articles
+        -- Policy: Users can only access their own articles (corrected)
         CREATE POLICY "Users can access own articles" ON articles
-            FOR ALL USING (auth.uid() = user_id);
+            FOR ALL USING ((SELECT auth.uid()) = user_id);
         """
         
-        logger.info("Database schema reference created. Please run this SQL in Supabase Dashboard:")
-        logger.info(articles_schema)
+        logger.info("Database schema reference - please ensure this is set up in Supabase Dashboard")
         
-    async def get_user_article_metadata(self, user_id: str, filename: str) -> Optional[Dict[str, Any]]:
-        """Get article metadata from database"""
+    def get_user_article_metadata(self, user_id: str, filename: str) -> Optional[Dict[str, Any]]:
+        """Get article metadata from database (synchronous)"""
         try:
             result = self.client.table("articles").select("*").eq("user_id", user_id).eq("filename", filename).execute()
             
-            if result.data:
+            if hasattr(result, 'data') and result.data:
                 return result.data[0]
             return None
             
@@ -310,3 +412,11 @@ class SupabaseDBManager:
 
 # Global database manager instance
 db_manager = SupabaseDBManager()
+
+# Compatibility wrapper for async calls
+async def get_user_article_metadata(user_id: str, filename: str) -> Optional[Dict[str, Any]]:
+    """Async wrapper for compatibility"""
+    return db_manager.get_user_article_metadata(user_id, filename)
+
+# Add to db_manager for compatibility
+db_manager.get_user_article_metadata = get_user_article_metadata
