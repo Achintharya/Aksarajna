@@ -17,15 +17,15 @@ load_dotenv('config/.env')
 # Configure logging
 logger = logging.getLogger(__name__)
 
-# Supabase configuration
+# Supabase configuration - Using new API keys
 SUPABASE_URL = os.getenv('SUPABASE_PROJECT_URL')
-SUPABASE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY')  # Service role key for backend operations
+SUPABASE_KEY = os.getenv('SUPABASE_SECRET_KEY')  # Secret key for backend operations
 
 if not SUPABASE_URL:
     raise ValueError("SUPABASE_PROJECT_URL environment variable is required")
 
 if not SUPABASE_KEY:
-    raise ValueError("SUPABASE_SERVICE_ROLE_KEY environment variable is required")
+    raise ValueError("SUPABASE_SECRET_KEY environment variable is required")
 
 # Initialize Supabase client
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)

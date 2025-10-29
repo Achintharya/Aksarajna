@@ -41,28 +41,17 @@ if not env_loaded:
     logger.info("No .env file found, using system environment variables (production mode)")
     load_dotenv()
 
-# Supabase configuration - Support both legacy and new keys
+# Supabase configuration - New API Keys Only
 SUPABASE_PROJECT_URL = os.getenv('SUPABASE_PROJECT_URL')
-
-# New API Keys (preferred)
 SUPABASE_PUBLISHABLE_KEY = os.getenv('SUPABASE_PUBLISHABLE_KEY')
 SUPABASE_SECRET_KEY = os.getenv('SUPABASE_SECRET_KEY')
 
-# Legacy Keys (fallback during migration)
-SUPABASE_ANON_KEY = os.getenv('SUPABASE_ANON_KEY')
-SUPABASE_SERVICE_ROLE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY')
-SUPABASE_JWT_SECRET = os.getenv('SUPABASE_JWT_SECRET')
+# Set API keys for use
+API_KEY_FOR_SERVER = SUPABASE_SECRET_KEY
+API_KEY_FOR_CLIENT = SUPABASE_PUBLISHABLE_KEY
+USE_NEW_KEYS = True
 
-# Determine which keys to use
-USE_NEW_KEYS = bool(SUPABASE_SECRET_KEY and SUPABASE_PUBLISHABLE_KEY)
-if USE_NEW_KEYS:
-    logger.info("Using new Supabase API keys (sb_secret_*, sb_publishable_*)")
-    API_KEY_FOR_SERVER = SUPABASE_SECRET_KEY
-    API_KEY_FOR_CLIENT = SUPABASE_PUBLISHABLE_KEY
-else:
-    logger.warning("Using legacy Supabase JWT keys - Migration to new keys recommended")
-    API_KEY_FOR_SERVER = SUPABASE_SERVICE_ROLE_KEY
-    API_KEY_FOR_CLIENT = SUPABASE_ANON_KEY
+logger.info("Using new Supabase API keys (sb_secret_*, sb_publishable_*)")
 
 # Validate required configuration
 if not SUPABASE_PROJECT_URL:
@@ -73,19 +62,14 @@ if not SUPABASE_PROJECT_URL:
     raise ValueError(error_msg)
 
 if not API_KEY_FOR_SERVER:
-    error_msg = "Server API key is required (SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY)"
+    error_msg = "SUPABASE_SECRET_KEY environment variable is required"
     logger.error(error_msg)
     raise ValueError(error_msg)
 
-# Process legacy JWT secret if available
-SUPABASE_JWT_SECRET_DECODED = None
-if SUPABASE_JWT_SECRET:
-    try:
-        SUPABASE_JWT_SECRET_DECODED = base64.b64decode(SUPABASE_JWT_SECRET)
-        logger.info(f"Decoded legacy JWT secret (length: {len(SUPABASE_JWT_SECRET_DECODED)} bytes)")
-    except Exception as e:
-        SUPABASE_JWT_SECRET_DECODED = SUPABASE_JWT_SECRET
-        logger.info(f"Using JWT secret as-is: {e}")
+if not API_KEY_FOR_CLIENT:
+    error_msg = "SUPABASE_PUBLISHABLE_KEY environment variable is required"
+    logger.error(error_msg)
+    raise ValueError(error_msg)
 
 # JWKS endpoint
 SUPABASE_PROJECT_URL = SUPABASE_PROJECT_URL.rstrip('/')
@@ -273,35 +257,8 @@ async def verify_jwt_token(token: str) -> Dict[str, Any]:
     except Exception as e:
         logger.warning(f"JWKS verification failed: {str(e)}")
     
-    # Fallback to HS256 with legacy JWT secret
-    if SUPABASE_JWT_SECRET_DECODED:
-        try:
-            logger.info("Attempting HS256 verification with legacy JWT secret")
-            payload = jwt.decode(
-                token,
-                SUPABASE_JWT_SECRET_DECODED,
-                algorithms=["HS256"],
-                options={
-                    "verify_signature": True,
-                    "verify_aud": False,
-                    "verify_exp": True,
-                    "verify_nbf": False,
-                    "verify_iat": True,
-                    "verify_iss": False,
-                    "require_exp": True,
-                    "require_iat": True,
-                }
-            )
-            
-            if validate_token_claims(payload):
-                logger.info("Successfully verified token with HS256 (legacy)")
-                return payload
-                
-        except JWTError as e:
-            logger.debug(f"HS256 verification failed: {str(e)}")
-    
     # All verification methods failed
-    logger.error("All token verification methods failed")
+    logger.error("Token verification failed - no valid signing key found")
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Token verification failed",
