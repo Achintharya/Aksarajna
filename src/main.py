@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Varnika - AI-Powered Article Generation System
+Aksarajna- AI-Powered Article Generation System
 Main application file with integrated FastAPI backend
 """
 
@@ -23,30 +23,57 @@ from dotenv import load_dotenv
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Import the existing modules
-from src.web_context_extract import extract as web_extract, file_manager, simple_extract, update_sources_file
-from src.context_summarizer import summarize_context
-from src.article_writer import start as generate_article
+# Import the existing modules - handle both local and production environments
+try:
+    from src.web_context_extract import extract as web_extract, file_manager, simple_extract, update_sources_file
+    from src.context_summarizer import summarize_context
+    from src.article_writer import start as generate_article
+except ImportError:
+    # Production environment import path
+    from web_context_extract import extract as web_extract, file_manager, simple_extract, update_sources_file
+    from context_summarizer import summarize_context
+    from article_writer import start as generate_article
 
 # Use auth_v2 for migration to new API keys
 # Once stable, rename auth_v2.py to auth.py and remove this conditional
 USE_NEW_AUTH = os.getenv('USE_NEW_AUTH', 'true').lower() == 'true'
 
 if USE_NEW_AUTH:
-    from auth import (
-        get_current_user, 
-        get_optional_user, 
-        require_admin, 
-        auth_health_check,
-        get_migration_status
-    )
-    print("✅ Using auth_v2 with new API key support")
+    try:
+        from src.auth import (
+            get_current_user, 
+            get_optional_user, 
+            require_admin, 
+            auth_health_check,
+            get_migration_status
+        )
+        print("✅ Using auth_v2 with new API key support")
+    except ImportError:
+        # Fallback for production environment where src. prefix might not work
+        from auth import (
+            get_current_user, 
+            get_optional_user, 
+            require_admin, 
+            auth_health_check,
+            get_migration_status
+        )
+        print("✅ Using auth_v2 with new API key support (production import)")
 else:
-    from src.auth import get_current_user, get_optional_user, require_admin, auth_health_check
-    get_migration_status = None  # Not available in old auth
-    print("⚠️ Using legacy auth - migration to auth_v2 recommended")
+    try:
+        from src.auth import get_current_user, get_optional_user, require_admin, auth_health_check
+        get_migration_status = None  # Not available in old auth
+        print("⚠️ Using legacy auth - migration to auth_v2 recommended")
+    except ImportError:
+        # Fallback for production environment
+        from auth import get_current_user, get_optional_user, require_admin, auth_health_check
+        get_migration_status = None
+        print("⚠️ Using legacy auth - migration to auth_v2 recommended (production import)")
 
-from src.supabase_client import storage_manager, db_manager
+try:
+    from src.supabase_client import storage_manager, db_manager
+except ImportError:
+    # Production environment import path
+    from supabase_client import storage_manager, db_manager
 
 # Load environment variables from config/.env
 load_dotenv('config/.env')
@@ -237,7 +264,10 @@ async def admin_list_users(current_user: Dict = Depends(require_admin)):
     """
     try:
         # Use service role to bypass RLS
-        from src.supabase_client import supabase
+        try:
+            from src.supabase_client import supabase
+        except ImportError:
+            from supabase_client import supabase
         
         # Query auth.users table
         result = supabase.auth.admin.list_users()
@@ -288,7 +318,10 @@ async def admin_delete_user(request: dict, current_user: Dict = Depends(require_
             )
         
         # Use service role to delete user
-        from src.supabase_client import supabase
+        try:
+            from src.supabase_client import supabase
+        except ImportError:
+            from supabase_client import supabase
         
         # Delete user (this will cascade delete their articles due to foreign key)
         result = supabase.auth.admin.delete_user(user_id)
@@ -311,7 +344,10 @@ async def admin_list_articles(current_user: Dict = Depends(require_admin)):
     """
     try:
         # Use service role to bypass RLS
-        from src.supabase_client import supabase
+        try:
+            from src.supabase_client import supabase
+        except ImportError:
+            from supabase_client import supabase
         
         # Query articles table with user email join
         result = supabase.table("articles").select("""
@@ -378,7 +414,10 @@ async def admin_delete_article(request: dict, current_user: Dict = Depends(requi
             )
         
         # Use service role to bypass RLS
-        from src.supabase_client import supabase
+        try:
+            from src.supabase_client import supabase
+        except ImportError:
+            from supabase_client import supabase
         
         # First get article details
         article_result = supabase.table("articles").select("*").eq("id", article_id).execute()
