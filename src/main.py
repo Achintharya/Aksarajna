@@ -34,40 +34,27 @@ except ImportError:
     from context_summarizer import summarize_context
     from article_writer import start as generate_article
 
-# Use auth_v2 for migration to new API keys
-# Once stable, rename auth_v2.py to auth.py and remove this conditional
-USE_NEW_AUTH = os.getenv('USE_NEW_AUTH', 'true').lower() == 'true'
+# Import authentication module
+try:
+    from src.auth import (
+        get_current_user, 
+        get_optional_user, 
+        require_admin, 
+        auth_health_check
+    )
+    print("✅ Using auth module (local import)")
+except ImportError:
+    # Fallback for production environment
+    from auth import (
+        get_current_user, 
+        get_optional_user, 
+        require_admin, 
+        auth_health_check
+    )
+    print("✅ Using auth module (production import)")
 
-if USE_NEW_AUTH:
-    try:
-        from src.auth import (
-            get_current_user, 
-            get_optional_user, 
-            require_admin, 
-            auth_health_check,
-            get_migration_status
-        )
-        print("✅ Using auth_v2 with new API key support")
-    except ImportError:
-        # Fallback for production environment where src. prefix might not work
-        from auth import (
-            get_current_user, 
-            get_optional_user, 
-            require_admin, 
-            auth_health_check,
-            get_migration_status
-        )
-        print("✅ Using auth_v2 with new API key support (production import)")
-else:
-    try:
-        from src.auth import get_current_user, get_optional_user, require_admin, auth_health_check
-        get_migration_status = None  # Not available in old auth
-        print("⚠️ Using legacy auth - migration to auth_v2 recommended")
-    except ImportError:
-        # Fallback for production environment
-        from auth import get_current_user, get_optional_user, require_admin, auth_health_check
-        get_migration_status = None
-        print("⚠️ Using legacy auth - migration to auth_v2 recommended (production import)")
+# Migration status not available in current auth
+get_migration_status = None
 
 try:
     from src.supabase_client import storage_manager, db_manager
@@ -242,16 +229,7 @@ async def auth_health():
     """Authentication service health check"""
     return await auth_health_check()
 
-@app.get("/auth/migration-status")
-async def auth_migration_status():
-    """Check API key migration status"""
-    if get_migration_status:
-        return get_migration_status()
-    else:
-        return {
-            "error": "Migration status not available",
-            "message": "Using legacy auth module - switch to auth_v2 for migration status"
-        }
+# Migration status endpoint removed - not available in current auth module
 
 # ============================================================================
 # Admin API Endpoints
