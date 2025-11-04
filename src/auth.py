@@ -90,10 +90,22 @@ JWKS_CACHE_DURATION = 600
 # Supported algorithms - ES256 preferred, with fallbacks
 SUPPORTED_ALGORITHMS = ["ES256", "RS256", "HS256"]
 
+# Known ES256 key for this project (hardcoded as fallback)
+KNOWN_ES256_KEY = {
+    "x": "D4CUqMVV0-g_eler2HWk-X1gT_WDO1sWKX7FxxACjgI",
+    "y": "l11q0r-HDj9VRv0PmT_Ky1QDmJc28fQt6kyh6ff5w7M",
+    "alg": "ES256",
+    "crv": "P-256",
+    "ext": True,
+    "kid": "f9a4bdc8-48ad-4084-9dfa-4cd6f7747d43",
+    "kty": "EC",
+    "key_ops": ["verify"]
+}
+
 async def fetch_jwks() -> Dict[str, Any]:
     """
     Fetch JWKS from Supabase with caching
-    Supports both legacy and new API key formats
+    JWKS endpoint is public and doesn't require authentication
     """
     current_time = time.time()
     
@@ -105,24 +117,21 @@ async def fetch_jwks() -> Dict[str, Any]:
     try:
         logger.info(f"Fetching JWKS from {JWKS_URL}")
         
-        # Use appropriate headers based on key type
+        # JWKS endpoint is public, no authentication needed
         headers = {
             "Content-Type": "application/json"
         }
-        
-        if USE_NEW_KEYS:
-            # New API keys use different header format
-            headers["apikey"] = API_KEY_FOR_SERVER
-        else:
-            # Legacy keys
-            headers["apikey"] = API_KEY_FOR_SERVER
-            headers["Authorization"] = f"Bearer {API_KEY_FOR_SERVER}"
 
         async with httpx.AsyncClient(timeout=10.0) as client:
             response = await client.get(JWKS_URL, headers=headers)
             response.raise_for_status()
             
         jwks_data = response.json()
+        
+        # If no keys found or error, use the known ES256 key as fallback
+        if not jwks_data.get('keys'):
+            logger.warning("No keys in JWKS response, using known ES256 key")
+            jwks_data = {'keys': [KNOWN_ES256_KEY]}
         
         # Cache the JWKS
         _jwks_cache['keys'] = jwks_data
@@ -134,31 +143,31 @@ async def fetch_jwks() -> Dict[str, Any]:
         for key in keys:
             alg = key.get('alg', 'unknown')
             kid = key.get('kid', 'unknown')
-            logger.debug(f"  Key: alg={alg}, kid={kid[:8]}...")
+            logger.info(f"  Key: alg={alg}, kid={kid[:8]}...")
         
         return jwks_data
         
     except httpx.TimeoutException:
-        logger.error("Timeout while fetching JWKS")
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Authentication service temporarily unavailable (timeout)",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        logger.error("Timeout while fetching JWKS, using known ES256 key")
+        # Use known key as fallback
+        jwks_data = {'keys': [KNOWN_ES256_KEY]}
+        _jwks_cache['keys'] = jwks_data
+        _jwks_cache['expires_at'] = current_time + JWKS_CACHE_DURATION
+        return jwks_data
     except httpx.HTTPStatusError as e:
-        logger.error(f"HTTP error while fetching JWKS: {e.response.status_code}")
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Authentication service temporarily unavailable",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        logger.error(f"HTTP error while fetching JWKS: {e.response.status_code}, using known ES256 key")
+        # Use known key as fallback
+        jwks_data = {'keys': [KNOWN_ES256_KEY]}
+        _jwks_cache['keys'] = jwks_data
+        _jwks_cache['expires_at'] = current_time + JWKS_CACHE_DURATION
+        return jwks_data
     except Exception as e:
-        logger.error(f"Unexpected error while fetching JWKS: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Authentication service error",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        logger.error(f"Unexpected error while fetching JWKS: {str(e)}, using known ES256 key")
+        # Use known key as fallback
+        jwks_data = {'keys': [KNOWN_ES256_KEY]}
+        _jwks_cache['keys'] = jwks_data
+        _jwks_cache['expires_at'] = current_time + JWKS_CACHE_DURATION
+        return jwks_data
 
 def get_signing_key_for_algorithm(token: str, jwks_data: Dict[str, Any], algorithm: str) -> Optional[str]:
     """
@@ -207,7 +216,8 @@ async def verify_jwt_token(token: str) -> Dict[str, Any]:
     try:
         unverified = jwt.decode(token, key=None, options={"verify_signature": False})
         token_alg = jwt.get_unverified_header(token).get('alg')
-        logger.info(f"Token algorithm: {token_alg}, aud: {unverified.get('aud')}")
+        token_kid = jwt.get_unverified_header(token).get('kid')
+        logger.info(f"Token algorithm: {token_alg}, kid: {token_kid}, aud: {unverified.get('aud')}, sub: {unverified.get('sub')}")
     except Exception as e:
         logger.error(f"Failed to decode token header: {e}")
         raise HTTPException(
@@ -221,41 +231,51 @@ async def verify_jwt_token(token: str) -> Dict[str, Any]:
         jwks_data = await fetch_jwks()
         
         if jwks_data.get('keys'):
-            # Try algorithms in order of preference
-            for algorithm in ["ES256", "RS256"]:
+            # Prioritize the token's algorithm, then try others
+            algorithms_to_try = []
+            if token_alg in ["ES256", "RS256"]:
+                algorithms_to_try.append(token_alg)
+            algorithms_to_try.extend([alg for alg in ["ES256", "RS256"] if alg != token_alg])
+            
+            for algorithm in algorithms_to_try:
                 signing_key = get_signing_key_for_algorithm(token, jwks_data, algorithm)
                 if signing_key:
                     try:
-                        logger.info(f"Attempting {algorithm} verification with JWKS")
+                        logger.info(f"Attempting {algorithm} verification with JWKS (key found)")
+                        
+                        # More lenient verification options for Supabase JWTs
                         payload = jwt.decode(
                             token,
                             signing_key,
                             algorithms=[algorithm],
                             options={
                                 "verify_signature": True,
-                                "verify_aud": False,  # Skip audience verification for flexibility
+                                "verify_aud": False,  # Supabase uses different audiences
                                 "verify_exp": True,
                                 "verify_nbf": False,
-                                "verify_iat": True,
-                                "verify_iss": False,
+                                "verify_iat": False,  # Some Supabase tokens don't have iat
+                                "verify_iss": False,  # Issuer verification can be flexible
                                 "require_exp": True,
-                                "require_iat": True,
+                                "require_iat": False,  # Don't require iat
                             }
                         )
                         
-                        # Additional validation
+                        # Additional validation - more lenient
                         if not validate_token_claims(payload):
+                            logger.warning(f"Token claims validation failed for {algorithm}")
                             continue
                             
                         logger.info(f"Successfully verified token with {algorithm}")
                         return payload
                         
                     except JWTError as e:
-                        logger.debug(f"{algorithm} verification failed: {str(e)}")
+                        logger.warning(f"{algorithm} verification failed: {str(e)}")
                         continue
+                else:
+                    logger.warning(f"No signing key found for {algorithm}")
     
     except Exception as e:
-        logger.warning(f"JWKS verification failed: {str(e)}")
+        logger.error(f"JWKS verification error: {str(e)}")
     
     # Try HS256 with legacy JWT secret as final fallback (for existing tokens)
     legacy_jwt_secret = os.getenv('SUPABASE_JWT_SECRET')
