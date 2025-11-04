@@ -46,6 +46,10 @@ SUPABASE_PROJECT_URL = os.getenv('SUPABASE_PROJECT_URL')
 SUPABASE_PUBLISHABLE_KEY = os.getenv('SUPABASE_PUBLISHABLE_KEY')
 SUPABASE_SECRET_KEY = os.getenv('SUPABASE_SECRET_KEY')
 
+# Load HS256 verification keys once at module level
+SUPABASE_SERVICE_ROLE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY')
+SUPABASE_JWT_SECRET = os.getenv('SUPABASE_JWT_SECRET')
+
 # Set API keys for use
 API_KEY_FOR_SERVER = SUPABASE_SECRET_KEY
 API_KEY_FOR_CLIENT = SUPABASE_PUBLISHABLE_KEY
@@ -207,11 +211,70 @@ def get_signing_key_for_algorithm(token: str, jwks_data: Dict[str, Any], algorit
         logger.debug(f"Error getting signing key for {algorithm}: {str(e)}")
         return None
 
+async def verify_via_supabase_api(token: str) -> Optional[Dict[str, Any]]:
+    """
+    Verify token via Supabase Auth API endpoint (recommended approach)
+    This delegates verification to Supabase and avoids local secret management
+    """
+    if not SUPABASE_SERVICE_ROLE_KEY and not API_KEY_FOR_SERVER:
+        logger.debug("No service role key available for Supabase API verification")
+        return None
+    
+    try:
+        logger.info("Attempting token verification via Supabase Auth API")
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "apikey": SUPABASE_SERVICE_ROLE_KEY or API_KEY_FOR_SERVER
+        }
+        
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(
+                f"{SUPABASE_PROJECT_URL}/auth/v1/user",
+                headers=headers
+            )
+            
+            if response.status_code == 200:
+                user_data = response.json()
+                logger.info("Successfully verified token via Supabase Auth API")
+                
+                # Convert Supabase API response to our expected format
+                return {
+                    "sub": user_data.get("id"),
+                    "email": user_data.get("email"),
+                    "role": user_data.get("role", "authenticated"),
+                    "aud": user_data.get("aud"),
+                    "exp": user_data.get("exp"),
+                    "iat": user_data.get("iat"),
+                    "iss": user_data.get("iss"),
+                    "app_metadata": user_data.get("app_metadata", {}),
+                    "user_metadata": user_data.get("user_metadata", {}),
+                }
+            elif response.status_code == 401:
+                logger.warning("Token rejected by Supabase Auth API (401)")
+                return None
+            else:
+                logger.warning(f"Supabase Auth API returned {response.status_code}: {response.text}")
+                return None
+                
+    except httpx.TimeoutException:
+        logger.warning("Timeout while verifying token via Supabase Auth API")
+        return None
+    except Exception as e:
+        logger.warning(f"Error verifying token via Supabase Auth API: {str(e)}")
+        return None
+
 async def verify_jwt_token(token: str) -> Dict[str, Any]:
     """
     Verify and decode a Supabase JWT token
-    Supports ES256 (preferred), RS256, and HS256 (legacy) algorithms
+    Tries multiple verification methods:
+    1. Supabase Auth API (recommended, delegates to Supabase)
+    2. JWKS-based verification (ES256/RS256)
+    3. HS256 with local secrets (fallback)
     """
+    # Try Supabase Auth API first (most secure, future-proof)
+    api_payload = await verify_via_supabase_api(token)
+    if api_payload:
+        return api_payload
     # Inspect token without verification
     try:
         unverified = jwt.decode(token, key=None, options={"verify_signature": False})
@@ -280,21 +343,20 @@ async def verify_jwt_token(token: str) -> Dict[str, Any]:
     # HS256 fallback for standard Supabase access tokens
     # Most Supabase tokens are HS256 signed with the project JWT secret
     if token_alg == "HS256":
-        # Try with service role key (contains JWT secret)
-        service_role_key = os.getenv('SUPABASE_SERVICE_ROLE_KEY')
-        if service_role_key:
+        # Prioritize service role key if present
+        if SUPABASE_SERVICE_ROLE_KEY:
             try:
-                logger.info("Attempting HS256 verification using SUPABASE_SERVICE_ROLE_KEY")
+                logger.info("Attempting HS256 verification using SUPABASE_SERVICE_ROLE_KEY (priority)")
                 
                 # For HS256, the key might be base64 encoded
                 try:
-                    # Try to decode if it's base64
-                    import base64
-                    decoded_key = base64.b64decode(service_role_key)
+                    decoded_key = base64.b64decode(SUPABASE_SERVICE_ROLE_KEY)
                     secret_key = decoded_key
-                except:
+                    logger.debug("Successfully base64 decoded service role key")
+                except Exception as e:
                     # Use as-is if not base64
-                    secret_key = service_role_key
+                    secret_key = SUPABASE_SERVICE_ROLE_KEY
+                    logger.debug(f"Using service role key as-is (base64 decode failed: {type(e).__name__})")
                 
                 payload = jwt.decode(
                     token,
@@ -313,7 +375,7 @@ async def verify_jwt_token(token: str) -> Dict[str, Any]:
                 )
                 
                 if validate_token_claims(payload):
-                    logger.info("Successfully verified token with HS256")
+                    logger.info("Successfully verified token with HS256 using service role key")
                     return payload
                 else:
                     logger.warning("HS256 token claims validation failed")
@@ -321,20 +383,20 @@ async def verify_jwt_token(token: str) -> Dict[str, Any]:
             except JWTError as e:
                 logger.warning(f"HS256 verification with service role key failed: {str(e)}")
         
-        # Also try with the secret key (in case it contains the JWT secret)
-        if SUPABASE_SECRET_KEY and SUPABASE_SECRET_KEY != service_role_key:
+        # Try with the secret key (in case it contains the JWT secret)
+        if SUPABASE_SECRET_KEY and SUPABASE_SECRET_KEY != SUPABASE_SERVICE_ROLE_KEY:
             try:
                 logger.info("Attempting HS256 verification using SUPABASE_SECRET_KEY")
                 
                 # For HS256, the key might be base64 encoded
                 try:
-                    # Try to decode if it's base64
-                    import base64
                     decoded_key = base64.b64decode(SUPABASE_SECRET_KEY)
                     secret_key = decoded_key
-                except:
+                    logger.debug("Successfully base64 decoded secret key")
+                except Exception as e:
                     # Use as-is if not base64
                     secret_key = SUPABASE_SECRET_KEY
+                    logger.debug(f"Using secret key as-is (base64 decode failed: {type(e).__name__})")
                 
                 payload = jwt.decode(
                     token,
@@ -362,20 +424,19 @@ async def verify_jwt_token(token: str) -> Dict[str, Any]:
                 logger.warning(f"HS256 verification with secret key failed: {str(e)}")
         
         # Try with the JWT secret environment variable if available
-        jwt_secret = os.getenv('SUPABASE_JWT_SECRET')
-        if jwt_secret:
+        if SUPABASE_JWT_SECRET and SUPABASE_JWT_SECRET not in [SUPABASE_SERVICE_ROLE_KEY, SUPABASE_SECRET_KEY]:
             try:
                 logger.info("Attempting HS256 verification using SUPABASE_JWT_SECRET")
                 
                 # For HS256, the key might be base64 encoded
                 try:
-                    # Try to decode if it's base64
-                    import base64
-                    decoded_key = base64.b64decode(jwt_secret)
+                    decoded_key = base64.b64decode(SUPABASE_JWT_SECRET)
                     secret_key = decoded_key
-                except:
+                    logger.debug("Successfully base64 decoded JWT secret")
+                except Exception as e:
                     # Use as-is if not base64
-                    secret_key = jwt_secret
+                    secret_key = SUPABASE_JWT_SECRET
+                    logger.debug(f"Using JWT secret as-is (base64 decode failed: {type(e).__name__})")
                 
                 payload = jwt.decode(
                     token,
