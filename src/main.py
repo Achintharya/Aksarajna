@@ -57,10 +57,34 @@ except ImportError:
 get_migration_status = None
 
 try:
-    from src.supabase_client import storage_manager, db_manager
+    from src.supabase_client import (
+        storage_manager, 
+        db_manager,
+        # Import async wrapper functions
+        list_user_articles,
+        get_article,
+        delete_article,
+        upload_sources,
+        get_sources,
+        upload_writing_style,
+        get_writing_style,
+        delete_writing_style
+    )
 except ImportError:
     # Production environment import path
-    from supabase_client import storage_manager, db_manager
+    from supabase_client import (
+        storage_manager, 
+        db_manager,
+        # Import async wrapper functions
+        list_user_articles,
+        get_article,
+        delete_article,
+        upload_sources,
+        get_sources,
+        upload_writing_style,
+        get_writing_style,
+        delete_writing_style
+    )
 
 # Load environment variables from config/.env
 load_dotenv('config/.env')
@@ -563,8 +587,8 @@ async def list_articles(current_user: Dict = Depends(get_current_user)):
         user_id = current_user["id"]
         print(f"🔍 Fetching articles for user: {user_id}")
         
-        # Get user's articles from Supabase
-        articles = await storage_manager.list_user_articles(user_id)
+        # Get user's articles from Supabase (use async wrapper)
+        articles = await list_user_articles(user_id)
         
         # Transform database records to match frontend expectations
         formatted_articles = []

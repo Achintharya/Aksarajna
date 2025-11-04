@@ -277,17 +277,33 @@ async def verify_jwt_token(token: str) -> Dict[str, Any]:
         return api_payload
     # Inspect token without verification
     try:
-        unverified = jwt.decode(token, key=None, options={"verify_signature": False})
+        # Get header without any verification
         token_alg = jwt.get_unverified_header(token).get('alg')
         token_kid = jwt.get_unverified_header(token).get('kid')
+        
+        # Decode payload without any verification
+        unverified = jwt.decode(
+            token, 
+            key=None, 
+            options={
+                "verify_signature": False,
+                "verify_aud": False,
+                "verify_iss": False,
+                "verify_exp": False,
+                "verify_nbf": False,
+                "verify_iat": False,
+                "verify_sub": False,
+                "require_exp": False,
+                "require_iat": False,
+                "require_nbf": False,
+            }
+        )
         logger.info(f"Token algorithm: {token_alg}, kid: {token_kid}, aud: {unverified.get('aud')}, sub: {unverified.get('sub')}")
     except Exception as e:
-        logger.error(f"Failed to decode token header: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token format",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        logger.error(f"Failed to decode token: {e}")
+        # Don't fail here, continue with verification attempts
+        token_alg = "HS256"  # Default to HS256 if we can't determine
+        token_kid = None
     
     # Try JWKS-based verification first (ES256 and RS256)
     try:

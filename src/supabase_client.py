@@ -370,16 +370,9 @@ async def delete_writing_style(user_id: str) -> bool:
     """Async wrapper for compatibility"""
     return storage_manager.delete_writing_style(user_id)
 
-# Add compatibility methods to storage_manager for existing code
-storage_manager.upload_article = upload_article
-storage_manager.get_article = get_article
-storage_manager.list_user_articles = list_user_articles
-storage_manager.delete_article = delete_article
-storage_manager.upload_sources = upload_sources
-storage_manager.get_sources = get_sources
-storage_manager.upload_writing_style = upload_writing_style
-storage_manager.get_writing_style = get_writing_style
-storage_manager.delete_writing_style = delete_writing_style
+# Note: DO NOT overwrite storage_manager methods with async wrappers
+# The storage_manager already has synchronous methods that work correctly
+# The async wrappers above are available as standalone functions when needed
 
 # Database helper functions
 class SupabaseDBManager:
