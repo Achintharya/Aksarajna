@@ -229,6 +229,35 @@ async def auth_health():
     """Authentication service health check"""
     return await auth_health_check()
 
+@app.get("/api/config")
+async def get_public_config():
+    """
+    Get public configuration for frontend
+    This endpoint provides the necessary configuration for the frontend to connect to Supabase
+    """
+    # Get the publishable key from environment
+    publishable_key = os.getenv('SUPABASE_PUBLISHABLE_KEY')
+    project_url = os.getenv('SUPABASE_PROJECT_URL')
+    
+    if not publishable_key or not project_url:
+        # Try to provide helpful error message
+        return {
+            "error": "Configuration incomplete",
+            "message": "Server is missing required Supabase configuration. Please ensure SUPABASE_PUBLISHABLE_KEY and SUPABASE_PROJECT_URL are set.",
+            "legacy_keys_disabled": True,
+            "instructions": "Use the new sb_publishable_* key format, not the old anon key"
+        }
+    
+    return {
+        "supabaseUrl": project_url,
+        "supabaseAnonKey": publishable_key,  # Frontend may expect this name
+        "supabasePublishableKey": publishable_key,  # New name for clarity
+        "apiUrl": os.getenv("API_URL", "http://localhost:8000"),
+        "legacy_keys_disabled": True,
+        "key_format": "new",  # Indicate we're using new key format
+        "message": "Using new Supabase API keys (ES256 signing)"
+    }
+
 # Migration status endpoint removed - not available in current auth module
 
 # ============================================================================
