@@ -1,6 +1,7 @@
 # Frontend Authentication Fix for Legacy Keys Disabled Error
 
 ## Problem
+
 When users try to login on the frontend, they get "legacy keys are disabled" error because the frontend is using the old `anon` key format instead of the new `sb_publishable_*` key.
 
 ## Solution
@@ -10,12 +11,14 @@ When users try to login on the frontend, they get "legacy keys are disabled" err
 Replace the old keys in your frontend's `.env` or configuration:
 
 **OLD (Legacy - Won't Work):**
+
 ```env
 VITE_SUPABASE_URL=https://pvarvmjbazehivkiuosk.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJhbGciOiJI...  # Old anon key format
 ```
 
 **NEW (Required):**
+
 ```env
 VITE_SUPABASE_URL=https://pvarvmjbazehivkiuosk.supabase.co
 VITE_SUPABASE_ANON_KEY=sb_publishable_...  # New publishable key format
@@ -24,6 +27,7 @@ VITE_SUPABASE_ANON_KEY=sb_publishable_...  # New publishable key format
 ### 2. Get Your New Publishable Key
 
 You can find your new publishable key in:
+
 1. Supabase Dashboard → Settings → API
 2. Look for "Publishable anon key" (starts with `sb_publishable_`)
 3. Copy this key to your frontend
@@ -31,6 +35,7 @@ You can find your new publishable key in:
 ### 3. Update Frontend Supabase Client Initialization
 
 If your frontend code looks like this:
+
 ```javascript
 import { createClient } from '@supabase/supabase-js'
 
@@ -78,6 +83,7 @@ if (config) {
 ### 5. Backend API Config Endpoint
 
 The backend now provides a `/api/config` endpoint that returns:
+
 ```json
 {
   "supabaseUrl": "https://pvarvmjbazehivkiuosk.supabase.co",
@@ -112,12 +118,14 @@ The authentication should now work with the ES256-signed JWTs using the new key 
 ## Environment Variables Summary
 
 ### Frontend (.env)
+
 ```env
 VITE_SUPABASE_URL=https://pvarvmjbazehivkiuosk.supabase.co
 VITE_SUPABASE_ANON_KEY=sb_publishable_xxx  # Get from Supabase Dashboard
 ```
 
 ### Backend (config/.env)
+
 ```env
 SUPABASE_PROJECT_URL=https://pvarvmjbazehivkiuosk.supabase.co
 SUPABASE_PUBLISHABLE_KEY=sb_publishable_xxx  # Same as frontend anon key
