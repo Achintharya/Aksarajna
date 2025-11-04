@@ -277,10 +277,133 @@ async def verify_jwt_token(token: str) -> Dict[str, Any]:
     except Exception as e:
         logger.error(f"JWKS verification error: {str(e)}")
     
-    # No HS256 fallback - legacy keys are disabled
+    # HS256 fallback for standard Supabase access tokens
+    # Most Supabase tokens are HS256 signed with the project JWT secret
+    if token_alg == "HS256":
+        # Try with service role key (contains JWT secret)
+        service_role_key = os.getenv('SUPABASE_SERVICE_ROLE_KEY')
+        if service_role_key:
+            try:
+                logger.info("Attempting HS256 verification using SUPABASE_SERVICE_ROLE_KEY")
+                
+                # For HS256, the key might be base64 encoded
+                try:
+                    # Try to decode if it's base64
+                    import base64
+                    decoded_key = base64.b64decode(service_role_key)
+                    secret_key = decoded_key
+                except:
+                    # Use as-is if not base64
+                    secret_key = service_role_key
+                
+                payload = jwt.decode(
+                    token,
+                    secret_key,
+                    algorithms=["HS256"],
+                    options={
+                        "verify_signature": True,
+                        "verify_aud": False,  # Supabase uses different audiences
+                        "verify_exp": True,
+                        "verify_nbf": False,
+                        "verify_iat": False,
+                        "verify_iss": False,
+                        "require_exp": True,
+                        "require_iat": False,
+                    }
+                )
+                
+                if validate_token_claims(payload):
+                    logger.info("Successfully verified token with HS256")
+                    return payload
+                else:
+                    logger.warning("HS256 token claims validation failed")
+                    
+            except JWTError as e:
+                logger.warning(f"HS256 verification with service role key failed: {str(e)}")
+        
+        # Also try with the secret key (in case it contains the JWT secret)
+        if SUPABASE_SECRET_KEY and SUPABASE_SECRET_KEY != service_role_key:
+            try:
+                logger.info("Attempting HS256 verification using SUPABASE_SECRET_KEY")
+                
+                # For HS256, the key might be base64 encoded
+                try:
+                    # Try to decode if it's base64
+                    import base64
+                    decoded_key = base64.b64decode(SUPABASE_SECRET_KEY)
+                    secret_key = decoded_key
+                except:
+                    # Use as-is if not base64
+                    secret_key = SUPABASE_SECRET_KEY
+                
+                payload = jwt.decode(
+                    token,
+                    secret_key,
+                    algorithms=["HS256"],
+                    options={
+                        "verify_signature": True,
+                        "verify_aud": False,
+                        "verify_exp": True,
+                        "verify_nbf": False,
+                        "verify_iat": False,
+                        "verify_iss": False,
+                        "require_exp": True,
+                        "require_iat": False,
+                    }
+                )
+                
+                if validate_token_claims(payload):
+                    logger.info("Successfully verified token with HS256 using secret key")
+                    return payload
+                else:
+                    logger.warning("HS256 token claims validation failed with secret key")
+                    
+            except JWTError as e:
+                logger.warning(f"HS256 verification with secret key failed: {str(e)}")
+        
+        # Try with the JWT secret environment variable if available
+        jwt_secret = os.getenv('SUPABASE_JWT_SECRET')
+        if jwt_secret:
+            try:
+                logger.info("Attempting HS256 verification using SUPABASE_JWT_SECRET")
+                
+                # For HS256, the key might be base64 encoded
+                try:
+                    # Try to decode if it's base64
+                    import base64
+                    decoded_key = base64.b64decode(jwt_secret)
+                    secret_key = decoded_key
+                except:
+                    # Use as-is if not base64
+                    secret_key = jwt_secret
+                
+                payload = jwt.decode(
+                    token,
+                    secret_key,
+                    algorithms=["HS256"],
+                    options={
+                        "verify_signature": True,
+                        "verify_aud": False,
+                        "verify_exp": True,
+                        "verify_nbf": False,
+                        "verify_iat": False,
+                        "verify_iss": False,
+                        "require_exp": True,
+                        "require_iat": False,
+                    }
+                )
+                
+                if validate_token_claims(payload):
+                    logger.info("Successfully verified token with HS256 using JWT secret")
+                    return payload
+                else:
+                    logger.warning("HS256 token claims validation failed with JWT secret")
+                    
+            except JWTError as e:
+                logger.warning(f"HS256 verification with JWT secret failed: {str(e)}")
     
     # All verification methods failed
-    logger.error("Token verification failed - no valid signing key found")
+    logger.error(f"Token verification failed - no valid signing key found for algorithm: {token_alg}")
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Token verification failed",
@@ -459,11 +582,17 @@ def get_migration_status() -> Dict[str, Any]:
     """
     Get the current migration status
     """
+    has_service_role = bool(os.getenv('SUPABASE_SERVICE_ROLE_KEY'))
+    has_jwt_secret = bool(os.getenv('SUPABASE_JWT_SECRET'))
+    
     return {
         "migration_phase": "completed",
         "using_new_keys": True,
         "new_keys_configured": bool(SUPABASE_SECRET_KEY and SUPABASE_PUBLISHABLE_KEY),
-        "legacy_keys_disabled": True,
-        "es256_signing": True,
+        "hs256_support": True,  # Now supports HS256 tokens
+        "es256_support": True,  # Also supports ES256 tokens
+        "service_role_key_available": has_service_role,
+        "jwt_secret_available": has_jwt_secret,
+        "supported_algorithms": ["ES256", "RS256", "HS256"],
         "recommendations": []
     }
