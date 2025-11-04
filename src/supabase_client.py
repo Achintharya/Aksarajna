@@ -20,27 +20,46 @@ logger = logging.getLogger(__name__)
 
 # Supabase configuration
 SUPABASE_URL = os.getenv('SUPABASE_PROJECT_URL')
-SUPABASE_SECRET_KEY = os.getenv('SUPABASE_SECRET_KEY')  # New secret key format
 
-# For Python client compatibility, try legacy key if new key doesn't work
-# The supabase-py client may not support new key format yet
-SUPABASE_KEY = SUPABASE_SECRET_KEY
+# Determine which key to use for supabase-py client compatibility
+# Prefer SUPABASE_SERVICE_ROLE_KEY for server-side operations.
+SERVICE_ROLE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY')
+NEW_SECRET_KEY = os.getenv('SUPABASE_SECRET_KEY')  # New sb_secret_* format
+LEGACY_KEY = SERVICE_ROLE_KEY  # legacy service_role_ key
 
-# Fallback to legacy service role key if available
-if not SUPABASE_KEY or (SUPABASE_KEY and SUPABASE_KEY.startswith('sb_secret_')):
-    legacy_key = os.getenv('SUPABASE_SERVICE_ROLE_KEY')
-    if legacy_key:
-        logger.info("Using legacy service role key for Python client compatibility")
-        SUPABASE_KEY = legacy_key
-    elif SUPABASE_KEY:
-        # Try using the new secret key anyway
-        logger.warning("Using new secret key format - may not be fully supported by supabase-py")
+SUPABASE_KEY = None
+
+if LEGACY_KEY:
+    # Use the legacy service role key when available (works with supabase-py)
+    SUPABASE_KEY = LEGACY_KEY
+    logger.info("Using SUPABASE_SERVICE_ROLE_KEY for Supabase client (recommended for server operations)")
+else:
+    # No service role key available; try the provided secret key
+    if NEW_SECRET_KEY:
+        if NEW_SECRET_KEY.startswith('sb_secret_'):
+            # New key format detected
+            logger.warning(
+                "Detected new sb_secret_* key format. supabase-py may not fully support this format. "
+                "Attempting to initialize client with the new key; if initialization fails, "
+                "provide SUPABASE_SERVICE_ROLE_KEY (legacy service role) instead."
+            )
+            SUPABASE_KEY = NEW_SECRET_KEY
+        else:
+            # Key present but not new format — assume it's compatible
+            SUPABASE_KEY = NEW_SECRET_KEY
+            logger.info("Using provided SUPABASE_SECRET_KEY for Supabase client")
+    else:
+        # No usable key found
+        raise ValueError(
+            "Missing Supabase key. Set SUPABASE_SERVICE_ROLE_KEY (recommended) or SUPABASE_SECRET_KEY in your environment."
+        )
+
+# Validate final presence
+if not SUPABASE_KEY:
+    raise ValueError("Failed to determine a Supabase key to initialize the client.")
 
 if not SUPABASE_URL:
     raise ValueError("SUPABASE_PROJECT_URL environment variable is required")
-
-if not SUPABASE_KEY:
-    raise ValueError("SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY environment variable is required")
 
 # Initialize Supabase client
 try:

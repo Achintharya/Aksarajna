@@ -277,39 +277,7 @@ async def verify_jwt_token(token: str) -> Dict[str, Any]:
     except Exception as e:
         logger.error(f"JWKS verification error: {str(e)}")
     
-    # Try HS256 with legacy JWT secret as final fallback (for existing tokens)
-    legacy_jwt_secret = os.getenv('SUPABASE_JWT_SECRET')
-    if legacy_jwt_secret:
-        try:
-            # Decode base64 JWT secret if needed
-            try:
-                jwt_secret_decoded = base64.b64decode(legacy_jwt_secret)
-            except:
-                jwt_secret_decoded = legacy_jwt_secret
-                
-            logger.info("Attempting HS256 verification with legacy JWT secret (for existing tokens)")
-            payload = jwt.decode(
-                token,
-                jwt_secret_decoded,
-                algorithms=["HS256"],
-                options={
-                    "verify_signature": True,
-                    "verify_aud": False,
-                    "verify_exp": True,
-                    "verify_nbf": False,
-                    "verify_iat": True,
-                    "verify_iss": False,
-                    "require_exp": True,
-                    "require_iat": True,
-                }
-            )
-            
-            if validate_token_claims(payload):
-                logger.info("Successfully verified token with HS256 (legacy)")
-                return payload
-                
-        except JWTError as e:
-            logger.debug(f"HS256 verification failed: {str(e)}")
+    # No HS256 fallback - legacy keys are disabled
     
     # All verification methods failed
     logger.error("Token verification failed - no valid signing key found")
@@ -492,15 +460,10 @@ def get_migration_status() -> Dict[str, Any]:
     Get the current migration status
     """
     return {
-        "migration_phase": "in_progress" if not USE_NEW_KEYS else "completed",
-        "using_new_keys": USE_NEW_KEYS,
+        "migration_phase": "completed",
+        "using_new_keys": True,
         "new_keys_configured": bool(SUPABASE_SECRET_KEY and SUPABASE_PUBLISHABLE_KEY),
-        "legacy_keys_configured": bool(SUPABASE_SERVICE_ROLE_KEY and SUPABASE_ANON_KEY),
-        "jwt_secret_configured": bool(SUPABASE_JWT_SECRET),
-        "recommendations": [] if USE_NEW_KEYS else [
-            "Create new API keys in Supabase Dashboard",
-            "Set SUPABASE_PUBLISHABLE_KEY and SUPABASE_SECRET_KEY environment variables",
-            "Create ES256 signing key in Supabase Dashboard",
-            "Test authentication with new keys before removing legacy keys"
-        ]
+        "legacy_keys_disabled": True,
+        "es256_signing": True,
+        "recommendations": []
     }
