@@ -514,6 +514,14 @@ async def search_web_content(request: WebSearchRequest, background_tasks: Backgr
         message=f"Web search started for query: {request.query}"
     )
 
+# Alias for backward compatibility with frontend
+@app.post("/api/search-extract", response_model=JobResponse)
+async def search_extract_alias(request: WebSearchRequest, background_tasks: BackgroundTasks):
+    """
+    Alias for /api/search endpoint (backward compatibility)
+    """
+    return await search_web_content(request, background_tasks)
+
 @app.post("/api/generate", response_model=JobResponse)
 async def generate_article_endpoint(request: ArticleGenerationRequest, background_tasks: BackgroundTasks):
     """
@@ -628,7 +636,7 @@ async def get_article(filename: str, current_user: Dict = Depends(get_current_us
         
         # Special handling for sources files
         if filename in ["sources.txt", "sources.md"]:
-            content = await storage_manager.get_sources(user_id)
+            content = await get_sources(user_id)  # Use async wrapper
             
             # Create response with cache-busting headers
             response = Response(
@@ -643,8 +651,8 @@ async def get_article(filename: str, current_user: Dict = Depends(get_current_us
             
             return response
         
-        # Regular article handling from Supabase Storage
-        content = await storage_manager.get_article(user_id, filename)
+        # Regular article handling from Supabase Storage (use async wrapper)
+        content = await get_article(user_id, filename)
         
         if content is None:
             raise HTTPException(
@@ -681,8 +689,8 @@ async def delete_article(filename: str, current_user: Dict = Depends(get_current
     try:
         user_id = current_user["id"]
         
-        # Delete article from Supabase Storage and database
-        success = await storage_manager.delete_article(user_id, filename)
+        # Delete article from Supabase Storage and database (use async wrapper)
+        success = await delete_article(user_id, filename)
         
         if not success:
             raise HTTPException(
@@ -773,8 +781,8 @@ async def update_sources(request: SourcesUpdateRequest, current_user: Dict = Dep
     try:
         user_id = current_user["id"]
         
-        # Upload sources to user's Supabase Storage
-        result = await storage_manager.upload_sources(user_id, request.content)
+        # Upload sources to user's Supabase Storage (use async wrapper)
+        result = await upload_sources(user_id, request.content)
         
         if not result.get("success"):
             raise HTTPException(
@@ -846,8 +854,8 @@ async def clear_sources(current_user: Dict = Depends(get_current_user)):
     try:
         user_id = current_user["id"]
         
-        # Clear sources by uploading empty content
-        result = await storage_manager.upload_sources(user_id, "")
+        # Clear sources by uploading empty content (use async wrapper)
+        result = await upload_sources(user_id, "")
         
         if not result.get("success"):
             raise HTTPException(
@@ -1088,8 +1096,8 @@ async def get_writing_style(current_user: Dict = Depends(get_current_user)):
     try:
         user_id = current_user["id"]
         
-        # Get writing style from user's Supabase Storage
-        content = await storage_manager.get_writing_style(user_id)
+        # Get writing style from user's Supabase Storage (use async wrapper)
+        content = await get_writing_style(user_id)
         
         # Create response with cache-busting headers
         response = Response(
@@ -1118,8 +1126,8 @@ async def update_writing_style(request: WritingStyleUpdateRequest, current_user:
     try:
         user_id = current_user["id"]
         
-        # Upload writing style to user's Supabase Storage
-        result = await storage_manager.upload_writing_style(user_id, request.content)
+        # Upload writing style to user's Supabase Storage (use async wrapper)
+        result = await upload_writing_style(user_id, request.content)
         
         if not result.get("success"):
             raise HTTPException(
@@ -1150,8 +1158,8 @@ async def clear_writing_style(current_user: Dict = Depends(get_current_user)):
     try:
         user_id = current_user["id"]
         
-        # Delete writing style from user's Supabase Storage
-        success = await storage_manager.delete_writing_style(user_id)
+        # Delete writing style from user's Supabase Storage (use async wrapper)
+        success = await delete_writing_style(user_id)
         
         if not success:
             raise HTTPException(
